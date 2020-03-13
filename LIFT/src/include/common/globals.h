@@ -1,13 +1,17 @@
 /*
  * globals.h
- *
- *  Created on: 12-Mar-2020
- *      Author: sajetan
  */
 
 #ifndef INCLUDE_COMMON_GLOBALS_H_
 #define INCLUDE_COMMON_GLOBALS_H_
 
+#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
+
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
 
 enum LIFT_DRONE_SESSION_STATES {
 	DRONE_SESSION_EST_INIT = 0,
@@ -24,7 +28,6 @@ enum LIFT_BST_SESSION_STATES {
 	BST_SESSION_EST_WAIT_COMMUNICATION,
 	BST_SESSION_EST_TERMINATE,
 } ;
-
 
 
 #endif /* INCLUDE_COMMON_GLOBALS_H_ */

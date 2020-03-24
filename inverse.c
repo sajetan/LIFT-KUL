@@ -9,8 +9,11 @@ inverse.c
 /* This function computes the inverse z of a mod p, where
 az mod m = 1, m is odd, a and m are coprime (i.e. gcd(a, m) = 1).
 
-This function is based on the binary extended gcd algorithm,
+This function is essentially the binary extended gcd algorithm,
 also called binary extended Euclidian algorithm.
+The only difference is that since we are only looking for an inverse
+and that we know that gcd(a, m) = 1, some unnecessary computations
+are left out.
 
 This algorithm has the adjective "binary" since it is a variant of 
 the classical extended Euclidian algorithm: the computationnally

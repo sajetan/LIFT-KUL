@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <math.h>
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -29,5 +30,9 @@ enum LIFT_BST_SESSION_STATES {
 	BST_SESSION_EST_TERMINATE,
 } ;
 
+
+void hex_decoder(const char *in, size_t len,uint32_t *out);
+void print_num(uint32_t *in, uint32_t size);
+void test_convert_hex_array();
 
 #endif /* INCLUDE_COMMON_GLOBALS_H_ */

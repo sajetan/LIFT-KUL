@@ -15,5 +15,4 @@ void inverseTest();
 void inverseTestHelp(WORD a, WORD m, WORD zExp);
 WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg);
 
-
 #endif

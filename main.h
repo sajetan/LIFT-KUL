@@ -22,10 +22,6 @@ purpose: it contains the prototypes, defines and includes
 #define BIT ((WORD) (sizeof(WORD)*8) )
 #define SIZE ((WORD) 40 )
 
-#define TESTOK() printf("OK, all tests passed for %s\n", __func__);
-#define TESTFAIL() printf("FAIL :/ - %s\n", __func__);
-
-
 // Lien's functions
 #include"sub.h"
 #include"add.h"
@@ -33,12 +29,12 @@ purpose: it contains the prototypes, defines and includes
 
 // Ferdinand's functions
 #include"gcd.h"
-#include"begcd.h"
 #include"inverse.h"
-#include"word.h"
+#include"shift.h"
 
 // Tejas's functions
 #include"utilities.h"
+
 
 
 #endif

@@ -8,8 +8,13 @@
 
 #include"main.h"
 
+void convert(WORD *out, const char *in);
+void print_num(WORD *in);
+WORD equalWord(WORD a[], WORD b[]);
+void copyWord(WORD copy[], WORD w[]);
+void printWord(WORD w[]);
+void convertTest();
 void hex_decoder(const char *in, size_t len,uint32_t *out);
-void print_num(uint32_t *in, uint32_t size);
 void test_convert_hex_array();
 
 

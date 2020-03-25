@@ -1,12 +1,11 @@
 /*
-Ferdinand Hannequart
 main.h
 
 purpose: it contains the prototypes, defines and includes
 */
 
-#ifndef DEF_MAIN
-#define DEF_MAIN
+#ifndef MAIN_H_
+#define MAIN_H_
 
 #include<time.h>        // for timing
 #include<stdio.h>       // for prints

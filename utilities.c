@@ -169,3 +169,4 @@ void test_convert_hex_array(){
 	hex_decoder(p,strlen(p), c);
 	print_num(c);
 }
+

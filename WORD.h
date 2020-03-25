@@ -3,6 +3,7 @@ Ferdinand Hannequart
 WORD.h
 
 purpose: contains the prototypes, defines and includes
+blabla
 */
 
 #ifndef DEF_WORD

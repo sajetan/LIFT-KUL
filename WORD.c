@@ -2,7 +2,6 @@
 Ferdinand Hannequart
 WORD.c
 
-
 */
 
 #include"WORD.h"

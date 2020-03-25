@@ -13,5 +13,7 @@ purpose: contains the prototypes, defines and includes
 void inverse(WORD* z, WORD a, WORD m);
 void inverseTest();
 void inverseTestHelp(WORD a, WORD m, WORD zExp);
+WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg);
+
 
 #endif

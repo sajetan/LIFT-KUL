@@ -9,9 +9,9 @@ WORD.c
 "length x MSB ... LSB" 
 e.g. for 16 bit: "2 x 178B 002F"*/
 void printWord(WORD a[]){
-    printf("%wd x ", a[0]);
+    printf("%d x ", a[0]);
     for(WORD i = a[0]; i>0; i--){
-        printf("%p ", a[i]);
+        printf("%x ", a[i]);
     }
     printf("\n");
 }
@@ -120,10 +120,10 @@ void shiftr1Test(WORD print){
         pass &= shiftr1TestHelp(test1[i][0], test1[i][1], print);
     }
     if(pass){
-        TESTOK()
+        printf("OK, all tests passed for %s\n", __func__);
     }
     else{
-        TESTFAIL()
+        printf("FAIL :/ - %s\n", __func__);
     }
 }
 
@@ -174,10 +174,10 @@ void shiftl1Test(WORD print){
         pass &= shiftl1TestHelp(test1[i][0], test1[i][1], print);
     }
     if(pass){
-        TESTOK()
+        printf("OK, all tests passed for %s\n", __func__);
     }
     else{
-        TESTFAIL()
+        printf("FAIL :/ - %s\n", __func__);
     }
 }
 
@@ -296,7 +296,8 @@ void shiftlTestHelp(WORD test[], WORD shift, WORD exp[]){
     printf("\n%s  shiftlTest() \n", __FILE__);
     printf("Test - ");
     printWord(test);
-    printf("shift - %wd\n", shift);
+    printf("shift - %d\n", shift);
+
     shiftl(test, shift);
     printf("Result - ");
     printWord(test);

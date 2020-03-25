@@ -11,9 +11,10 @@ purpose: contains the prototypes, defines and includes
 #include"main.h"
 
 #define GCDTESTPRINT(u, v, exp) if(exp == gcd(u, v)) \
-                                printf("Test OK: The gcd of %wd and %wd is %wd\n", u, v, exp);\
+                                printf("Test OK: The gcd of %d and %d is %d\n", u, v, exp);\
                                 else \
-                                printf("FAIL: The gcd of %wd and %wd is %wd, expected %wd\n", u, v, gcd(u, v), exp);
+                                printf("FAIL: The gcd of %d and %d is %d, expected %d\n", u, v, gcd(u, v), exp);
+
 
 WORD gcd(WORD u, WORD v);
 void gcdTest();

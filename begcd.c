@@ -4,7 +4,7 @@ begcd.c
 
 purpose: computing the gcd using the binary gcd algorithm. 
 This is a recursive implementation
-blabla
+
 */
 #include"begcd.h"
 
@@ -120,17 +120,18 @@ begcd(&a, &b, &r, x, y);
         printf("%s - PASS\n", __FILE__);
     }
     else{
-        printf("%s - FAIL: expected a=%wd, b=%wd, gcd=%wd but got a=%wd, b=%wd, gcd=%wd\n", __FILE__, aExp, bExp, rExp, a, b, r);
+        printf("%s - FAIL: expected a=%d, b=%d, gcd=%d but got a=%d, b=%d, gcd=%d\n", __FILE__, aExp, bExp, rExp, a, b, r);
     } 
 }
 void verifyCoefficients(WORD x, WORD y, WORD expGCD ){
     WORD a=0, b=0, r=0; // where the result will be stored
     begcd(&a, &b, &r, x, y);
     if(expGCD == r && expGCD == (a*x + b*y)){
-        printf("%s - x=%wd, y=%wd, a=%wd, b=%wd, gcd=%wd is a valid combination ", __FILE__, x, y, a, b, expGCD);
+        printf("%s - x=%d, y=%d, a=%d, b=%d, gcd=%d is a valid combination ", __FILE__, x, y, a, b, expGCD);
     }
     else{
-        printf("%s - FAIL: x=%wd, y=%wd, a=%wd, b=%wd, gcd=%wd is not valid", __FILE__, x, y, a, b, expGCD);
+        printf("%s - FAIL: x=%d, y=%d, a=%d, b=%d, gcd=%d is not valid", __FILE__, x, y, a, b, expGCD);
+
     }
 }
 

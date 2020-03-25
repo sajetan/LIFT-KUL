@@ -29,41 +29,72 @@ INPUT: two strictely positive integers a and p, p odd, gcd(a,m) = 1.
 OUTPUT: integer z, inverse of a mod m
 */
 void inverse(WORD* z, WORD a, WORD m){
-    if(m <= 0 || a <= 0){
-        printf("INVALID INPUT: input must be strictly positive, code will possibly get stuck in infinite loop\n");
-    }
-    if(~m & 1){
-        printf("INVALID INPUT: m must be odd\n");
-    }
     WORD u = m, v = a,B = 0, D = 1;
+    WORD BIsNeg = 0, DIsNeg = 0;
     do{
         while(~u & 1){ //while u is even, do the following
             u = u >> 1;
             if( ~B & 1){ // if B is even, then
                 B = B >> 1;}
             else{
-                B = (B-m) >> 1;}}
+                B = subtractUnsigned(B, m, &BIsNeg, 0) >> 1;}}
 
         while(~v & 1){ //while v is even, do the following
             v = v >> 1;
             if( ~D & 1){ // if  D is even, then
                 D = D >> 1;}
             else{
-                D = (D-m) >> 1;}}
+                D = subtractUnsigned(D, m, &DIsNeg, 0) >> 1;}}
 
         // check which number is larger and subtract
         if(u>=v){
             u = u - v;
-            B = B - D;}
+            B = subtractUnsigned(B, D, &BIsNeg, DIsNeg);}
         else{
             v = v - u;
-            D = D - B;}
+            D = subtractUnsigned(D, B, &DIsNeg, BIsNeg);}
+
     }while(u != 0);
 
     // end, values are placed in the pointers:
-    *z = D;
-    if(D<0){
-        *z = D + m;}
+    if(DIsNeg){
+        *z = m-D;
+    }
+    else{
+        *z = D;
+    }
+}
+
+WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg){
+    if(!*aIsNeg && !bIsNeg){
+        if(a<b){
+            *aIsNeg = 1;
+            return b-a;
+        }
+        else{
+            return a-b;
+        }
+    }
+    else if (!*aIsNeg && bIsNeg){
+        return a+b;
+    }
+    else if (*aIsNeg && !bIsNeg){
+        return a+b;
+    }
+    else if(*aIsNeg && bIsNeg){
+        if(a>b){
+            return a-b;
+        }
+        else{
+            *aIsNeg = 0;
+
+            return b-a;
+        }
+        *aIsNeg = a>b;
+        return a-b;
+    }
+
+
 }
 
 /* Test function for the above inverse */
@@ -75,16 +106,19 @@ void inverseTest(){
     inverseTestHelp(1, 5, 1);
     inverseTestHelp(57, 278562785, 254127453);
     inverseTestHelp(278562785, 57, 5);
+    inverseTestHelp(54, 8755, 3729);
+
 }
 
 void inverseTestHelp(WORD a, WORD m, WORD zExp){
     WORD z=0; // where the result will be stored
     inverse(&z, a, m);
     if(zExp == z ){
-        printf("%s - PASS: expected z=%wd, got z=%wd, \n", __FILE__, zExp, z);
+        printf("%s - PASS: expected z=%d, got z=%d, \n", __FILE__, zExp, z);
     }
     else{
-        printf("%s - FAIL: expected z=%wd, got z=%wd, \n", __FILE__, zExp, z);
+        printf("%s - FAIL: expected z=%d, got z=%d, \n", __FILE__, zExp, z);
+
     }
 
 

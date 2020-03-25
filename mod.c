@@ -1,5 +1,4 @@
 /*
-
  * mod.c
  *
  *  Created on: Mar 17, 2020
@@ -20,13 +19,14 @@ void mod(WORD *res, WORD *a, WORD *n)
 	//z = index of most significant non zero element of a
 	WORD z = length_a;
 	while(a[z] == 0){
-			z--;
-			}
+		z--;
+	}
 	//y = index of most significant non zero element of n
 	WORD y = length_n;
 	while(n[y] == 0){
-			y--;
-			}
+		y--;
+	}
+
 
 	// if z > y => a > n
 	if(z>y) {
@@ -37,15 +37,16 @@ void mod(WORD *res, WORD *a, WORD *n)
 			//z = index of most significant non zero element of a
 			WORD z = length_a;
 			while(a[z] == 0){
-					z--;
-					}
+				z--;
+			}
 			//y = index of most significant non zero element of n
 			WORD y = length_n;
 			while(n[y] == 0){
-					y--;
-					}
+				y--;
+			}
 		}
 		//after while-loop, you are sure that z <= y
+	}
 
 	// if y > z => n > a => res = a
 	if (y>z){
@@ -58,8 +59,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 
 
 
-	}
-
 	if (z==y){
 
 		//if a[z] > n[z] => a > n
@@ -67,7 +66,8 @@ void mod(WORD *res, WORD *a, WORD *n)
 			while (a[z] > n[z]) {
 				// a =  a - n
 				sub(a,a,n);
-				}
+			}
+
 		}
 		//after while-loop, you are sure that a[z]<= n[z]
 
@@ -77,7 +77,7 @@ void mod(WORD *res, WORD *a, WORD *n)
 			WORD i;
 			for(i=1; i<=length_a; i++) {
 				res[i] = a[i];
-					}
+			}
 		}
 
 		if (a[z] == n[z]){
@@ -93,7 +93,8 @@ void mod(WORD *res, WORD *a, WORD *n)
 				WORD i;
 				for(i=1; i<=length_a; i++) {
 					res[i] = 0;
-						}
+				}
+
 			}
 
 
@@ -103,22 +104,19 @@ void mod(WORD *res, WORD *a, WORD *n)
 				WORD i;
 				for(i=1; i<=length_a; i++) {
 					res[i] = a[i];
-						}
-				}
+					}
+			}
+
 			//if a[z] > n[z] => a > n
 			if (a[z] > n[z]) {
 				// a =  a - n
 				sub(a,a,n);
-					}
 				res[0] = length_a;
 				WORD i;
 				for(i=1; i<=length_a; i++) {
 					res[i] = a[i];
-						}
-
+				}
 			}
-			}
+		}
 	}
 }
-
-

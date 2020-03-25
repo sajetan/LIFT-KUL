@@ -29,11 +29,9 @@ INPUT: two strictely positive integers a and p, p odd, gcd(a,m) = 1.
 OUTPUT: integer z, inverse of a mod m
 */
 void inverse(WORD* z, WORD a, WORD m){
-
     WORD u = m, v = a,B = 0, D = 1;
     WORD BIsNeg = 0, DIsNeg = 0;
     do{
-
         while(~u & 1){ //while u is even, do the following
             u = u >> 1;
             if( ~B & 1){ // if B is even, then
@@ -96,6 +94,7 @@ WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg){
         return a-b;
     }
 
+
 }
 
 /* Test function for the above inverse */
@@ -108,6 +107,7 @@ void inverseTest(){
     inverseTestHelp(57, 278562785, 254127453);
     inverseTestHelp(278562785, 57, 5);
     inverseTestHelp(54, 8755, 3729);
+
 }
 
 void inverseTestHelp(WORD a, WORD m, WORD zExp){
@@ -118,6 +118,7 @@ void inverseTestHelp(WORD a, WORD m, WORD zExp){
     }
     else{
         printf("%s - FAIL: expected z=%d, got z=%d, \n", __FILE__, zExp, z);
+
     }
 
 

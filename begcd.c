@@ -4,6 +4,7 @@ begcd.c
 
 purpose: computing the gcd using the binary gcd algorithm. 
 This is a recursive implementation
+
 */
 #include"begcd.h"
 
@@ -130,6 +131,7 @@ void verifyCoefficients(WORD x, WORD y, WORD expGCD ){
     }
     else{
         printf("%s - FAIL: x=%d, y=%d, a=%d, b=%d, gcd=%d is not valid", __FILE__, x, y, a, b, expGCD);
+
     }
 }
 

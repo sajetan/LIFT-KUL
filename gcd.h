@@ -15,6 +15,7 @@ purpose: contains the prototypes, defines and includes
                                 else \
                                 printf("FAIL: The gcd of %d and %d is %d, expected %d\n", u, v, gcd(u, v), exp);
 
+
 WORD gcd(WORD u, WORD v);
 void gcdTest();
 

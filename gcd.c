@@ -4,6 +4,7 @@ gcd.c
 
 purpose: computing the gcd using the binary gcd algorithm. 
 This is a recursive implementation based on the one of the wikipedia page.
+
 */
 #include"gcd.h"
 

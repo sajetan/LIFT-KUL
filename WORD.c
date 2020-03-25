@@ -1,34 +1,29 @@
 /*
 Ferdinand Hannequart
 WORD.c
+
 */
 
-#include"word.h"
+#include"WORD.h"
 
-/* prints a word[] in the following format:
-"length x MSB ... LSB" 
-e.g. for 16 bit: "2 x 178B 002F"*/
 void printWord(WORD a[]){
-    printf("%d x ", a[0]);
+    printf("%wd x ", a[0]);
     for(WORD i = a[0]; i>0; i--){
-        printf("%x ", a[i]);
+        printf("%p ", a[i]);
     }
     printf("\n");
 }
 
-/* copies array w[] to array copy[]
-INPUT: 2 WORD[] arrays of length SIZE*/
-void copyWord(WORD copy[], WORD w[]){
+/* Function for copying a[] to c[] */
+void copyWord(WORD a[], WORD c[]){
     for(WORD i = 0; i<=SIZE; i++){
-        copy[i] = w[i];
+        c[i] = a[i];
     }
 }
 
 /*function for comparing two WORDS[].
 BEWARE: the length field must be equal as well! 
-e.g. {0} and {1, 0} are different 
-INPUT: 2 WORD[] numbers
-OUTPUT: 1 if equal, 0 if different*/
+e.g. {0} and {1, 0} are different */
 WORD equalWord(WORD a[], WORD b[]){
     WORD S1 = a[0];
     WORD S2 = b[0];
@@ -48,7 +43,7 @@ WORD equalWord(WORD a[], WORD b[]){
     }
 }
 
-/* Shift function: shifts a WORD[] number once to the right*/
+/* Shift function: shifts a WORD[] once to the right*/
 void shiftr1(WORD w[]){
     // if w[0] == 0, nothing changes. Else:
     if(w[0] != 0){
@@ -66,7 +61,7 @@ void shiftr1(WORD w[]){
 }
 
 
-/* Shift function: shifts a WORD[] number once to the left*/
+/* Shift function: shifts a WORD[] once to the left*/
 void shiftl1(WORD w[]){
     // compute upper cell
     WORD upperValue =  w[w[0]] >> (BIT -1);
@@ -120,10 +115,10 @@ void shiftr1Test(WORD print){
         pass &= shiftr1TestHelp(test1[i][0], test1[i][1], print);
     }
     if(pass){
-        printf("OK, all tests passed for %s\n", __func__);
+        TESTOK()
     }
     else{
-        printf("FAIL :/ - %s\n", __func__);
+        TESTFAIL()
     }
 }
 
@@ -131,7 +126,7 @@ void shiftr1Test(WORD print){
 and contains all the print instructions*/
 WORD shiftr1TestHelp(WORD test[], WORD exp[], WORD print){
     WORD c[SIZE];
-    copyWord(c, test);
+    copyWord(test, c);
     shiftr1(test);
     if(print){
         printf("\n%s  shiftl1Test() line \n", __FILE__);
@@ -174,10 +169,10 @@ void shiftl1Test(WORD print){
         pass &= shiftl1TestHelp(test1[i][0], test1[i][1], print);
     }
     if(pass){
-        printf("OK, all tests passed for %s\n", __func__);
+        TESTOK()
     }
     else{
-        printf("FAIL :/ - %s\n", __func__);
+        TESTFAIL()
     }
 }
 
@@ -185,7 +180,7 @@ void shiftl1Test(WORD print){
 and contains all the print instructions*/
 WORD shiftl1TestHelp(WORD test[], WORD exp[], WORD print){
     WORD originalTest[SIZE];
-    copyWord( originalTest,test);
+    copyWord(test, originalTest);
     shiftl1(test);
     if(print){
         printf("\n%s  shiftl1Test() line \n", __FILE__);
@@ -296,8 +291,7 @@ void shiftlTestHelp(WORD test[], WORD shift, WORD exp[]){
     printf("\n%s  shiftlTest() \n", __FILE__);
     printf("Test - ");
     printWord(test);
-    printf("shift - %d\n", shift);
-
+    printf("shift - %wd\n", shift);
     shiftl(test, shift);
     printf("Result - ");
     printWord(test);

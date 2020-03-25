@@ -4,6 +4,7 @@ begcd.c
 
 purpose: computing the gcd using the binary gcd algorithm. 
 This is a recursive implementation
+blabla
 */
 #include"begcd.h"
 

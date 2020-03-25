@@ -10,6 +10,6 @@
 
 #include"main.h"
 
-void sub(WORD *res, WORD *a, WORD *b);
+void sub(WORD *res, WORD *a, WORD *b, WORD size);
 
 #endif /* SUB_H_ */

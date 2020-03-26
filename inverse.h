@@ -1,9 +1,7 @@
 /*
-Ferdinand Hannequart
-inverse.h
-
-purpose: contains the prototypes, defines and includes
-*/
+ *Ferdinand Hannequart
+ *inverse.h
+ */
 
 #ifndef DEF_INVERSE
 #define DEF_INVERSE

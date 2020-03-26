@@ -1,9 +1,9 @@
 /*
-Ferdinand Hannequart
-gcd.h
-
-purpose: contains the prototypes, defines and includes
-*/
+ *Ferdinand Hannequart
+ *gcd.h
+ *
+ *purpose: contains the prototypes, defines and includes
+ */
 
 #ifndef DEF_GCD
 #define DEF_GCD

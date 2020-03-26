@@ -53,7 +53,7 @@ void shiftl1(WORD w[]){
 /* Test function of shiftr1(), prints all the tests in a readable way */
 void shiftr1Test(WORD print){
     const WORD STOP = 74;
-
+    BEGINTEST(print)
     // tests with 1 shift
     WORD test1[100] [2] [100]  = {
         {{0},               {0}},
@@ -78,12 +78,8 @@ void shiftr1Test(WORD print){
     for(WORD i = 0; test1[i][0][0] != STOP && pass;i++){
         pass &= shiftr1TestHelp(test1[i][0], test1[i][1], print);
     }
-    if(pass){
-        printf("OK, all tests passed for %s\n", __func__);
-    }
-    else{
-        printf("FAIL :/ - %s\n", __func__);
-    }
+    TEST(pass)
+    ENDTEST(print)
 }
 
 /* This subfunction is used by shiftr1Test()
@@ -107,6 +103,8 @@ WORD shiftr1TestHelp(WORD test[], WORD exp[], WORD print){
 /* Test function of shiftl1(), prints all the tests in a readable way */
 void shiftl1Test(WORD print){
     const WORD STOP = 74;
+
+    BEGINTEST(print)
 
     // tests with 1 shift
     WORD test1[100] [2] [100]  = {
@@ -132,12 +130,8 @@ void shiftl1Test(WORD print){
     for(WORD i = 0; test1[i][0][0] != STOP && pass;i++){
         pass &= shiftl1TestHelp(test1[i][0], test1[i][1], print);
     }
-    if(pass){
-        printf("OK, all tests passed for %s\n", __func__);
-    }
-    else{
-        printf("FAIL :/ - %s\n", __func__);
-    }
+    TEST(pass)
+    ENDTEST(print)
 }
 
 /* This subfunction is used by shiftl1Test()

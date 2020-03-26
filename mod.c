@@ -27,7 +27,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 		y--;
 	}
 
-
 	// if z > y => a > n
 	if(z>y) {
 
@@ -58,7 +57,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 	}
 
 
-
 	if (z==y){
 
 		//if a[z] > n[z] => a > n
@@ -67,7 +65,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 				// a =  a - n
 				sub(a,a,n);
 			}
-
 		}
 		//after while-loop, you are sure that a[z]<= n[z]
 
@@ -94,7 +91,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 				for(i=1; i<=length_a; i++) {
 					res[i] = 0;
 				}
-
 			}
 
 
@@ -106,7 +102,6 @@ void mod(WORD *res, WORD *a, WORD *n)
 					res[i] = a[i];
 					}
 			}
-
 			//if a[z] > n[z] => a > n
 			if (a[z] > n[z]) {
 				// a =  a - n

@@ -48,21 +48,35 @@ WORD gcd(WORD u, WORD v){
     }
 }
 
-void gcdTest()
+void gcdTest(WORD print)
 {
-    printf("-------\n   gcdTest():\n");
+    BEGINTEST(print)
+    WORD pass = 1;
     // corner cases
-    GCDTESTPRINT(0, 0, 0)
-    GCDTESTPRINT(1, 0, 1)
-    GCDTESTPRINT(2, 0, 2)
-    GCDTESTPRINT(0, 1, 1)
-    GCDTESTPRINT(0, 2, 2)
-    GCDTESTPRINT(249856,249856 , 249856)
+    gcdTestPrint(0, 0, 0, print, &pass);
+    gcdTestPrint(1, 0, 1, print, &pass);
+    gcdTestPrint(2, 0, 2, print, &pass);
+    gcdTestPrint(0, 1, 1, print, &pass);
+    gcdTestPrint(0, 2, 2, print, &pass);
+    gcdTestPrint(249856,249856 , 249856, print, &pass);
 
     // other cases
-    GCDTESTPRINT(23, 17, 1)
-    GCDTESTPRINT(20, 36, 4)
-    GCDTESTPRINT(60, 36, 12)
-    GCDTESTPRINT(123947628, 563487258, 6)
-    GCDTESTPRINT(568790880, 58, 2)
+    gcdTestPrint(23, 17, 1, print, &pass);
+    gcdTestPrint(20, 36, 4, print, &pass);
+    gcdTestPrint(60, 36, 12, print, &pass);
+    gcdTestPrint(123947628, 563487258, 6, print, &pass);
+    gcdTestPrint(568790880, 58, 2, print, &pass);
+    TEST(pass)
+    ENDTEST(print)
+}
+
+void gcdTestPrint(WORD u, WORD v, WORD exp, WORD print, WORD* pass){
+    *pass &= exp == gcd(u, v);
+    if(print){
+        if(*pass){
+            printf("Test OK: The gcd of %d and %d is %d\n", u, v, exp);
+        } else{
+            printf("FAIL: The gcd of %d and %d is %d, expected %d\n", u, v, gcd(u, v), exp);
+        }
+    }
 }

@@ -11,8 +11,8 @@ purpose: contains the prototypes, defines and includes
 #include"main.h"
 
 void inverse(WORD* z, WORD a, WORD m);
-void inverseTest();
-void inverseTestHelp(WORD a, WORD m, WORD zExp);
+void inverseTest(WORD print);
+void inverseTestHelp(WORD a, WORD m, WORD zExp, WORD print, WORD* pass);
 WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg);
 
 #endif

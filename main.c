@@ -5,8 +5,7 @@
 #include"main.h"
 
 void main(){
-    
-    
+
 
     /////// Tejas ///////
     /*
@@ -17,19 +16,16 @@ void main(){
 
 
     /////// Ferdinand ///////
-    /*
-    convertTest();
+    
 
-    WORD a[SIZE] = {0};
-    char pp[]= "20";
-    hex_decoder(pp,strlen(pp), a);
-	print_num(a);
-
-    gcdTest();
+ 	getNumberBytesTest(0);
+ 	hash256Test(0);
     shiftl1Test(0);     // 0 is summary, 1 is everything
     shiftr1Test(0);     // 0 is summary, 1 is everything
-    inverseTest();
-    */
+	gcdTest(0);
+    inverseTest(0);
+	convertTest();
+
 
    /////// Lien ///////
    /*
@@ -65,4 +61,3 @@ void main(){
 	printf("res[7]= %x\n", res[7]);
     */
 }
-

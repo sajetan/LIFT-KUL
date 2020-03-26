@@ -20,21 +20,36 @@ void convert(WORD *out, const char *in){
 	}
 
 	WORD len = strlen(in);
-	WORD index = 0; // keeps track of the cells of the array
-
-	for(WORD i = 0; i<len ; i++){
+	WORD stopEarly = 0; // handle MSB zeros and remove them
+	while( stopEarly<len && in[stopEarly] == '0'){
+		stopEarly++;
+	}
+	WORD index = 0; 	// keeps track of the cells of the array
+	WORD current = 0;	// will store the number as a char
+	WORD t = 0;			// will store the number as an integer
+	for(WORD i = 0; i<len-stopEarly ; i++){
 		index = i/(BIT/4)+1;
-		WORD t = (in[len-i-1]> '9' ? in[len-i-1] - 'A' + 10 : in[len-i-1] - '0');
-		out[index] |= t<< 4*(i%(BIT/4));
+		current = in[len-i-1];
+		if(current >= 'A' && current <= 'F'){
+			t = current - 'A' + 10;
+		} else if(current >= 'a' && current <= 'f'){
+			t = current - 'A' - 22;
+		}else{
+			t = current - '0';
+		}		
+		out[index] |= t<< (4*(i%(BIT/4)));
 	}
 	out[0] = index;
 }
-/*prints an array, format: [size, lsb-> msb]*/
+/*prints an array; format: [size, lsb-> msb]*/
 void print_num(WORD *in){
     //printf("[size, lsb-> msb]:  ");
     printf("[");
     for (WORD i = 0; i < in[0]+1; i++) {
 		switch(BIT){
+			case 64:
+    		printf("0x%16x,", in[i]);
+			break;
 			case 32:
     		printf("0x%08x,", in[i]);
 			break;
@@ -141,22 +156,42 @@ void convertTest(){
 	WORD w[SIZE] = {0};
 	printf("\n---- %s -----\n", __func__);
 	// 6AB7F
-	convert(w, "6ABF7");
-	printf("Original string: 6ABF7 \n");
+	convert(w, "00000000000006ABF7000000000000000");
+	printf("Original string: 00000000000006ABF7000000000000000 \n");
 	printf("Resulting array: ");
 	print_num(w);
-	printf("\n");
 
 	// 0
 	convert(w, "0");
 	printf("Original string: 0 \n");
 	printf("Resulting array: ");
 	print_num(w);
-	printf("\n");
 
 	// F0F0F0
-	convert(w, "F0F0F0");
-	printf("Original string: F0F0F0 \n");
+	convert(w, "F0F0");
+	printf("Original string: F0F0 \n");
+	printf("Resulting array: ");
+	print_num(w);
+
+	// F0F0F0
+	convert(w, "00F0F000");
+	printf("Original string: 00F0F000 \n");
+	printf("Resulting array: ");
+	print_num(w);
+	
+	// F0F0F0
+	convert(w, "00FFFF00");
+	printf("Original string: 00FFFF00 \n");
+	printf("Resulting array: ");
+	print_num(w);
+
+	convert(w, "abcdef");
+	printf("Original string: abcdef \n");
+	printf("Resulting array: ");
+	print_num(w);
+
+	convert(w, "ABCDEF");
+	printf("Original string: ABCDEF \n");
 	printf("Resulting array: ");
 	print_num(w);
 
@@ -169,4 +204,3 @@ void test_convert_hex_array(){
 	hex_decoder(p,strlen(p), c);
 	print_num(c);
 }
-

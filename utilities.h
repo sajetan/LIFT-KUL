@@ -17,5 +17,4 @@ void convertTest();
 void hex_decoder(const char *in, size_t len,uint32_t *out);
 void test_convert_hex_array();
 
-
 #endif /* SUB_H_ */

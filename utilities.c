@@ -17,10 +17,12 @@ out: [3, 9B, F5, 8]
 void convert(WORD *out, const char *in){
 	WORD len = strlen(in);
 	if(len >= BIT/4*SIZE-1){
-		printf("!!!!! max size exceeded !!!!\n\n\n");
+		printf("\n youpidou message from converter:\n"
+				"the number you want to convert is too large\n"
+				"Increase SIZE or reduce the number you want to convert\n");
 	}
 
-	for(WORD i = 0; i<sizeof(out)/sizeof(WORD); i++){ // set array to zero
+	for(WORD i = 0; i<SIZE; i++){ // set array to zero
 		out[i] = 0;
 	}
 
@@ -40,7 +42,7 @@ void convert(WORD *out, const char *in){
 			t = current - 'A' - 22;
 		}else{
 			t = current - '0';
-		}		
+		}	
 		out[index] |= t<< (4*(i%(BIT/4)));
 	}
 	out[0] = index;
@@ -142,38 +144,6 @@ WORD greaterThan(WORD a[], WORD b[]){
 	}
 }
 
-void hex_decoder(const char *in, size_t len,uint32_t *out){
-	uint32_t padding_required=0;
-	uint32_t padzeros=0;
-	uint32_t i, t, bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7, index;
-
-	if (len%8!=0) {padding_required=1;padzeros=8-len%8; len = len/8+1;}
-	//len=len/8+1; // I removed ceil() because even with the math.h library, it gave me an error, I didn't
-	for (t = len,i = 0; i < len*8-padzeros; i+=8,--t){
-		if (padding_required){
-			uint32_t t_arr[8]={0};
-			for (uint32_t offset = padzeros,index=0; offset < 8;offset++,index++ ){
-				t_arr[offset]=in[index] > '9' ? toupper(in[index]) - 'A' + 10 : in[index] - '0';
-			}
-			out[t] = (t_arr[0]<<28)| (t_arr[1]<<24) | (t_arr[2]<<20) | (t_arr[3]<<16) | (t_arr[4]<<12) | (t_arr[5]<<8) | (t_arr[6]<<4) | t_arr[7];
-			padding_required=0;
-			i-=padzeros;
-		}
-		else{
-		bit7 = in[i] > '9' ? toupper(in[i]) - 'A' + 10 : in[i] - '0';
-		bit6 = in[i+1] > '9' ? toupper(in[i+1]) - 'A' + 10 : in[i+1] - '0';
-		bit5 = in[i+2] > '9' ? toupper(in[i+2]) - 'A' + 10 : in[i+2] - '0';
-		bit4 = in[i+3] > '9' ? toupper(in[i+3]) - 'A' + 10 : in[i+3] - '0';
-		bit3 = in[i+4] > '9' ? toupper(in[i+4]) - 'A' + 10 : in[i+4] - '0';
-		bit2 = in[i+5] > '9' ? toupper(in[i+5]) - 'A' + 10 : in[i+5] - '0';
-		bit1 = in[i+6] > '9' ? toupper(in[i+6]) - 'A' + 10 : in[i+6] - '0';
-		bit0 = in[i+7] > '9' ? toupper(in[i+7]) - 'A' + 10 : in[i+7] - '0';
-
-		out[t] = (bit7<<28)| (bit6<<24) | (bit5<<20) | (bit4<<16) | (bit3<<12) | (bit2<<8) | (bit1<<4) | bit0;
-		}
-	}
-	out[0]=len;
-}
 
 
 
@@ -220,7 +190,49 @@ void convertTest(){
 	printf("Resulting array: ");
 	print_num(w);
 
+	convert(w, "cdbf000c000cf");
+	printf("Original string: cdbf000c000cf \n");
+	printf("Resulting array: ");
+	print_num(w);
+
+
+	
+
 	printf("---------end %s-------------\n\n", __func__);
+}
+
+/*
+void hex_decoder(const char *in, size_t len,uint32_t *out){
+	uint32_t padding_required=0;
+	uint32_t padzeros=0;
+	uint32_t i, t, bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7, index;
+
+	if (len%8!=0) {padding_required=1;padzeros=8-len%8; len = len/8+1;}
+	//len=len/8+1; // I removed ceil() because even with the math.h library, it gave me an error, I didn't
+	for (t = len,i = 0; i < len*8-padzeros; i+=8,--t){
+		if (padding_required){
+			uint32_t t_arr[8]={0};
+			for (uint32_t offset = padzeros,index=0; offset < 8;offset++,index++ ){
+				t_arr[offset]=in[index] > '9' ? toupper(in[index]) - 'A' + 10 : in[index] - '0';
+			}
+			out[t] = (t_arr[0]<<28)| (t_arr[1]<<24) | (t_arr[2]<<20) | (t_arr[3]<<16) | (t_arr[4]<<12) | (t_arr[5]<<8) | (t_arr[6]<<4) | t_arr[7];
+			padding_required=0;
+			i-=padzeros;
+		}
+		else{
+		bit7 = in[i] > '9' ? toupper(in[i]) - 'A' + 10 : in[i] - '0';
+		bit6 = in[i+1] > '9' ? toupper(in[i+1]) - 'A' + 10 : in[i+1] - '0';
+		bit5 = in[i+2] > '9' ? toupper(in[i+2]) - 'A' + 10 : in[i+2] - '0';
+		bit4 = in[i+3] > '9' ? toupper(in[i+3]) - 'A' + 10 : in[i+3] - '0';
+		bit3 = in[i+4] > '9' ? toupper(in[i+4]) - 'A' + 10 : in[i+4] - '0';
+		bit2 = in[i+5] > '9' ? toupper(in[i+5]) - 'A' + 10 : in[i+5] - '0';
+		bit1 = in[i+6] > '9' ? toupper(in[i+6]) - 'A' + 10 : in[i+6] - '0';
+		bit0 = in[i+7] > '9' ? toupper(in[i+7]) - 'A' + 10 : in[i+7] - '0';
+
+		out[t] = (bit7<<28)| (bit6<<24) | (bit5<<20) | (bit4<<16) | (bit3<<12) | (bit2<<8) | (bit1<<4) | bit0;
+		}
+	}
+	out[0]=len;
 }
 
 void test_convert_hex_array(){
@@ -229,3 +241,4 @@ void test_convert_hex_array(){
 	hex_decoder(p,strlen(p), c);
 	print_num(c);
 }
+*/

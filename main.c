@@ -10,13 +10,12 @@ void main(){
     /////// Tejas ///////
     /*
 
-    test_convert_hex_array();
     
     */
 
 
     /////// Ferdinand ///////
-    
+	randomTest();
 	addTest(0);
 	addSelfTest(0);
 	subTest(0);
@@ -25,8 +24,8 @@ void main(){
  	hash256Test(0);
     shiftl1Test(0);     // 0 is summary, 1 is everything
     shiftr1Test(0);     // 0 is summary, 1 is everything
-	gcdTest(0); 
     inverseTest(0);
+	
 	//convertTest();
 
 

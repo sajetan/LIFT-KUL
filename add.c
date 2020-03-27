@@ -21,7 +21,7 @@ void add(WORD *res, WORD *a, WORD *b)
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
         res[i] = a[i] + b[i] + c ; // if overflow, take back that extra bit
-        c = a[i] > (max - b[i]-c);
+        c = c ? a[i] >= (max - b[i]) : a[i] > (max - b[i]);
     }
     res[i] = c; //overflow carry
     res[0] = i - (c==0); // adjust length

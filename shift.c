@@ -53,6 +53,7 @@ void shiftl1(WORD w[]){
 /* Test function of shiftr1(), prints all the tests in a readable way */
 void shiftr1Test(WORD print){
     const WORD STOP = 74;
+    const WORD max = ~0;
     BEGINTEST(print)
     // tests with 1 shift
     WORD test1[100] [2] [100]  = {
@@ -62,12 +63,12 @@ void shiftr1Test(WORD print){
         {{1, 2},            {1, 1}},
         {{1, 1<<(BIT-2)},   {1,1<<(BIT-3) }},
         {{1, 1<<(BIT-1)},   {1,1<<(BIT-2) }},
-        {{3, ~0, ~0, ~0},   {3, ~0, ~0, ~0-(1<<(BIT-1))}},        
-        {{3, ~0, ~0, 0},    {2, ~0, ~0-(1<<(BIT-1))}},
-        {{3, 0, ~0, ~0},    {3, 1<<(BIT-1), ~0, ~0-(1<<(BIT-1))}},        
-        {{5, 0, ~0, ~0, 0, 0},{3, 1<<(BIT-1), ~0, ~0-(1<<(BIT-1))}},        
-        {{4, 0,  0, ~0, ~0},{4, 0, 1<<(BIT-1), ~0, ~0-(1<<(BIT-1))}},        
-        {{3, 0, ~0, 0},     {2,(1<<(BIT-1)), ~0-(1<<(BIT-1))}}, 
+        {{3, max, max, max},   {3, max, max, max-(1<<(BIT-1))}},        
+        {{3, max, max, 0},    {2, max, max-(1<<(BIT-1))}},
+        {{3, 0, max, max},    {3, 1<<(BIT-1), max, max-(1<<(BIT-1))}},        
+        {{5, 0, max, max, 0, 0},{3, 1<<(BIT-1), max, max-(1<<(BIT-1))}},        
+        {{4, 0,  0, max, max},{4, 0, 1<<(BIT-1), max, max-(1<<(BIT-1))}},        
+        {{3, 0, max, 0},     {2,(1<<(BIT-1)), max-(1<<(BIT-1))}}, 
         {{4, 1,0, 0, 1<<(BIT-1)},   {4, 0, 0, 0, 1<<(BIT-2)}}, 
         {{4, 1<<(BIT-1),0, 0, 1},   {3, 1<<(BIT-2), 0, 1<<(BIT-1)}}, 
         {{7, 0, 0, 0, ( 1<<(BIT-1) )+1, 0, 0, 0},   {4, 0, 0, 1<<(BIT-1), 1<<(BIT-2)}},
@@ -103,6 +104,8 @@ WORD shiftr1TestHelp(WORD test[], WORD exp[], WORD print){
 /* Test function of shiftl1(), prints all the tests in a readable way */
 void shiftl1Test(WORD print){
     const WORD STOP = 74;
+    const WORD max = ~0;
+
 
     BEGINTEST(print)
 
@@ -114,12 +117,12 @@ void shiftl1Test(WORD print){
         {{1, 2},            {1, 4}},
         {{1, 1<<(BIT-2)},   {1,1<<(BIT-1) }},
         {{1, 1<<(BIT-1)},   {2, 0, 1}},
-        {{3, ~0, ~0, ~0},   {4, ~0 -1, ~0, ~0, 1}},        
-        {{3, ~0, ~0, 0},    {3, ~0 -1, ~0, 1}},
-        {{3, 0, ~0, ~0},    {4, 0, ~0-1, ~0, 1}},        
-        {{5, 0, ~0, ~0, 0, 0},{4, 0, ~0-1, ~0, 1}},        
-        {{4, 0,  0, ~0, ~0},{5, 0, 0, ~0-1, ~0, 1}},        
-        {{3, 0, ~0, 0},     {3,0, ~0-1, 1}}, 
+        {{3, max, max, max},   {4, max -1, max, max, 1}},        
+        {{3, max, max, 0},    {3, max -1, max, 1}},
+        {{3, 0, max, max},    {4, 0, max-1, max, 1}},        
+        {{5, 0, max, max, 0, 0},{4, 0, max-1, max, 1}},        
+        {{4, 0,  0, max, max},{5, 0, 0, max-1, max, 1}},        
+        {{3, 0, max, 0},     {3,0, max-1, 1}}, 
         {{4, 1,0, 0, 1<<(BIT-1)},   {5, 2, 0, 0, 0, 1}}, 
         {{4, 1<<(BIT-1),0, 0, 1},   {4, 0, 1, 0, 2}}, 
         {{7, 0, 0, 0, ( 1<<(BIT-1) )+1, 0, 0, 0},   {5, 0, 0, 0, 2, 1}},

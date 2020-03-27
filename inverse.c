@@ -8,113 +8,164 @@ inverse.c
 
 /* This function computes the inverse z of a mod p, where
 az mod m = 1, m is odd, a and m are coprime (i.e. gcd(a, m) = 1).
+
 This function is essentially the binary extended gcd algorithm,
 also called binary extended Euclidian algorithm.
 The only difference is that since we are only looking for an inverse
 and that we know that gcd(a, m) = 1, some unnecessary computations
 are left out.
+
 This algorithm has the adjective "binary" since it is a variant of 
 the classical extended Euclidian algorithm: the computationnally
 expensive divisions are replaced by elementary shifts and additions.
 This implementation is more efficient than the classical approach 
 when using multiple-precision numbers.
+
 This implementation is based on Algorithm 14.61 
 of the Handbook of Applied Cryptography.
 As mentioned in note 14.64, the values A and C are not computed.
-INPUT: two strictely positive integers a and p, p odd, gcd(a,m) = 1.
-OUTPUT: integer z, inverse of a mod m
+
+INPUT: two arrays a and m representing strictely positive integers, m odd, gcd(a,m) = 1.
+OUTPUT: array number z, inverse of a mod m
 */
-void inverse(WORD* z, WORD a, WORD m){
+void inverse(WORD z[], WORD a[], WORD m[]){
 
-    WORD u = m, v = a,B = 0, D = 1;
-    WORD BIsNeg = 0, DIsNeg = 0;
-    do{
+    WORD u[SIZE] = {0};
+    WORD v[SIZE] = {0};
+    WORD B[SIZE] = {0};
+    WORD D[SIZE] = {0};
+    WORD BIsNeg = 0;    // will keep track of sign of B
+    WORD DIsNeg = 0;    // will keep track of sign of D
 
-        while(~u & 1){ //while u is even, do the following
-            u = u >> 1;
-            if( ~B & 1){ // if B is even, then
-                B = B >> 1;}
-            else{
-                B = subtractUnsigned(B, m, &BIsNeg, 0) >> 1;}}
+    copyWord(u, m);     // u = m
+    copyWord(v, a);     // v = a
+    convert(B, "0");    // B = 0
+    convert(D, "1");    // D = 1
+    
+    do{                                         // do
+        while(~u[1] & 1){                       //while u is even, do the following
+            shiftr1(u);                         // u = u >> 1
+            if( ~B[1] & 1){                     // if B is even, then
+                shiftr1(B);}                    // B = B >> 1
+            else{                               // else
+                subUnsigned(B, m, &BIsNeg, 0);  // B = B - m
+                shiftr1(B);}}                   // B = B >> 1
 
-        while(~v & 1){ //while v is even, do the following
-            v = v >> 1;
-            if( ~D & 1){ // if  D is even, then
-                D = D >> 1;}
-            else{
-                D = subtractUnsigned(D, m, &DIsNeg, 0) >> 1;}}
+        while(~v[1] & 1){                       //while v is even, do the following
+            shiftr1(v);                         // v = v >> 1;
+            if( ~D[1] & 1){                     // if D is even then
+                shiftr1(D);}                    // D = D >> 1
+            else{                               // else
+                subUnsigned(D, m, &DIsNeg, 0);  // D = D - m
+                shiftr1(D);}}                   // D = D >> 1
 
-        // check which number is larger and subtract
-        if(u>=v){
-            u = u - v;
-            B = subtractUnsigned(B, D, &BIsNeg, DIsNeg);}
-        else{
-            v = v - u;
-            D = subtractUnsigned(D, B, &DIsNeg, BIsNeg);}
+        if(greaterThan(u, v) || equalWord(u, v)){// if u >= v
+            subSelf(u, v);                      // u = u - v
+            subUnsigned(B, D, &BIsNeg, DIsNeg);}// B = B - D
+        else{                                   //else
+            subSelf(v, u);                      // v = v - u
+            subUnsigned(D, B, &DIsNeg, BIsNeg); // D = D - B
+        }
+    }while(u[0] != 0 || (u[0]!=1 && u[1]!=0));  // while u different from 0
 
-    }while(u != 0);
-
-    // end, values are placed in the pointers:
-    if(DIsNeg){
-        *z = m-D;
-    }
+    if(DIsNeg){                                 
+        sub(z, m, D);                           // if D negative: z = D + m (since D contains
+    }                                           // actually a positive numbern we compute z = m-D)
     else{
-        *z = D;
+        copyWord(z , D);                        // otherwise: z = D
     }
 }
 
 /* function that returns the absolute value of the subtraction
- + keeps track of the sign of each number.
- This way, we never work with negative numbers */
-WORD subtractUnsigned(WORD a, WORD b, WORD* aIsNeg, WORD bIsNeg){
-    if (*aIsNeg ^ bIsNeg){
-        return a+b;
-    } else if(!*aIsNeg && !bIsNeg){
-        if(a<b){
+ and keeps track of the sign of each number.
+
+ Essentially it yields a = |a-b| and indicates if a became negative or not
+ through the aIsNeg pointer.
+
+ This way, we never work with negative numbers.
+ bIsNeg is not a pointer, since b's sign remains unchanged*/
+void subUnsigned(WORD a[], WORD b[], WORD* aIsNeg, WORD bIsNeg){
+    WORD result[SIZE] = {0};            // where the result will be stored temporarely
+    
+    if (*aIsNeg ^ bIsNeg){              // case 1: opposite signs
+        add(result, a, b);
+    } 
+    
+    else if(!*aIsNeg && !bIsNeg){       // case 2: both positive
+        if(greaterThan(b, a)){
             *aIsNeg = 1;
-            return b-a;
+            sub(result, b, a);          // b-a;
         }
         else{
-            return a-b;
+            sub(result, a, b);          // a-b;
         }
-    } else if(*aIsNeg && bIsNeg){
-        if(a>b){
-            return a-b;
+
+    } else if(*aIsNeg && bIsNeg){       // case 3: both negative
+        if(greaterThan(a, b)){
+            sub(result, a, b);          // a-b;
         }
         else{
             *aIsNeg = 0;
-            return b-a;
+            sub(result, b, a);          // b-a;
         }
     }
+    copyWord(a, result);                // copy result to pointer
 }
 
-/* Test function for the above inverse */
+/* Test function for the inverse */
 void inverseTest(WORD print){
     BEGINTEST(print)
     WORD pass = 1;
-    inverseTestHelp(5, 3, 2, print, &pass);
-    inverseTestHelp(271, 383, 106, print, &pass);
-    inverseTestHelp(64382695, 3948573, 3108589, print, &pass);
-    inverseTestHelp(1, 1, 1, print, &pass);
-    inverseTestHelp(1, 5, 1, print, &pass);
-    inverseTestHelp(57, 278562785, 254127453, print, &pass);
-    inverseTestHelp(278562785, 57, 5, print, &pass);
-    inverseTestHelp(54, 8755, 3729, print, &pass);
+    //inverseTestHelp("5", "3", "2", print, &pass);
+    inverseTestHelp("10f", "17f", "6a", print, &pass);
+    inverseTestHelp("3d666e7", "3c401d", "2f6eed", print, &pass);
+    inverseTestHelp("1", "1", "1", print, &pass);
+    inverseTestHelp("1", "5", "1", print, &pass);
+    inverseTestHelp("39", "109a87e1", "f25ad5d", print, &pass);
+    inverseTestHelp("109a87e1", "39", "5", print, &pass);
+    inverseTestHelp("36", "2233", "e91", print, &pass);
+    inverseTestHelp("253af5dfef54b657c4", 
+                    "d390009f057907971c18dbcb", 
+                    "56fdc5ec0705d17ff0c36db6", print, &pass);
+
+    /*
+        inverseTestHelp("5", "3", "2", print, &pass);
+    inverseTestHelp("271", "383", "106", print, &pass);
+    inverseTestHelp("64382695", "3948573", "3108589", print, &pass);
+    inverseTestHelp("1", "1", "1", print, &pass);
+    inverseTestHelp("1", "5", "1", print, &pass);
+    inverseTestHelp("57", "278562785", "254127453", print, &pass);
+    inverseTestHelp("278562785", "57", "5", print, &pass);
+    inverseTestHelp("54", "8755", "3729", print, &pass);
+    */
     TEST(pass)
     ENDTEST(print)
 }
 
-void inverseTestHelp(WORD a, WORD m, WORD zExp, WORD print, WORD* pass){
-    WORD z=0; // where the result will be stored
-    inverse(&z, a, m);
-    *pass &= zExp == z;
+void inverseTestHelp(char aChar[], char mChar[], char expChar[], WORD print, WORD* pass){
+    WORD a[SIZE] = {0};
+    WORD m[SIZE] = {0};
+    WORD exp[SIZE] = {0};
+    WORD z[SIZE]={0}; // where the result will be stored
+
+    convert(a, aChar);
+    convert(m, mChar);
+    convert(exp, expChar);
+
+    inverse(z, a, m);
+    *pass &= equalWord( exp,z);
+       
     if(print){
-        if(*pass ){
-            printf("%s - PASS: expected z=%d, got z=%d, \n", __FILE__, zExp, z);
+        if(equalWord( exp,z) ){
+            printf("PASS \n");
         }
         else{
-            printf("%s - FAIL: expected z=%d, got z=%d, \n", __FILE__, zExp, z);
+            printf("-- FAIL :/ \n");
         }
+        printf("expected : ");
+        print_num(exp);
+        printf("got      : ");
+        print_num(z);
     }
 }
 

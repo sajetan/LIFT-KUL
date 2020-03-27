@@ -96,10 +96,13 @@ void getNumberBytesTest(WORD print){
     pass &= getNumberBytesTestHelp(6, a, print);
     
     convert(a, "0008726353700");
-    pass &= getNumberBytesTestHelp(6, a, print);
+    pass &= getNumberBytesTestHelp(5, a, print);
 
     convert(a, "000000000055000000000055000000000055");
     pass &= getNumberBytesTestHelp(13, a, print);
+   
+    convert(a, "00087977656000");
+    pass &= getNumberBytesTestHelp(6, a, print);
 
     TEST(pass)
     ENDTEST(print)

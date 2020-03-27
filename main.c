@@ -16,7 +16,8 @@ void main(){
 
 
     /////// Ferdinand ///////
-    
+	randomTest();
+    /*
 	addTest(0);
 	addSelfTest(0);
 	subTest(0);
@@ -28,6 +29,7 @@ void main(){
 	gcdTest(0); 
     inverseTest(0);
 	//convertTest();
+	*/
 
 
    /////// Lien ///////

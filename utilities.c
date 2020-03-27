@@ -15,11 +15,15 @@ in: "8F59B"
 out: [3, 9B, F5, 8]
 !!! out[] must have size SIZE and the string must be shorter that BIT/4*SIZE-1*/
 void convert(WORD *out, const char *in){
+	WORD len = strlen(in);
+	if(len >= BIT/4*SIZE-1){
+		printf("!!!!! max size exceeded !!!!\n\n\n");
+	}
+
 	for(WORD i = 0; i<sizeof(out)/sizeof(WORD); i++){ // set array to zero
 		out[i] = 0;
 	}
 
-	WORD len = strlen(in);
 	WORD stopEarly = 0; // handle MSB zeros and remove them
 	while( stopEarly<len && in[stopEarly] == '0'){
 		stopEarly++;
@@ -72,13 +76,13 @@ void print_num(WORD *in){
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyWord(WORD copy[], WORD w[]){
-    for(WORD i = 0; i<=SIZE; i++){
+    for(WORD i = 0; i<SIZE; i++){
         copy[i] = w[i];
     }
 }
 
 /*function for comparing two WORDS[].
-BEWARE: the length field must be equal as well! 
+BEWARE: the lengreaterThanh field must be equal as well! 
 e.g. {0} and {1, 0} are different 
 INPUT: 2 WORD[] numbers
 OUTPUT: 1 if equal, 0 if different*/
@@ -107,7 +111,7 @@ WORD equalWord(WORD a[], WORD b[]){
 }
 
 /* prints a word[] in the following format:
-"length x MSB ... LSB" 
+"lengreaterThanh x MSB ... LSB" 
 e.g. for 16 bit: "2 x 178B 002F"*/
 void printWord(WORD a[]){
     printf("%d x ", a[0]);
@@ -115,6 +119,27 @@ void printWord(WORD a[]){
         printf("%x ", a[i]);
     }
     printf("\n");
+}
+
+WORD greaterThan(WORD a[], WORD b[]){
+	WORD lenA = a[0];
+	WORD lenB = b[0];
+	if(lenA > lenB){
+		return (WORD) 1;
+	} else if(lenA < lenB){
+		return (WORD) 0;
+	} else if (lenA == 0){
+		return (WORD) 0;
+	} else{
+		for(WORD i = lenA; i>0; i--){
+			if(a[i]>b[i]){
+				return (WORD) 1;
+			} else if (a[i]<b[i]){
+				return (WORD) 0;
+			}
+		}
+		return (WORD) 0;
+	}
 }
 
 void hex_decoder(const char *in, size_t len,uint32_t *out){

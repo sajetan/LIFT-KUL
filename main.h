@@ -1,12 +1,11 @@
 /*
-Ferdinand Hannequart
 main.h
 
 purpose: it contains the prototypes, defines and includes
 */
 
-#ifndef DEF_MAIN
-#define DEF_MAIN
+#ifndef MAIN_H_
+#define MAIN_H_
 
 #include<time.h>        // for timing
 #include<stdio.h>       // for prints
@@ -17,10 +16,9 @@ purpose: it contains the prototypes, defines and includes
 #include<ctype.h>       // for toupper()
 
 
-#define WORD uint32_t
-#define WORD_2 uint64_t // should be removed
+#define WORD uint16_t
 #define BIT ((WORD) (sizeof(WORD)*8) )
-#define SIZE ((WORD) 40 )
+#define SIZE ((WORD) 50 )
 #define TEST(pass)          if(pass)\
                             printf("OK, all tests passed for %s\n", __func__);\
                             else \
@@ -32,9 +30,9 @@ purpose: it contains the prototypes, defines and includes
 
 
 // Lien's functions
-#include"sub.h"
 #include"add.h"
-#include"mod.h"
+#include"sub.h"
+
 
 // Ferdinand's functions
 #include"gcd.h"

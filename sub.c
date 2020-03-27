@@ -23,7 +23,7 @@ void sub(WORD *res, WORD *a, WORD *b)
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
         res[i] = a[i] + ((WORD)~b[i]) + c ; 
-        c = a[i] > (max - ((WORD)~b[i]) - c); // compute carry by detecting overflow
+        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
     }
     
     //setting res[0] right:
@@ -78,6 +78,9 @@ void subTest(WORD print){
 	subTestHelp("CF562876982769827653429857694382797634972659",
 				 "BDCFCBDFBC73458725648723656CBCDFCBDFDBCFDCDF", 
 				 "11865c96dbb423fb50eebb74f1fc86a2ad9658c7497a", &pass,  print);
+    subTestHelp("8AB3FD76358BCD", "FDC76234686DC", "7ad78752ef04f1", &pass,  print);
+
+    
     TEST(pass)
     ENDTEST(print)
 }

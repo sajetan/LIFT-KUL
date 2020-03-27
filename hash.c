@@ -104,6 +104,21 @@ void getNumberBytesTest(WORD print){
     convert(a, "00087977656000");
     pass &= getNumberBytesTestHelp(6, a, print);
 
+    convert(a, "0008797765600BFCD0");
+    pass &= getNumberBytesTestHelp(8, a, print);
+
+    convert(a, "1000BC5D");
+    pass &= getNumberBytesTestHelp(4, a, print);
+
+    convert(a, "cdbf000c000cf");
+    pass &= getNumberBytesTestHelp(7, a, print);
+    
+    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf");
+    pass &= getNumberBytesTestHelp(26, a, print);
+
+    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf876543212345");
+    pass &= getNumberBytesTestHelp(32, a, print);
+    
     TEST(pass)
     ENDTEST(print)
 
@@ -112,8 +127,8 @@ void getNumberBytesTest(WORD print){
 WORD getNumberBytesTestHelp(WORD exp, WORD w[], WORD print){
     WORD result = getNumberBytes(w);
     if (print){
+        printf("expected %d, got %d  : ", exp, result);
         print_num(w);
-        printf("expected %d, got %d\n", exp, result);
     }
     return exp == result;
 }

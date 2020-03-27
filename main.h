@@ -16,9 +16,9 @@ purpose: it contains the prototypes, defines and includes
 #include<ctype.h>       // for toupper()
 
 
-#define WORD uint16_t
+#define WORD uint32_t
 #define BIT ((WORD) (sizeof(WORD)*8) )
-#define SIZE ((WORD) 50 )
+#define SIZE ((WORD) 33 )
 #define TEST(pass)          if(pass)\
                             printf("OK, all tests passed for %s\n", __func__);\
                             else \
@@ -26,7 +26,7 @@ purpose: it contains the prototypes, defines and includes
 #define BEGINTEST(print)    if (print)\
                             printf("\n------- begin %s -------\n", __func__);
 #define ENDTEST(print)      if (print)\
-                            printf("------- end %s -------\n", __func__);
+                            printf("------- end %s -------\n\n", __func__);
 
 
 // Lien's functions
@@ -35,11 +35,11 @@ purpose: it contains the prototypes, defines and includes
 
 
 // Ferdinand's functions
-#include"gcd.h"
 #include"inverse.h"
 #include"shift.h"
 #include"sha3.h"
 #include"hash.h"
+#include"random.h"
 
 // Tejas's functions
 #include"utilities.h"

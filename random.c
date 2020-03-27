@@ -27,6 +27,7 @@ void random(WORD rand[]){
 }
 
 void randomTest(){
+    printf("Test - random number: ");
     WORD w[SIZE] = {0};
     random(w);
     print_num(w);

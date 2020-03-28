@@ -32,6 +32,7 @@ purpose: it contains the prototypes, defines and includes
 // Lien's functions
 #include"add.h"
 #include"sub.h"
+#include"mod.h"
 
 
 // Ferdinand's functions

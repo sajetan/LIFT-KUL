@@ -31,5 +31,5 @@ void main(){
 
    /////// Lien ///////
 	modTest(0);
-
+	multTest(0);
 }

@@ -17,6 +17,7 @@ purpose: it contains the prototypes, defines and includes
 
 
 #define WORD uint32_t
+#define WORD_2 uint64_t
 #define BIT ((WORD) (sizeof(WORD)*8) )
 #define SIZE ((WORD) 33 )
 #define TEST(pass)          if(pass)\
@@ -33,7 +34,7 @@ purpose: it contains the prototypes, defines and includes
 #include"add.h"
 #include"sub.h"
 #include"mod.h"
-
+#include"mult.h"
 
 // Ferdinand's functions
 #include"inverse.h"
@@ -41,6 +42,7 @@ purpose: it contains the prototypes, defines and includes
 #include"sha3.h"
 #include"hash.h"
 #include"random.h"
+
 
 // Tejas's functions
 #include"utilities.h"

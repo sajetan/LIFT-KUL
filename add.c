@@ -48,6 +48,22 @@ void addSelf(WORD *a, WORD *b)
 		a[0] = i - (c==0);
 }
 
+/* performs addition a = a + 1
+INPUT:  - 1 array of WORDS of length SIZE 
+OUTPUT: - the result a+1 is stored in array a*/
+void add1(WORD *a)
+{
+    WORD carry =1;
+    WORD i=1;
+    do{
+        a[i] += carry;
+        carry = a[i] == 0 ;
+        i++;
+    }while(carry);
+    i--;
+    a[0] += i>a[0]; 
+}
+
 
 
 

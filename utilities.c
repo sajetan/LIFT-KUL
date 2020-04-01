@@ -1,25 +1,24 @@
 /*
  * utilities.c
+ * 
+ * 
  */
 
 #include"utilities.h"
 
-/*
-Converts a string of a hexadecimal numbers into an array of integers.
-
-out[0] contains the length
-out[1] is the lsb
-out[out[0]] is the msb
-example: suppose that WORD is uint8_t:
-in: "8F59B"
-out: [3, 9B, F5, 8]
-!!! out[] must have size SIZE and the string must be shorter that BIT/4*SIZE-1*/
+/* Converts a string of a hexadecimal numbers into an array of words.
+ * out[0] contains the length
+ * out[1] is the lsb
+ * out[out[0]] is the msb
+ * example: suppose that WORD is uint8_t:
+ * in: "8F59B"
+ * out: [3, 9B, F5, 8]
+ * !!! out[] must have size SIZE, and therefore the string must be shorter that BIT/4*SIZE-1
+ */
 void convert(WORD *out, const char *in){
 	WORD len = strlen(in);
 	if(len >= BIT/4*SIZE-1){
-		printf("\n youpidou message from converter:\n"
-				"the number you want to convert is too large\n"
-				"Increase SIZE or reduce the number you want to convert\n");
+		printf("!!!!! max size exceeded !!!!\n\n\n");
 	}
 
 	for(WORD i = 0; i<SIZE; i++){ // set array to zero
@@ -42,19 +41,79 @@ void convert(WORD *out, const char *in){
 			t = current - 'A' - 22;
 		}else{
 			t = current - '0';
-		}	
+		}		
 		out[index] |= t<< (4*(i%(BIT/4)));
 	}
 	out[0] = index;
 }
+
+/* 	Converts an number into an array of words.
+   	INPUT:	number: can be any type, wil be casted to the largest uint64_t
+	OUTPUT:	array : array of words, minimum length = 5. */
+void number2array(WORD array[], uint64_t number){
+	WORD i = 0;
+
+	// 1. assign core value
+	for (i = 1; i<=BIT/8; i++){
+		array[i] = (WORD) number;
+		number >>= BIT;
+	}
+	i--;
+
+	// 2. assign length
+	while(array[i] == 0 && i >0){  
+        i--; 
+    }	
+	array[0] = i;
+}
+
+/*	Converts a string into an array of words.
+	The last character '\0' is not converted.
+	example: "hello" is converted in [0x03 0xlo 0xel 0x0h] (letters are replaced by ascii value)
+   	INPUT:	text	: string of any length	
+	OUTPUT:	array 	: array of words, length should be large enough to hold the string */
+void text2array(WORD array[], char text[]){
+    WORD i = 0;
+	WORD index = 0;
+	
+	// 1. assign core value
+	while(text[i] != '\0'){
+        index = i/BYTE +1;	
+        array[index] |= text[i] << ( (8*i) % (BIT) );
+        i++;
+    }
+	index = (i-1)/BYTE +1; // decrement i once
+	
+	// 2. assign length
+	while(array[index] == 0 && index >0){
+        index--; 
+    }	
+    array[0] = index;
+}
+
+/*	Converts an array of words into a string.
+	INPUT:	array 	: array of words, length should be large enough to hold the string 
+	OUTPUT:	text	: string of any length	
+*/
+void array2text(char text[], WORD array[]){
+    WORD i 		= 0;
+	WORD index 	= 0;
+	WORD len 	= getNumberBytes(array);
+	
+	while(i < len){
+        index = i/BYTE +1;	
+		text[i] = array[index] >> ( (8*i) % (BIT) );
+        i++;
+    }
+	text[i] = '\0';
+}
+
 /*prints an array; format: [size, lsb-> msb]*/
 void print_num(WORD *in){
     //printf("[size, lsb-> msb]:  ");
     printf("[");
     for (WORD i = 0; i < in[0]+1; i++) {
 		switch(BIT){
-			case 64:
-    		printf("0x%16x,", in[i]);
 			break;
 			case 32:
     		printf("0x%08x,", in[i]);
@@ -73,6 +132,7 @@ void print_num(WORD *in){
     printf("]");
     printf("\n\r");
 }
+
 
 
 /* copies array w to array copy

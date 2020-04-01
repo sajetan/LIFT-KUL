@@ -12,6 +12,7 @@
 
 void add(WORD *res, WORD *a, WORD *b);
 void addSelf(WORD *a, WORD *b);
+void add1(WORD *a);
 //test functions
 void addTest(WORD print);
 void addTestHelp(char aChar[], char bChar[], char expChar[], WORD* pass, WORD print);

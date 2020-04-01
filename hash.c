@@ -9,39 +9,56 @@
 
 
 /* hash function (256 bit)
-INPUTS: - input  : array of length smaller than 2^BIT
-        - hash   : array of length SIZE, the hash value will be stored there
+INPUTS: - in    : array of WORDS, length can be whatever
+OUTPUT: - out   : array of WORDS, length = SIZE; will contain the 256 bit hash
 */
-void hash256(WORD hash[], WORD input[]){
-    WORD bytes = getNumberBytes(input);
-    input = input+1; // don't take the first element which is the size
-    sha3_HashBuffer(256, SHA3_FLAGS_KECCAK, input, bytes, hash, BIT*SIZE);
-    for(WORD i = SIZE-1; i>0; i--){ // shift all cells to free place for size
-        hash[i] = hash[i-1];
+void hash256(WORD out[],  void* in){
+    WORD numberBytes    = getNumberBytes(in);
+    WORD len            = SIZE-1;
+    WORD i              = 0;
+    
+    // 256 for 256 bit hash
+    // SHA3_FLAGS_KECCAK is a constant used by sha3.c
+    // input+1 instead of input to send the array without first element
+    // numberBytes is the exact number of relevant bytes (without MSB zeros, so that H("65") = H("065"))
+    // BIT*SIZE is the amount of bytes of array "out"
+
+    in += BIT/8; // use pointer arithmetic to sent whole array except first element
+
+    sha3_HashBuffer(256, SHA3_FLAGS_KECCAK, in, numberBytes, out, (BIT/8)*SIZE);
+    for( i = SIZE; i>0; i--){ // shift all cells to free place for size
+        out[i] = out[i-1];
     }
-    WORD len = SIZE-1;
-    while(hash[len] == 0){
+    while(out[len] == 0 && len > 0){
         len--;
     }
-    hash[0] = len;
+    out[0] = len;
+
 }
 /*  Returns the number of bytes of a number.
     All MSB zeros, i.e. all digits after the largest non-zero bit, are excluded.
-    This function is important for the hash, since the exact amount of bytes must be known.
-    For example, 0xA6 and 0x00A6 have both 1 relevant byte 
+    This function is important for the hash function, since the exact amount of bytes must be known.
+    For example, 0xABC and 0x000000ABC have both 2 relevant bytes 
     and should therefore yield the same hash.*/
 WORD getNumberBytes(WORD w[]){
     WORD len = w[0];
-    while(w[len] == 0){ // in case the size was not updated correctly
-        len--; 
+    WORD nZeros = 0;
+
+    while(w[len] == 0 && len >0){ // in case the size was not updated correctly
+        printf(  "\n\n WARNING FROM getNumberBytes():"
+                "NUMBER OF ELEMENTS WAS NOT UPDATEd \n\n");
+       len--; 
     }
-    WORD nZeros = getNumberZeroBytes(w[len]);
+    nZeros = getNumberZeroBytes(w[len]);
     return len*(BIT/8)-nZeros;
 }
 
 /*  Returns the amount of zero MSB bytes in one integer*/
 WORD getNumberZeroBytes(WORD w){
     WORD nZeros = BIT/8;
+    if(w == 0){
+        return 0;
+    }
     while(w != 0){
         w >>= 8;
         nZeros--;
@@ -50,38 +67,42 @@ WORD getNumberZeroBytes(WORD w){
 }
 
 void hash256Test(WORD print){
-    WORD hash[SIZE] = {0};
-    WORD in[SIZE] = {0};
-    WORD exp[SIZE] = {0};
+    WORD pass = 1;
+    //char pInit[] = "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e";
+    //char p0[] = "4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45";
+    //char p1[] = "9f0adad0a59b05d2e04a1373342b10b9eb16c57c164c8a3bfcbf46dccee39a21";
+    //char p2[] = "d319cfe69680e37edd3a2a83a076b18f075bbfb86d2e915757c0cfe491b4bf9c";
+    
+    BEGINTEST(print)
+    
+    hash256TestHelp("abc", "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e",  &pass,  print);
+    //hash256TestHelp("636261636261", p1,  &pass,  print);
+    //hash256TestHelp("636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261", p2,  &pass,  print);
 
-    convert(in, "636261");
-    convert(exp, "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e");
+    TEST(pass)
+    ENDTEST(print)
+}
+void hash256TestHelp(char inchar[], char expchar[], WORD* pass, WORD print){
+    WORD hash[SIZE] = {0};
+    WORD in[SIZE]   = {0};
+    WORD exp[SIZE]  = {0};
+
+    text2array(in, inchar);
+    convert(exp, expchar);
+    //print_num(in);
     hash256( hash, in);
     if(print){
-        printf("\n---- %s -----\n", __func__);
         printf("result: ");
         print_num(hash);
         printf("expected: ");
         print_num(exp);
-        if(equalWord(exp, hash)){
-            printf("OK, all tests passed for %s\n", __func__);
-        }
-        else{
-            printf("FAIL :/ - %s\n", __func__);
-        }
-        printf("---------end %s-------------\n\n", __func__);
-    } else{
-        if(equalWord(exp, hash)){
-            printf("OK, all tests passed for %s\n", __func__);
-        }
-        else{
-            printf("FAIL :/ - %s\n", __func__);
-        }
     }
+    *pass &= equalWord(exp, hash);
 }
+
+
 void getNumberBytesTest(WORD print){
     WORD a[SIZE] = {0};
-    WORD exp = 0;
     WORD pass = 1;
 
     BEGINTEST(print)

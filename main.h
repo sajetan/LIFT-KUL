@@ -8,6 +8,7 @@ purpose: it contains the prototypes, defines and includes
 #define MAIN_H_
 
 #include<time.h>        // for timing
+#include<sys/time.h>        // for timing
 #include<stdio.h>       // for prints
 #include<stdint.h>      // for uint32_t
 
@@ -16,10 +17,18 @@ purpose: it contains the prototypes, defines and includes
 #include<ctype.h>       // for toupper()
 
 
-#define WORD uint32_t
+#define WORD uint16_t
 #define WORD_2 uint64_t
-#define BIT ((WORD) (sizeof(WORD)*8) )
-#define SIZE ((WORD) 33 )
+#define BYTE sizeof(WORD)
+#define BIT (BYTE*8)
+#define SIZE ((WORD) 50 )
+
+#define WORDR uint16_t // for entropy pool, must be higher than 8 bit
+#define BYTER sizeof(WORDR)
+#define BITR (sizeof(WORDR)*8)
+#define SIZER 50 // 800 bits, should be large enough for personalization string, hash values, image or counter
+
+
 #define TEST(pass)          if(pass)\
                             printf("OK, all tests passed for %s\n", __func__);\
                             else \

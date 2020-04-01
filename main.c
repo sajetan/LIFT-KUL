@@ -1,35 +1,57 @@
 /*
- * main.c
- */
+main.h
 
-#include"main.h"
+purpose: it contains the prototypes, defines and includes
+*/
 
-int main(){
+#ifndef MAIN_H_
+#define MAIN_H_
 
-    /////// Tejas ///////
+#include<time.h>        // for timing
+#include<sys/time.h>        // for timing
+#include<stdio.h>       // for prints
+#include<stdint.h>      // for uint32_t
+
+#include<stddef.h>
+#include<string.h>
+#include<ctype.h>       // for toupper()
 
 
-
-
-    /////// Ferdinand ///////
-	addTest(0);
-	addSelfTest(0);
-	subTest(0);
-	subSelfTest(0);
- 	getNumberBytesTest(0);
-    shiftl1Test(0); 
-    shiftr1Test(0);
-	hash256Test(0);			// hash
-    inverseTest(0);			// inverse
-	//randomTest();			// random numbers
-	//demoEntropyPool();	// demo entropy pool
-
-	
-	//convertTest();
+#define WORD uint8_t
+#define WORD_2 uint64_t
+#define BYTE sizeof(WORD)
+#define BIT (BYTE*8)
+#define SIZE ((WORD) 51 )
 
 
 
-   /////// Lien ///////
-	modTest(0);
-	multTest(0);
-}
+#define TEST(pass)          if(pass)\
+                            printf("OK, all tests passed for %s\n", __func__);\
+                            else \
+                            printf("FAIL :/ - %s\n", __func__);
+#define BEGINTEST(print)    if (print)\
+                            printf("\n------- begin %s -------\n", __func__);
+#define ENDTEST(print)      if (print)\
+                            printf("------- end %s -------\n\n", __func__);
+
+
+// Lien's functions
+#include"add.h"
+#include"sub.h"
+#include"mod.h"
+#include"mult.h"
+
+// Ferdinand's functions
+#include"inverse.h"
+#include"shift.h"
+#include"sha3.h"
+#include"hash.h"
+#include"random.h"
+
+
+// Tejas's functions
+#include"utilities.h"
+
+
+
+#endif

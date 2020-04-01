@@ -40,7 +40,7 @@ void addSelf(WORD *a, WORD *b)
         WORD max = ~0;
 
         for (i=1; i<=length_b|| i<=length_a; i++) {
-            cNext = a[i] > (max - b[i]);
+            cNext = c ? a[i] >= (max - b[i]) : a[i] > (max - b[i]);
             a[i] = a[i] + b[i] + c ; // if overflow, take back that extra bit
             c = cNext;
 		}

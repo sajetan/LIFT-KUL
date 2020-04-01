@@ -44,7 +44,7 @@ void subSelf( WORD *a, WORD *b)
     WORD max = ~0;
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
-        cNext = a[i] > (max - ((WORD)~b[i]) - c);
+        cNext =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
         a[i] = a[i] + ((WORD)~b[i]) + c ; // if overflow, take back that extra bit
         c = cNext;
     }

@@ -39,21 +39,22 @@ void subSelf( WORD *a, WORD *b)
     WORD length_a = a[0];
     WORD length_b = b[0];
     WORD c = 1;     // with subtraction, begin with carry = 1
-    WORD cNext = 0;
     WORD i;
     WORD max = ~0;
+    WORD res[SIZE] = {0};
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
-        cNext =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
-        a[i] = a[i] + ((WORD)~b[i]) + c ; // if overflow, take back that extra bit
-        c = cNext;
+        res[i] = a[i] + ((WORD)~b[i]) + c ;
+        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
     }
-    
-    //setting a[0] right:
-    while (a[i] == 0  && i>0){
+
+    //setting res[0] right:
+    while (res[i] == 0  && i>0){
         i--;
     }
-    a[0] = i;
+    res[0] = i;
+
+    copyWord(a, res);
 }
 
 

@@ -1,58 +1,42 @@
 /*
-main.h
+ * main.c
+ */
 
-purpose: it contains the prototypes, defines and includes
-*/
+#include"main.h"
 
-#ifndef MAIN_H_
-#define MAIN_H_
-
-#include<time.h>        // for timing
-#include<sys/time.h>        // for timing
-#include<stdio.h>       // for prints
-#include<stdint.h>      // for uint32_t
-
-#include<stddef.h>
-#include<string.h>
-#include<ctype.h>       // for toupper()
+void main(){
 
 
-#define WORD uint8_t
-#define WORD_2 uint64_t
-#define BYTE sizeof(WORD)
-#define BIT (BYTE*8)
-#define SIZE ((WORD) 51 )
+    /////// Tejas ///////
+    /*
+
+    */
 
 
+    /////// Ferdinand ///////
+	//randomTest();
+	addTest(0);
+	addSelfTest(0);
+	subTest(0);
+	subSelfTest(0);
 
-#define TEST(pass)          if(pass)\
-                            printf("OK, all tests passed for %s\n", __func__);\
-                            else \
-                            printf("FAIL :/ - %s\n", __func__);
-#define BEGINTEST(print)    if (print)\
-                            printf("\n------- begin %s -------\n", __func__);
-#define ENDTEST(print)      if (print)\
-                            printf("------- end %s -------\n\n", __func__);
+ 	//getNumberBytesTest(0);
+ 	hash256Test(0);
+    shiftl1Test(0);     // 0 is summary, 1 is everything
+    shiftr1Test(0);     // 0 is summary, 1 is everything
+    inverseTest(0);
 
-
-// Lien's functions
-#include"add.h"
-#include"sub.h"
-#include"mod.h"
-#include"mult.h"
-#include"division.h"
-
-// Ferdinand's functions
-#include"inverse.h"
-#include"shift.h"
-#include"sha3.h"
-#include"hash.h"
-#include"random.h"
+	convertTest();
 
 
-// Tejas's functions
-#include"utilities.h"
+   /////// Lien ///////
+	modTest(0);
+	multTest(0);
+	smallMultTest(0);
+	shiftBaseTest(0);
+	divisionTest(0);
 
 
+	//sig_genTest(0);
 
-#endif
+}

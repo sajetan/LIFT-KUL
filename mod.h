@@ -11,6 +11,7 @@
 #include"main.h"
 
 void mod(WORD *res, WORD *a, WORD *n);
+void smallMod(WORD *res, WORD *a, WORD *n);
 
 //testfunctions
 void modTest(WORD print);

@@ -40,6 +40,7 @@ purpose: it contains the prototypes, defines and includes
 #include"sub.h"
 #include"mod.h"
 #include"mult.h"
+#include"division.h"
 
 // Ferdinand's functions
 #include"inverse.h"

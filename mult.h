@@ -11,10 +11,13 @@
 #include"main.h"
 
 void mult(WORD *res, WORD *a, WORD *b);
+void smallMult(WORD *res, WORD a, WORD *b);
 
 //testfunctions
 
 void multTest(WORD print);
 void multTestHelp(char aChar[], char bChar[], char expChar[], WORD* pass, WORD print);
+void smallMultTest(WORD print);
+void smallMultTestHelp(WORD a, char bChar[], char expChar[], WORD* pass, WORD print);
 
 #endif /* MULT_H_ */

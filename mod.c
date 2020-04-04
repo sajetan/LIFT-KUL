@@ -17,14 +17,20 @@
 // res has min{length_a,length_n} - elements (0-elements not included)
 void mod(WORD *res, WORD *a, WORD *n){
 	WORD quotient[SIZE] = {0};
-	if(a[0] == 0){
-		WORD res[SIZE] = {0};
+	if(greaterThan(n, a)){
+		copyWord(res, a);
+
 	}
-	else if(a[0] == 1){
-		smallMod(res, a , n);
+	else if(equalWord(a,n) || a[0] == 0){
+		copyWord(res,quotient);
 	}
 	else{
-		division(quotient, res, a, n);
+		if(a[0] == 1){
+			smallMod(res, a , n);
+		}
+		else{
+			division(quotient, res, a, n);
+		}
 	}
 }
 
@@ -62,6 +68,8 @@ void modTest(WORD print){
     modTestHelp("2F984E58B2B","1FAFE27CFD","107A9D373", &pass,  print);
 	modTestHelp("1FAFE27CFD","2F984E58B2B","1FAFE27CFD", &pass,  print);
     modTestHelp("9E6F6C70F1", "1FAFE27CFD", "0", &pass,  print);
+    modTestHelp("9E6F6C7123456789", "1FAFE27CFD123456789456", "9E6F6C7123456789", &pass,  print);
+
     modTestHelp("F0B22C70313F84E6528979C359F36917BDFF4B365F81CF5D40AF394EAB27DD440CFF87036D8A972FE2F9E8FDAA8CAF778B7D5014436CF1E73F59834D995A1F2C31",
     		"1B", "B", &pass,  print);
     modTestHelp("F0B22C70313F84E6528979C359F36917BDFF4B365F81CF5D40AF394EAB27DD440CFF87036D8A972FE2F9E8FDAA8CAF778B7D5014436CF1E73F59834D995A1F2C31",

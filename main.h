@@ -18,7 +18,9 @@ purpose: it contains the prototypes, defines and includes
 
 
 #define WORD uint16_t
-#define WORD_2 uint64_t
+#define WORD_2 uint32_t
+
+#define WORD_3 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
 #define SIZE ((WORD) 50 )

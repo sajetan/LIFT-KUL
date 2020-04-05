@@ -49,7 +49,7 @@ void addSelf(WORD *a, WORD *b)
 }
 
 /* performs addition a = a + 1
-INPUT:  - 1 array of WORDS of length SIZE 
+INPUT:  - 1 array of WORDS of length SIZE
 OUTPUT: - the result a+1 is stored in array a*/
 void add1(WORD *a)
 {
@@ -61,9 +61,8 @@ void add1(WORD *a)
         i++;
     }while(carry);
     i--;
-    a[0] += i>a[0]; 
+    a[0] += i>a[0];
 }
-
 
 
 
@@ -84,7 +83,26 @@ void addTest(WORD print){
     addTestHelp("Fa", "400C", "4106", &pass,  print);
     addTestHelp("8AB687687", "B78BBFBFDBFDCD", "B78BC86B447454", &pass,  print);
     addTestHelp("039587BAFEEEEBDDCC0293857023958BCDBCDBC723", "59832029383BCDBABCDBACABDACFFCAD2039587032945873209530958", "59832029383bcdbaf634285bc9beba89e06290c734cdb12ffc62ed07b", &pass,  print);
-    
+    addTestHelp("abcdefabcdefabcdefabcdefabcdefa1264654865123154894652315489456132abcdededcecdcdceceddecf12345674894561231456",
+    		"124789aaaaabbbbbbbdddeeeeee6452131564684846a46b4654c6d46e456f4684654c65d4f456eefff",
+    		"abcdefabcdefabcdefabcdefabe0372ad0f100420cdef3278354095a69c5ac59af4149259152294a33d235c37a7aab3ae694a6920455", &pass,  print);
+    addTestHelp("1254789963332569898987894561321564847945613254897645123547894653215478465123548746513254587946513254678465132456786513245",
+    		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccdddddddddddddd",
+    		"125478996333256a34343233f00bdcc00f2f23f00bdcff342100cdf10345020edd1034020cdf1043031dff212546131dff21345131e102345642f1022", &pass,  print);
+    addTestHelp("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    		"fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    		"100000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", &pass,  print);
+    addTestHelp("abc1564687865412654896451548965423187465132864518465148651ac486d84651ce864514865132846513222222222222222",
+    		"fffffff", "abc1564687865412654896451548965423187465132864518465148651ac486d84651ce864514865132846513222222232222221", &pass,  print);
+    addTestHelp("fffffff", "fffffff", "1ffffffe", &pass,  print);
+    addTestHelp("111111111111111111111111111111111111111111111111111111111111111111111111111111111111f",
+    		"123456789123456789151234564789456132564894aaaaabbbeeefdfefefdfffdfefffedfffdfefffefdfffde",
+    		"12346789a23456789a26234567589a5672436759a5bbbbbccd0000f10100f110f10110ff110f1011100f110fd", &pass,  print);
+    addTestHelp("213a1513a51a6cda56cd1a648ad4ca615ad61ca6cd68d14c86dc4a86c48bef864bf8e61be531bf5648fb789bf4b5f61ebf3bfe486",
+    		"ef1564feb894feb891fe5b6f1eb65f154fe8f1e56e1bf48ad651cda65c1a65cda65da16d8c46da48d",
+    		"213a1513a51a6cda56cd1a6579ea2f60136b1b5f5f672cbba592a99c1474e16bba14daa6bb838cfca515de699b13978c4b82d8913", &pass,  print);
+
+
     TEST(pass)
     ENDTEST(print)
 }
@@ -101,7 +119,7 @@ void addTestHelp(char aChar[], char bChar[], char expChar[], WORD* pass, WORD pr
 
     add(res, a, b);
     *pass &= equalWord(res, exp);
-    
+
     if(print){
         if(*pass ){
             printf("PASS \n");
@@ -137,7 +155,25 @@ void addSelfTest(WORD print){
     addSelfTestHelp("Fa", "400C", "4106", &pass,  print);
     addSelfTestHelp("8AB687687", "B78BBFBFDBFDCD", "B78BC86B447454", &pass,  print);
     addSelfTestHelp("039587BAFEEEEBDDCC0293857023958BCDBCDBC723", "59832029383BCDBABCDBACABDACFFCAD2039587032945873209530958", "59832029383bcdbaf634285bc9beba89e06290c734cdb12ffc62ed07b", &pass,  print);
-    
+    addSelfTestHelp("abcdefabcdefabcdefabcdefabcdefa1264654865123154894652315489456132abcdededcecdcdceceddecf12345674894561231456",
+        		"124789aaaaabbbbbbbdddeeeeee6452131564684846a46b4654c6d46e456f4684654c65d4f456eefff",
+        		"abcdefabcdefabcdefabcdefabe0372ad0f100420cdef3278354095a69c5ac59af4149259152294a33d235c37a7aab3ae694a6920455", &pass,  print);
+	addSelfTestHelp("1254789963332569898987894561321564847945613254897645123547894653215478465123548746513254587946513254678465132456786513245",
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccdddddddddddddd",
+			"125478996333256a34343233f00bdcc00f2f23f00bdcff342100cdf10345020edd1034020cdf1043031dff212546131dff21345131e102345642f1022", &pass,  print);
+	addSelfTestHelp("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+			"fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+			"100000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", &pass,  print);
+	addSelfTestHelp("abc1564687865412654896451548965423187465132864518465148651ac486d84651ce864514865132846513222222222222222",
+			"fffffff", "abc1564687865412654896451548965423187465132864518465148651ac486d84651ce864514865132846513222222232222221", &pass,  print);
+	addSelfTestHelp("fffffff", "fffffff", "1ffffffe", &pass,  print);
+	addSelfTestHelp("111111111111111111111111111111111111111111111111111111111111111111111111111111111111f",
+			"123456789123456789151234564789456132564894aaaaabbbeeefdfefefdfffdfefffedfffdfefffefdfffde",
+			"12346789a23456789a26234567589a5672436759a5bbbbbccd0000f10100f110f10110ff110f1011100f110fd", &pass,  print);
+	addSelfTestHelp("213a1513a51a6cda56cd1a648ad4ca615ad61ca6cd68d14c86dc4a86c48bef864bf8e61be531bf5648fb789bf4b5f61ebf3bfe486",
+			"ef1564feb894feb891fe5b6f1eb65f154fe8f1e56e1bf48ad651cda65c1a65cda65da16d8c46da48d",
+			"213a1513a51a6cda56cd1a6579ea2f60136b1b5f5f672cbba592a99c1474e16bba14daa6bb838cfca515de699b13978c4b82d8913", &pass,  print);
+
     TEST(pass)
     ENDTEST(print)
 }
@@ -153,7 +189,7 @@ void addSelfTestHelp(char aChar[], char bChar[], char expChar[], WORD* pass, WOR
 
     addSelf(a, b);
     *pass &= equalWord(a, exp);
-    
+
     if(print){
         if(*pass ){
             printf("PASS \n");

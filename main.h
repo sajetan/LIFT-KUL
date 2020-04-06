@@ -8,27 +8,29 @@ purpose: it contains the prototypes, defines and includes
 #define MAIN_H_
 
 #include<time.h>        // for timing
-#include<sys/time.h>        // for timing
+#include<sys/time.h>    // for timing
 #include<stdio.h>       // for prints
-#include<stdint.h>      // for uint32_t
-
+#include<stdint.h>      // for uintx_t
+#include<pthread.h>     // threads
+#include<unistd.h>      // for sleep()
+//#include <stdlib.h>
 #include<stddef.h>
 #include<string.h>
-#include<ctype.h>       // for toupper()
+#include <assert.h>
 
+#define P(print)    printf("hello %d \n", print);
 
-#define WORD uint16_t
-#define WORD_2 uint32_t
+#define WORD uint8_t
 
-#define WORD_3 uint64_t
+#define SIZEHASH 256
+
+#define NUMBEROFBITS 258    // max number of bits our arrays will have to hold
+#define WORD_2 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
-#define SIZE ((WORD) 50 )
+#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
 
-#define WORDR uint16_t // for entropy pool, must be higher than 8 bit
-#define BYTER sizeof(WORDR)
-#define BITR (sizeof(WORDR)*8)
-#define SIZER 50 // 800 bits, should be large enough for personalization string, hash values, image or counter
+
 
 
 #define TEST(pass)          if(pass)\
@@ -57,7 +59,6 @@ purpose: it contains the prototypes, defines and includes
 
 // Tejas's functions
 #include"utilities.h"
-
 
 
 #endif

@@ -11,7 +11,7 @@
 
 #include"main.h"
 
-void hash256(WORD hash[],  void* input);
+void hash(WORD out[],  void* in, uint16_t sizeHash);
 WORD getNumberBytes(WORD w[]);
 void getNumberBytesTest(WORD print);
 WORD getNumberZeroBytes(WORD w);

@@ -12,7 +12,9 @@
 INPUTS: - in    : array of WORDS, length can be whatever
 OUTPUT: - out   : array of WORDS, length = SIZE; will contain the 256 bit hash
 */
-void hash256(WORD out[],  void* in){
+void hash(WORD out[],  void* in, uint16_t sizeHash){
+    assert (sizeHash == 256 ||sizeHash == 384 ||sizeHash == 612);
+
     WORD numberBytes    = getNumberBytes(in);
     WORD len            = SIZE-1;
     WORD i              = 0;
@@ -25,7 +27,7 @@ void hash256(WORD out[],  void* in){
 
     in += BIT/8; // use pointer arithmetic to sent whole array except first element
 
-    sha3_HashBuffer(256, SHA3_FLAGS_KECCAK, in, numberBytes, out, (BIT/8)*SIZE);
+    sha3_HashBuffer(sizeHash, SHA3_FLAGS_KECCAK, in, numberBytes, out, (BIT/8)*SIZE);
     for( i = SIZE; i>0; i--){ // shift all cells to free place for size
         out[i] = out[i-1];
     }
@@ -83,21 +85,21 @@ void hash256Test(WORD print){
     ENDTEST(print)
 }
 void hash256TestHelp(char inchar[], char expchar[], WORD* pass, WORD print){
-    WORD hash[SIZE] = {0};
+    WORD myHash[SIZE] = {0};
     WORD in[SIZE]   = {0};
     WORD exp[SIZE]  = {0};
 
     text2array(in, inchar);
     convert(exp, expchar);
     //print_num(in);
-    hash256( hash, in);
+    hash( myHash, in, SIZEHASH);
     if(print){
         printf("result: ");
-        print_num(hash);
+        print_num(myHash);
         printf("expected: ");
         print_num(exp);
     }
-    *pass &= equalWord(exp, hash);
+    *pass &= equalWord(exp, myHash);
 }
 
 

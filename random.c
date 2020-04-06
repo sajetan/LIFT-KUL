@@ -9,25 +9,34 @@
 
 #include"random.h"
 
-/*returns a 256 bit random number
-input: WORD array of size SIZE*/
+/* 
+    Returns a random number of specified length.
+    INPUTS:     -pool   :   structure entropy pool
+                -bit    :   32 bit number specifying the desired number of random bits
+                            obviously, it mut be smaller than the maximum allowed number of bits
+                            given WORD and SIZE
+    OUTPUTS:    -rand   :   array of WORD of size SIZE
+*/
 void random(WORD rand[], uint32_t bit, EntropyPool* pool){
-    WORD intermediate[SIZE] = {0};
-    uint32_t i = 0;
-    uint32_t start = 0;
-    uint32_t max = (128/BIT);
+    assert(bit<=NUMBEROFBITS);
 
-    // get values
+    WORD intermediate[SIZE] = {0};  // will contain the 128 bit random output
+    uint32_t i = 0;                 // will iterate over the 128 bit random output
+    uint32_t start = 0;             // will iterate over the number of 128 bit numbers needed
+    uint32_t max = (SIZEHASH/BIT);
+
+    // get values from the hashPool function and put them in the array
     start = 1;
     while(bit>((start-1)*BIT)){
+        updatePool(pool);
         hashPool(intermediate, pool);
-        for(i = 0; i<max ;i++ ){
+        for(i = 0; i<max && i + start < SIZE ;i++ ){
             rand[start + i] = intermediate[i+1];
         }
-        start +=i;
+        start +=i;                                      
     }
 
-    // update length
+    // update length of the output array
     start--;
     while(rand[start] == 0 && start>0){
         start--;
@@ -47,25 +56,25 @@ WORD getTime(){
 /* returns the rotor blade speed */
 WORD getBladeSpeed(){
     // code 
-    return 0;
+    return ~0;
 }
 
 /* returns the battery level */
 WORD getBatteryLevel(){
     // code 
-    return 0;
+    return ~0;
 }
 
 /* returns the GPS coordinates*/
 WORD getPosition(){
     // code 
-    return 0;
+    return ~0;
 }
 
 /* returns image from camera*/
 void getImage(WORD image[]){
     WORD i = 0;
-    for (i = 1; i<SIZER; i++){
+    for (i = 1; i<SIZE; i++){
         image[i] = 0;
     }
     i--;
@@ -86,7 +95,7 @@ char *getString(){
 */
 void initPool(EntropyPool* pool){
     WORD i = 0;
-    char *s = getString();
+    //char *s = getString();
 
     /* entropy inputs */
     pool->time = 0;
@@ -95,21 +104,41 @@ void initPool(EntropyPool* pool){
     pool->position = 0;
 
     /*  image + personalization string + counter + half of previous hash */
-    for(i = 0; i<SIZER; i++){
+    /*for(i = 0; i<SIZER; i++){
         pool->image[i] = 0;
         pool->str[i] = 0;
         pool->counter[i] = 0;
         pool->previousHash[i] = 0;
     }
-    getString(s);
     text2array(pool->str, s); // convert string s to array str in the pool
+    */
 
+
+    /* complete  */
+    //for(i = 0; i<SIZEPOOL; i++){
+    //    pool->complete[i] = 0;
+   // }
+
+    /* half of the privious hash  */
+    for(i = 0; i<SIZEHALFHASH; i++){
+        pool->halfHash[i] = 0;
+    }
+
+    /* counter  */
+    for(i = 0; i<(SIZECOUNTER+1); i++){
+        pool->counterArray[i] = 0;
+    }
+    pool->counter = 0;
 
     /* complete  */
     for(i = 0; i<SIZEPOOL; i++){
         pool->complete[i] = 0;
-
     }
+
+
+
+    /* kill signal for thread */
+    pool->kill = 0;
 }
 
 /* 
@@ -122,9 +151,7 @@ void updatePool(EntropyPool* pool){
     pool->bladeSpeed        = getBladeSpeed();
     pool->battery           = getBatteryLevel();
     pool->position          = getPosition();
-    getImage(pool->image);
-
-    mergePool( pool);  
+    mergePool(pool);
 }
 
 /*
@@ -135,21 +162,31 @@ void updatePool(EntropyPool* pool){
  */
 void mergePool( EntropyPool* pool){
     WORD start = 0;
+    WORD i = 0;
 
-    // first add the single items
+
+    // insert values into 'complete' array
     start= 1;
     pool->complete[start+0] = pool->time;
     pool->complete[start+1] = pool->bladeSpeed;
     pool->complete[start+2] = pool->battery;
     pool->complete[start+3] = pool->position;
+    start += SINGLEITEMS; 
 
-    // then add the arrays
-    start += SINGLEITEMS;
-    insertArray(pool->complete, pool->image,        &start);
-    insertArray(pool->complete, pool->str,          &start);
-    insertArray(pool->complete, pool->counter,      &start);
-    insertArray(pool->complete, pool->previousHash, &start);
-    
+
+    // insert the counter
+    for (i = 0; i<SIZECOUNTER; i++){
+        pool->complete[start+i] = pool->counterArray[i+1] ; // counterArray[i+1] since length field not included
+    }
+    start += SIZECOUNTER; 
+
+
+    // insert the upper half of the previous hash
+    for (i = 0; i<SIZEHALFHASH; i++){
+        pool->complete[start+i] = pool->halfHash[i] ; 
+    }
+    start += SIZEHALFHASH; 
+
     // and finally determine the new size.
     start--;
     while(pool->complete[start] == 0 && start>0){
@@ -161,53 +198,103 @@ void mergePool( EntropyPool* pool){
 /*
     Compute the hash of the entropy pool.
     More specifically, the "pool.complete" array is hashed.
-    The lower bits are passed on, the upper bits return in the pool.
+    The lower 128 bits are passed on, the upper 128 bits return in the pool.
 */
 void hashPool(WORD w[], EntropyPool* pool){
     WORD i      = 0;
-    WORD half   = 256/(BIT*2);
+    WORD half   = SIZEHASH/(BIT*2);
 
-    mergePool(pool);                // merge all items into array pool.complete
-    hash256(w, pool->complete);     // compute the hash of pool.compete
+    mergePool(pool); // only important place is here
 
-    // update the half hash value of the pool
+    hash(w, pool->complete, SIZEHASH);     // compute the hash of pool.complete
+    // update the upper half hash value of the pool
     for(i =0; i<half; i++){
-        pool->previousHash[i+1] = w[i +1 +half ];
+        pool->halfHash[i] = w[i +1 +half ];
+        w[i +1 +half ] = 0;
     }
-    pool->previousHash[0] = half;
 
     // pass on only the lower bits by updating the length field
     w[0] = half;
 
-    add1(pool->counter);   // increase counter by 1
+    pool->counter++;   // increase counter by 1
 
+number2array(pool->counterArray, pool->counter); // convert counter number to array
 }
+
 
 /*
     Iteratively updates and computes the hash of the entropy pool
     to build up entropy. This function is used in the very beginning, when 
     the entropy pool has been created but lacks sufficient entropy.
 */
-void accumulate(EntropyPool* pool, uint16_t n){
-    WORD i = 0;
+void accumulate(EntropyPool* pool, uint32_t n){
+    uint32_t i = 0;
     WORD w[SIZE] = {0};
-
     for(i = 0; i<n; i++){
         updatePool(pool);
         hashPool(w, pool);
     }
 }
-
 /*
-    Auxiliary function to easily insert small arrays in bigger ones
-*/
-void insertArray(WORD out[], WORD in[], WORD* start){
-    WORD i = 1;
-    for(i = 1; i<=in[0]; i++){
-        out[*start +i-1] = in[i];
+void *realtime_update_pool( void *ptr ){
+    EntropyPool* pool = (EntropyPool *) ptr;    // cast pool
+    P(101)
+    P(pool->kill)
+    while(!pool->kill){
+    //while(1){
+        P(11)
+        updatePool(pool);
+        P(12)	
+        P(77)
+        printPool(pool);
     }
-    *start +=i-1;
 }
+
+pthread_t createPool(EntropyPool* pool){
+    // 1. initialize pool by setting all elements to 0
+    initPool(pool);
+
+    // 2. create a thread that updates the values of the pool in real time
+    pthread_t thread_id;
+	pthread_create(&thread_id, NULL, realtime_update_pool, &pool);
+    
+    // 3. build up entropy
+    //accumulate(pool, 100);
+
+    // 4. return thread identity, will be used to kill the thread
+    return thread_id;
+}
+
+void killPool(EntropyPool* pool, pthread_t* thread_id){
+
+    // Set kill value to 1, which will cause the while loop
+    // of the thread to exit.
+    pool->kill = 1;
+
+    // Wait for the thread to finish
+    pthread_join(*thread_id, NULL); 
+}
+
+
+
+void managePoolThread( void *ptr )
+{    
+    EntropyPool* pool = (EntropyPool*) ptr;    // cast pool
+
+    initPool(pool);  // initialize pool
+
+    accumulate(pool, 100);    // let the pool accumulate entropy
+
+
+    while(1){
+         update
+     }
+     pool = (char *) ptr;
+     printf("%s \n", message);
+}
+*/
+
+
 
 /* 
     Displays the elements of the entropy pool in a graphically pleasing way
@@ -218,28 +305,30 @@ void printPool(EntropyPool* pool){
     printf("\t rotorBladeSpeed = %x\n", pool->bladeSpeed);
     printf("\t battery         = %x\n", pool->battery);
     printf("\t GPS             = %x\n", pool->position);
-    printf("\t image           = "); print_num(pool->image);
+    /*printf("\t image           = "); print_num(pool->image);
 
     printf("\n");
 
-    printf("\t personalization string = "); print_num(pool->str);
+    printf("\t personalization string = "); print_num(pool->str);*/
 
     printf("\n");
 
-    printf("\t counter          = "); print_num(pool->counter);
+    printf("\t counter uint32_t             = %ld\n", pool->counter); 
+    printf("\t counter [len, lsb->msb]      = ");  print_array(pool->counterArray, SIZECOUNTER+1);
 
     printf("\n");
 
-    printf("\t previous hash     = "); print_num(pool->previousHash);
+    printf("\t half hash  [ lsb->msb]       = "); print_array(pool->halfHash, SIZEHALFHASH);
     printf("\n");
 
-    printf("\t complete       = "); print_num(pool->complete);
+    printf("\t complete [len, lsb->msb]     = "); print_array(pool->complete, SIZEPOOL);
     printf("-------------------------------\n\n");
 
 }
 
 void demoEntropyPool(){
 	EntropyPool pool;
+    WORD w[SIZE] = {0};
 
 	initPool(&pool);
 
@@ -253,17 +342,29 @@ void demoEntropyPool(){
 
     printf("// and a second time.\n"
             "// counter should still be at 0, as well as the previous hash\n"
-            "// all the other values can be found back in the array 'complete'\n");
+            "// and the complete array");
 	updatePool(&pool);
 	printPool(&pool);
 
-    printf("// Now we will build up the entropy by successively updating\n"
-            " and hashing the pool. \n"
-            " the field previousHash receives now the upper part of the previous hash\n"
-            " Let's do it 100 times\n"
-            " counter should now be at 100 (64):\n");
+    printf("// Let's merge the pool\n");
+	mergePool(&pool);
+	printPool(&pool);
 
-	accumulate(&pool, 100);
+    printf("// Now we hash it \n");
+	hashPool(w,&pool);
+	printPool(&pool);
+
+    printf("// and merge again \n");
+	mergePool(&pool);
+	printPool(&pool);
+
+    printf("// Now we will build up the entropy by successively updating,\n"
+            " merging and hashing the pool. \n"
+            " the field previousHash receives now the upper part of the previous hash\n"
+            " Let's do it 100000 times\n"
+            " counter should now be at around 100000 + previous :\n");
+
+	accumulate(&pool, 1);
 	printPool(&pool);
 
     printf("// Now the entropy pool is ready for usage!\n");
@@ -277,20 +378,21 @@ void randomTest(){
     WORD a[SIZE] = {0};
     uint32_t n = 10;
     
+    initPool(&pool);        // initialize pool
+    accumulate(&pool, 100); // mix the pool 100 times
+
     BEGINTEST(1)
 	
-    initPool(&pool);
-    
     n = 0;
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 0 bits:"); print_num(a);
-    
+
     n = 1;
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 1 bits:"); print_num(a);
-    
+
     n = 10;
     random(a, n, &pool);
     //printPool(&pool);
@@ -300,7 +402,7 @@ void randomTest(){
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 128 bits:"); print_num(a);
-    
+
     n = 129;
     random(a, n, &pool);
     //printPool(&pool);
@@ -311,12 +413,18 @@ void randomTest(){
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 256 bits:"); print_num(a);
-    
+
     n = 257;
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 257 bits:"); print_num(a);
 
+    n = 258;
+    random(a, n, &pool);
+    //printPool(&pool);
+    printf("random number of n = 257 bits:"); print_num(a);
+    
+    
     ENDTEST(1)
 
 }

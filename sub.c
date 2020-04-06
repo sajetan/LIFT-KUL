@@ -1,54 +1,57 @@
-///*
-//
-// * sub.c
-// *
-// *  Created on: Mar 17, 2020
-// *      Author: r0665956
-// */
+/*
+
+* sub.c
+*
+*  Created on: Mar 17, 2020
+*      Author: r0665956
+*/
 
 #include"sub.h"
 
-// Calculates res = (a - b).
-// a and b represent large integers stored in arrays with WORD-type elements
-// a is an array of length_a elements (0-elements not included), b is an array of length_b elements (0-elements not included),
-//res has length_a elements (0-elements not included)
-// with a>= b !!! (we will never use negative numbers in our implementation)
+/*
+Calculates res = (a - b).
+a and b represent large integers stored in arrays with WORD-type elements
+a is an array of length_a elements (0-elements not included), b is an array of length_b elements (0-elements not included),
+res has length_a elements (0-elements not included)
+with a>= b !!! (we will never use negative numbers in our implementation)
+*/
+
 void sub(WORD *res, WORD *a, WORD *b)
 {
     WORD length_a = a[0];
     WORD length_b = b[0];
-    WORD c = 1;     		// for subtraction, begin with carry = 1
+    WORD c = 1;     		/* for subtraction, begin with carry = 1 */
     WORD i;
-    WORD max = ~0;			// wil be used to detect overflow
+    WORD max = ~0;			/* wil be used to detect overflow */
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
         res[i] = a[i] + ((WORD)~b[i]) + c ;
-        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
+        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; /* compute carry by detecting overflow */
     }
 
-    //setting res[0] right:
+    /*setting res[0] right:*/
     while (res[i] == 0  && i>0){
         i--;
     }
     res[0] = i;
 }
 
-// Calculates a = a-b
+/* Calculates a = a-b*/
 void subSelf( WORD *a, WORD *b)
 {
     WORD length_a = a[0];
     WORD length_b = b[0];
-    WORD c = 1;     // with subtraction, begin with carry = 1
+    WORD c = 1;     /* with subtraction, begin with carry = 1*/
     WORD i;
     WORD max = ~0;
     WORD res[SIZE] = {0};
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
         res[i] = a[i] + ((WORD)~b[i]) + c ;
-        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
+        c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; /* compute carry by detecting overflow*/
     }
 
-    //setting res[0] right:
+    /*setting res[0] right:*/
     while (res[i] == 0  && i>0){
         i--;
     }

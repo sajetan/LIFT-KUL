@@ -25,7 +25,8 @@ purpose: it contains the prototypes, defines and includes
 #define SIZEHASH 256
 
 #define NUMBEROFBITS 258    // max number of bits our arrays will have to hold
-#define WORD_2 uint64_t
+#define WORD_2 uint32_t
+#define WORD_3 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
 #define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
@@ -48,6 +49,7 @@ purpose: it contains the prototypes, defines and includes
 #include"sub.h"
 #include"mod.h"
 #include"mult.h"
+#include"division.h"
 
 // Ferdinand's functions
 #include"inverse.h"

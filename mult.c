@@ -8,6 +8,10 @@
 
 #include"mult.h"
 
+
+/*
+calculates res = a*b, with a and b arrays
+*/
 void mult(WORD *res, WORD *a, WORD *b){
 	WORD i;
 	WORD j;
@@ -40,7 +44,9 @@ void mult(WORD *res, WORD *a, WORD *b){
 }
 
 
-//calculates: res = a * b, with a an integer of BIT bits or smaller, and b a n array
+/*
+calculates: res = a * b, with a an integer of BIT bits or smaller, and b an array
+*/
 void smallMult(WORD *res, WORD a, WORD *b){
 	WORD i;
 	WORD j;

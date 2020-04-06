@@ -1,10 +1,10 @@
-///*
-//
-// * add.c
-// *
-// *  Created on: Mar 17, 2020
-// *      Author: r0665956
-// */
+/*
+
+* add.c
+*
+*  Created on: Mar 17, 2020
+*      Author: r0665956
+*/
 
 #include"add.h"
 
@@ -15,16 +15,16 @@ void add(WORD *res, WORD *a, WORD *b)
 {
     WORD length_a = a[0];
     WORD length_b = b[0];
-    WORD c = 0;             // carry
+    WORD c = 0;             /* carry */
     WORD i;
-    WORD max = ~0;          // for detecting overflow/carry
+    WORD max = ~0;          /* for detecting overflow/carry */
 
     for (i=1; i<=length_b|| i<=length_a; i++) {
         res[i] = a[i] + b[i] + c ; // if overflow, take back that extra bit
         c = c ? a[i] >= (max - b[i]) : a[i] > (max - b[i]);
     }
-    res[i] = c; //overflow carry
-    res[0] = i - (c==0); // adjust length
+    res[i] = c; /*overflow carry*/
+    res[0] = i - (c==0); /* adjust length */
 }
 
 /* performs addition a = a + b
@@ -41,7 +41,7 @@ void addSelf(WORD *a, WORD *b)
 
         for (i=1; i<=length_b|| i<=length_a; i++) {
             cNext = c ? a[i] >= (max - b[i]) : a[i] > (max - b[i]);
-            a[i] = a[i] + b[i] + c ; // if overflow, take back that extra bit
+            a[i] = a[i] + b[i] + c ; /* if overflow, take back that extra bit*/
             c = cNext;
 		}
         a[i] = c;

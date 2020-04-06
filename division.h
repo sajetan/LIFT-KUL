@@ -19,8 +19,6 @@ void shiftBase(WORD *res, WORD a, WORD *y);
 //testfunction
 void divisionTest(WORD print);
 void divisionTestHelp(char xChar[], char yChar[], char expqChar[], char exprChar[], WORD* pass, WORD print);
-void shiftBaseTestHelp(WORD a, char yChar[], char expChar[], WORD* pass, WORD print);
-void shiftBaseTest(WORD print);
 
 
 #endif /* DIVISION_H_ */

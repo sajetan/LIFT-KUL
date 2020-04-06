@@ -1,9 +1,5 @@
-
 /*
-
  * mod.c
-
-
  *
  *  Created on: Mar 17, 2020
  *      Author: LIEN
@@ -11,13 +7,16 @@
 
 #include"mod.h"
 
-// Calculates res = a mod n
-// a and n represent large integers stored in arrays with WORD-type elements
-// a is an array of length_a elements (0-elements not included), n is an array of length_n elements (0-elements not included),
-// res has min{length_a,length_n} - elements (0-elements not included)
+/* 
+Calculates res = a mod n
+a and n represent large integers stored in arrays with WORD-type elements
+a is an array of length_a elements (0-elements not included), n is an array of length_n elements (0-elements not included),
+*/
+
 void mod(WORD *res, WORD *a, WORD *n){
 	WORD quotient[SIZE] = {0};
-	if(greaterThan(n, a)){
+	
+	if(greaterThan(n, a)){			
 		copyWord(res, a);
 
 	}
@@ -33,6 +32,11 @@ void mod(WORD *res, WORD *a, WORD *n){
 		}
 	}
 }
+
+/*
+calculates res = a mod n, when there is only a small difference between a and n,
+is used in the general mod function since the division function cannot handle an input a with a[0] = 1
+*/
 
 void smallMod(WORD *res, WORD *a, WORD *n){
 	WORD c[SIZE] = {0};

@@ -18,6 +18,7 @@ void convertTest();
 void number2array(WORD array[], uint64_t number);
 void text2array(WORD array[], char text[]);
 void array2text(char text[], WORD array[]);
+void print_array(WORD *in, uint64_t size);
 //void hex_decoder(const char *in, size_t len,uint32_t *out);
 //void test_convert_hex_array();
 

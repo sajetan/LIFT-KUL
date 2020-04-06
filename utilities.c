@@ -49,12 +49,12 @@ void convert(WORD *out, const char *in){
 
 /* 	Converts an number into an array of words.
    	INPUT:	number: can be any type, wil be casted to the largest uint64_t
-	OUTPUT:	array : array of words, minimum length = 5. */
+	OUTPUT:	array : array of words, minimum length = 5 */
 void number2array(WORD array[], uint64_t number){
 	WORD i = 0;
 
 	// 1. assign core value
-	for (i = 1; i<=BIT/8; i++){
+	for (i = 1; i<=64/BIT; i++){
 		array[i] = (WORD) number;
 		number >>= BIT;
 	}
@@ -110,9 +110,32 @@ void array2text(char text[], WORD array[]){
 
 /*prints an array; format: [size, lsb-> msb]*/
 void print_num(WORD *in){
-    //printf("[size, lsb-> msb]:  ");
     printf("[");
     for (WORD i = 0; i < in[0]+1; i++) {
+		switch(BIT){
+			break;
+			case 32:
+    		printf("0x%08x,", in[i]);
+			break;
+			case 16:
+    		printf("0x%04x,", in[i]);
+			break;
+			case 8:
+    		printf("0x%02x,", in[i]);
+			break;
+			default:
+    		printf("0x%08x,", in[i]);
+			break;
+		}
+    }
+    printf("]");
+    printf("\n\r");
+}
+
+/*prints an array; format: [in[0], in[1], ..., in[size-1]]*/
+void print_array(WORD *in, uint64_t size){
+    printf("[");
+    for (WORD i = 0; i < size; i++) {
 		switch(BIT){
 			break;
 			case 32:

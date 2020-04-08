@@ -47,6 +47,44 @@ void convert(WORD *out, const char *in){
 	out[0] = index;
 }
 
+
+
+void convertWithSize(WORD *out, const char *in, size_t size){
+	WORD len = strlen(in);
+
+	for(WORD i = 0; i<SIZE; i++){ // set array to zero
+		out[i] = 0;
+	}
+
+	WORD stopEarly = 0; // handle MSB zeros and remove them
+	while( stopEarly<len && in[stopEarly] == '0'){
+		stopEarly++;
+	}
+	WORD index = 0; 	// keeps track of the cells of the array
+	WORD current = 0;	// will store the number as a char
+	WORD t = 0;			// will store the number as an integer
+	for(WORD i = 0; i<len-stopEarly ; i++){
+
+		index = i/(size/4)+1;
+		current = in[len-i-1];
+
+		if(current >= 'A' && current <= 'F'){
+			t = current - 'A' + 10;
+		} else if(current >= 'a' && current <= 'f'){
+			t = current - 'A' - 22;
+		}else{
+			t = current - '0';
+		}
+
+		out[index] |= t<< (4*(i%(size/4)));
+	}
+	out[0] = index;
+
+
+}
+
+
+
 /* 	Converts an number into an array of words.
    	INPUT:	number: can be any type, wil be casted to the largest uint64_t
 	OUTPUT:	array : array of words, minimum length = 5 */
@@ -131,6 +169,17 @@ void print_num(WORD *in){
     printf("]");
     printf("\n\r");
 }
+void print_hex(uint32_t *in)
+{
+    int32_t i;
+
+    printf("0x");
+    for (i = in[0]; i >= 1; i--) {
+    	printf("%08x", in[i]);
+    }
+    printf("\n\r");
+}
+
 
 /*prints an array; format: [in[0], in[1], ..., in[size-1]]*/
 void print_array(WORD *in, uint64_t size){
@@ -157,7 +206,6 @@ void print_array(WORD *in, uint64_t size){
 }
 
 
-
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyWord(WORD copy[], WORD w[]){
@@ -165,6 +213,15 @@ void copyWord(WORD copy[], WORD w[]){
         copy[i] = w[i];
     }
 }
+
+/* copies array w to array copy
+INPUT: 2 WORD[] arrays of length SIZE*/
+void copyArrayWithSize(WORD copy[], WORD w[]){
+    for(WORD i = 0; i<w[0]+1; i++){
+        copy[i] = w[i];
+    }
+}
+
 
 /*function for comparing two WORDS[].
 BEWARE: the lengreaterThanh field must be equal as well! 

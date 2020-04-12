@@ -20,7 +20,7 @@ purpose: it contains the prototypes, defines and includes
 
 #define P(print)    printf("hello %d \n", print);
 
-#define WORD uint8_t
+#define WORD uint16_t
 
 #define SIZEHASH 256
 
@@ -29,8 +29,8 @@ purpose: it contains the prototypes, defines and includes
 #define WORD_3 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
-#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
-
+//#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
+#define SIZE 100
 
 
 

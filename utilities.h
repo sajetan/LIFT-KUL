@@ -10,7 +10,7 @@
 
 void convert(WORD *out, const char *in);
 void print_num(WORD *in);
-void print_hex(uint32_t *in); //prints [0x1,0x2,0x3,0x4] as 0x4321
+void print_hex(WORD *in); //prints [0x1,0x2,0x3,0x4] as 0x4321
 WORD equalWord(WORD a[], WORD b[]);
 void copyWord(WORD copy[], WORD w[]);
 void copyArrayWithSize(WORD copy[], WORD w[]);
@@ -22,6 +22,7 @@ void number2array(WORD array[], uint64_t number);
 void text2array(WORD array[], char text[]);
 void array2text(char text[], WORD array[]);
 void print_array(WORD *in, uint64_t size);
+void initArray(WORD *in, size_t size);
 //void hex_decoder(const char *in, size_t len,uint32_t *out);
 //void test_convert_hex_array();
 

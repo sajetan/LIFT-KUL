@@ -47,6 +47,11 @@ void convert(WORD *out, const char *in){
 	out[0] = index;
 }
 
+void initArray(WORD *in, size_t size){
+	for(WORD i = 0; i<size; i++){ // set array to zero
+		in[i] = 0;
+	}
+}
 
 
 void convertWithSize(WORD *out, const char *in, size_t size){
@@ -169,13 +174,27 @@ void print_num(WORD *in){
     printf("]");
     printf("\n\r");
 }
-void print_hex(uint32_t *in)
+void print_hex(WORD *in)
 {
-    int32_t i;
+    WORD i;
 
     printf("0x");
     for (i = in[0]; i >= 1; i--) {
-    	printf("%08x", in[i]);
+    	switch(BIT){
+			break;
+			case 32:
+    		printf("%08x", in[i]);
+			break;
+			case 16:
+    		printf("%04x", in[i]);
+			break;
+			case 8:
+    		printf("%02x", in[i]);
+			break;
+			default:
+    		printf("%08x", in[i]);
+			break;
+    	}
     }
     printf("\n\r");
 }

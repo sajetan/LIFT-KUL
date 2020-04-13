@@ -18,6 +18,11 @@ purpose: it contains the prototypes, defines and includes
 #include<string.h>
 #include <assert.h>
 
+#define FALSE 0
+#define TRUE 1
+
+
+//new
 #define P(print)    printf("hello %d \n", print);
 
 #define WORD uint16_t

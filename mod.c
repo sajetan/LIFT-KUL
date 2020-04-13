@@ -33,6 +33,22 @@ void mod(WORD *res, WORD *a, WORD *n){
 	}
 }
 
+void mod_sub(WORD *res, WORD *a, WORD *b, WORD *n){
+	WORD temp[SIZE] = {0};
+    sub(temp,a, b);
+    if (a[0]==0 && b[0]==0) return;
+
+    if ( greaterThan(b,a) || equalWord(b,a)){
+            
+            add(res,temp,n);
+            
+    }
+    else
+    	copyArrayWithSize(res,temp);
+
+    res[0]=n[0];
+}
+
 /*
 calculates res = a mod n, when there is only a small difference between a and n,
 is used in the general mod function since the division function cannot handle an input a with a[0] = 1

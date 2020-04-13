@@ -9,10 +9,12 @@
 #define MOD_H_
 
 #include"main.h"
+#include "add.h"
+#include "sub.h"
 
 void mod(WORD *res, WORD *a, WORD *n);
 void smallMod(WORD *res, WORD *a, WORD *n);
-
+void mod_sub(WORD *res, WORD *a, WORD *b, WORD *n);
 //testfunctions
 void modTest(WORD print);
 void modTestHelp(char aChar[], char bChar[], char expChar[], WORD* pass, WORD print);

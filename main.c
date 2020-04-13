@@ -26,7 +26,7 @@ int main(){
 	hash256Test(0);			// hash
     inverseTest(0);			// inverse
 	
-	randomTest();			// random numbers
+//	randomTest();			// random numbers
 	
 	//demoEntropyPool();	// demo entropy pool
 

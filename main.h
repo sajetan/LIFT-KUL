@@ -35,7 +35,7 @@ purpose: it contains the prototypes, defines and includes
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
-#define SIZE 100
+#define SIZE 68
 
 
 

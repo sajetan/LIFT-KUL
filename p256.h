@@ -39,10 +39,26 @@ typedef struct{
 
 void affineToJacobian(p256_jacobian *out,p256_affine *in);
 void jacobianToAffine(p256_affine *out,p256_jacobian *in);
-p256_word checkIfZero( p256_word* a);
-void pointAdd(p256_jacobian *out, p256_jacobian *in1, p256_jacobian *in2);
-void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in);
 p256_word pointValidOnCurve(p256_affine *in);
-void pointScalarMultJacobian(p256_affine *out, p256_jacobian *in, p256_integer k);
+p256_word checkIfZero( p256_word* a);
+
+//in affine
+void pointAddAffine(p256_affine *out, p256_affine *in1, p256_affine *in2);
+void pointDoubleAffine(p256_affine *out, p256_affine *in);
+void pointScalarMultAffine(p256_affine *out, p256_affine *in, p256_integer k);
+
+//in jacobian
+p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian *in2);
+void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in);
+void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer k);
+
+
+//only for testing
+void p256TestScalarMultJacobian(); //test scalar mult jacobian
+void p256TestScalarMultAffine();
+void p256TestAdditionAffine();
+void p256TestDoubleAffine();
+
+
 
 #endif /* P256_H_ */

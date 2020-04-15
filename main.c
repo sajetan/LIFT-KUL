@@ -41,6 +41,8 @@ int main(){
 
 
    /////// Lien ///////
-	//modTest(0);
-	//multTest(0);
+// 	modTest(0);
+// 	multTest(0);
+// 	divisionTest(0);
+// 	signatureTest(1);
 }

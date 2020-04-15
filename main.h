@@ -55,6 +55,7 @@ purpose: it contains the prototypes, defines and includes
 #include"mod.h"
 #include"mult.h"
 #include"division.h"
+#include"signature.h"
 
 // Ferdinand's functions
 #include"inverse.h"

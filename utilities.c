@@ -53,6 +53,19 @@ void initArray(WORD *in, size_t size){
 	}
 }
 
+void convertArray16toArray8(uint8_t *out, uint16_t *in){
+	WORD i;
+	for(i=1; i<=in[0]; i++){
+		out[i*2-1] = in[i];
+		out[i*2] = in[i] >> 8;
+	}
+
+	WORD w = 2*in[0];
+	while (out[w] == 0  && w>0){
+		w--;
+	}
+	out[0] = w;
+}
 
 void convertWithSize(WORD *out, const char *in, size_t size){
 	WORD len = strlen(in);

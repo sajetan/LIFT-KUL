@@ -23,6 +23,8 @@ void text2array(WORD array[], char text[]);
 void array2text(char text[], WORD array[]);
 void print_array(WORD *in, uint64_t size);
 void initArray(WORD *in, size_t size);
+void convertArray16toArray8(uint8_t *out, uint16_t *in);
+
 //void hex_decoder(const char *in, size_t len,uint32_t *out);
 //void test_convert_hex_array();
 

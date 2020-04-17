@@ -17,6 +17,10 @@ purpose: it contains the prototypes, defines and includes
 #include<stddef.h>
 #include<string.h>
 #include <assert.h>
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <string.h>
+
 
 #define FALSE 0
 #define TRUE 1
@@ -34,8 +38,8 @@ purpose: it contains the prototypes, defines and includes
 #define WORD_3 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
-//#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +2)
-#define SIZE 68
+#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
+//#define SIZE 19
 
 
 
@@ -63,6 +67,8 @@ purpose: it contains the prototypes, defines and includes
 #include"sha3.h"
 #include"hash.h"
 #include"random.h"
+#include"communication.h"
+#include"message.h"
 
 
 // Tejas's functions

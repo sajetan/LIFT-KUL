@@ -7,8 +7,8 @@
 
 #include"message.h"
 
-void getTLV(uint8_t* message, int* message_length, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data){
-    assert(BYTE_DATA_MAX >= dataLength);
+void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data){
+    assert(MAX_DATA_LENGTH >= dataLength);
 
     uint16_t i = 0;
     uint16_t start = 0;
@@ -18,27 +18,27 @@ void getTLV(uint8_t* message, int* message_length, WORD_TAG tag,  WORD_LEN dataL
     start = 0;
     for(i = 0; i<BYTE_TAG; i++){
         tag >>= 8*i;
-        message[start + i] = tag;
+        buf[start + i] = tag;
     }
     
     // insert length
     start += i;
     for(i = 0; i<BYTE_LEN; i++){
         dataLengthCopy >>= 8*i;
-        message[start + i] = dataLengthCopy;
+        buf[start + i] = dataLengthCopy;
     }
     
     // insert ID
     start += i;
     for(i = 0; i<BYTE_ID; i++){
         id >>= 8*i;
-        message[start + i] = id;
+        buf[start + i] = id;
     }
 
     // insert data
     start += i;
     for(i = 0; i<dataLength; i++){
-        message[start + i] = data[i];
+        buf[start + i] = data[i];
     }
 
     // perform check
@@ -46,9 +46,9 @@ void getTLV(uint8_t* message, int* message_length, WORD_TAG tag,  WORD_LEN dataL
     assert(start == (BYTE_TAG + BYTE_LEN + BYTE_ID + dataLength));
 
     // return length
-    *message_length = start;
+    *buf_len = start;
 }
-
+/*
 void getTLVTest(){
     WORD_TAG tag    = 0;
     WORD_LEN len    = 0;
@@ -69,3 +69,4 @@ void getTLVTest(){
 
     print_array(message, message_len);
 }
+*/

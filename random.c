@@ -23,25 +23,36 @@ void random(WORD rand[], uint32_t bit, EntropyPool* pool){
     WORD intermediate[SIZE] = {0};  // will contain the 128 bit random output
     uint32_t i = 0;                 // will iterate over the 128 bit random output
     uint32_t start = 0;             // will iterate over the number of 128 bit numbers needed
-    uint32_t max = (SIZEHASH/BIT);
+    uint32_t max = (SIZEHASH/BIT/2);
+    uint8_t shift = 0;
 
     // get values from the hashPool function and put them in the array
     start = 1;
     while(bit>((start-1)*BIT)){
         updatePool(pool);
         hashPool(intermediate, pool);
-        for(i = 0; i<max && i + start < SIZE ;i++ ){
+        for(i = 0; i<max && (i + start-1)*BIT < bit ;i++ ){
             rand[start + i] = intermediate[i+1];
         }
         start +=i;                                      
     }
+    start--;
+    
+    // remove excess bits
+    shift = (bit % BIT == 0) ? 0 :  ( BIT - bit % BIT );
+
+    rand[start] <<= shift;
+    rand[start] >>= shift;
+
+
+
 
     // update length of the output array
-    start--;
     while(rand[start] == 0 && start>0){
         start--;
     }
     rand[0] = start;
+
 }
 
 /*  returns the current time in microsecond. If word = uint8_t, 
@@ -377,16 +388,18 @@ void randomTest(){
     EntropyPool pool;
     WORD a[SIZE] = {0};
     uint32_t n = 10;
-    
     initPool(&pool);        // initialize pool
     accumulate(&pool, 100); // mix the pool 100 times
 
     BEGINTEST(1)
+
+    for(int i = 0; i<10; i++){
+            n = i;
+            random(a, n, &pool);
+            //printPool(&pool);
+            printf("random number of n = %d bits:", n); print_num(a);
+    }
 	
-    n = 0;
-    random(a, n, &pool);
-    //printPool(&pool);
-    printf("random number of n = 0 bits:"); print_num(a);
 
     n = 1;
     random(a, n, &pool);
@@ -422,7 +435,7 @@ void randomTest(){
     n = 258;
     random(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 257 bits:"); print_num(a);
+    printf("random number of n = 258 bits:"); print_num(a);
     
     
     ENDTEST(1)

@@ -1,0 +1,91 @@
+/*
+ * first draft of the FSM_CC.c file
+ * 
+ *
+ *  Created on: April 17, 2020
+ *      Author: Lien Wouters
+ */
+ 
+ //Different states
+ 
+typedef enum
+{
+ Wait_Start_STS_State,   //Idle state
+ Wait_STS_1_State,
+ Wait_Start_Communication_State,
+} eSystemState;
+
+
+//Different events
+typedef enum
+{
+  start_STS,
+  STS_1_received,
+  reset
+} eSystemEvent;
+
+
+//Eventhandlers
+eSystemState start_STS_handler(void)
+{
+  send_STS_0();  //function that creates and sends STS_0 packet
+  return Wait_STS_1_State
+}
+
+eSystemState STS_1_received_handler(void)
+{
+  Read_Received_Data();  //function that reads the data from the received packet
+  Compute_Session_Key();  //function that computes and stores the session key
+  STS_1_valid = verify_STS_1();  //function that verifies the received STS_1 packet
+  
+  if (STS_1_valid){
+    send_STS_2();   //function that creates and sends STS_2 packet
+    return Wait_Start_Communication_State;
+  }
+  else{
+    return Wait_STS_1_State;
+  }
+}
+
+
+int main()
+{
+
+    eSystemState eNextState = Wait_Start_STS_State;
+    eSystemEvent eNewEvent;
+
+    while(1)
+    {
+        //Read system Events
+        eSystemEvent eNewEvent = ReadEvent();   
+
+        switch(eNextState)
+        {
+        
+        case Wait_Start_STS_State:
+        {
+            if(start_STS == eNewEvent){
+                eNextState = start_STS_handler();
+            }
+
+        }
+        break;
+        
+        case Wait_STS_1_State:
+        {
+            if(STS_1_received == eNewEvent){
+                eNextState = STS_1_received_handler();
+            }           
+            
+            if(reset == eNewEvent){                   // go back to the begin state if the waiting for STS_1 takes too long
+                eNextState = Wait_Start_STS_State;
+            }
+        }
+        break;
+        
+        default:
+           break;
+
+        }
+  
+ 

@@ -9,7 +9,8 @@
 #ifndef DEF_MESSAGE
 #define DEF_MESSAGE
 
-#include"communication.h"     // for uintx_t
+#include"globals.h"
+#include"communication.h"
 
 //#include"main.h"
 
@@ -62,6 +63,7 @@ struct User
 };
 */
 void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data);
+void decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, WORD_ID* id, uint8_t* data, uint8_t* buf, uint16_t buf_len);
 void getTLVTest();
 
 #endif

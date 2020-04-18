@@ -6,41 +6,38 @@
 
 int main(void)
 {
-	int i;
-	int  recvlen;					// # bytes received
-	uint8_t buf[MAX_TRANSFER_LENGTH];	// message buffer
 
 	// Ports for direct communication
 	// Time-out is set to 5 seconds
-	init_socket(9999, 9998, 1000);
+	init_socket(9999, 9998, 10);
 
 	// Ports for communication over GNU Radio
 	// init_socket(21235, 21237, 5);
     
-    // now let's send and receive the messages
-	recvlen = receive_message(buf);
-			buf[recvlen] = 0;
-		printf("Received: %s\n", buf);
+	// FSM part
+	State state = STS_send_1;
+	Memory memory;
+	initMemory(&memory);
+	int exit = 0;
 
-	for(int i = 0; i<recvlen; i++){
-		printf("%d", buf[i]);
-	}
+	// udp part
+	uint8_t buf[MAX_TRANSFER_LENGTH] = {0};	// message buffer
+	uint16_t buf_len = 0;	// message buffer length
+	
 
-	/*
-	for (i=0; i<MSGS; i++) {
-		recvlen = receive_message(buf);
-		buf[recvlen] = 0;
-		printf("Received: %s\n", buf);
-
-		sprintf(buf, "Pong message %d from receiver\n", i);
-        if(send_message(buf, strlen(buf))==0) {
-			close_sockets();
-			printf("Send failed at message %d\n", i);
-			return 0;
+	while(!exit){
+		switch(state){
+			case STS_send_1: 
+				state = STS_send_1_fct(buf, &buf_len, &memory);
+				break;
+			case STS_drone_completed: 
+				state = STS_drone_completed_fct();
+				break;
+			case State_Exit: 
+				exit = 1;
+				break;
 		}
-		printf("Sent:     %s\n", buf);
-	}
-	*/
+	}	
 	close_sockets();
 	return 0;
 }

@@ -6,13 +6,12 @@
 #include"p256.h"
 
 int main(){
-
 	
     /////// Tejas ///////
-      p256TestScalarMultJacobian(); //test scalar mult jacobian
-      p256TestScalarMultAffine();  //test scalar mult affine
-      p256TestAdditionAffine();  //test add affine
-      p256TestDoubleAffine();  //test double affine
+      //p256TestScalarMultJacobian(); //test scalar mult jacobian
+      //p256TestScalarMultAffine();  //test scalar mult affine
+      //p256TestAdditionAffine();  //test add affine
+      //p256TestDoubleAffine();  //test double affine
 
 
 
@@ -21,7 +20,7 @@ int main(){
     /////// Ferdinand ///////
 
   	
-//	addTest(0);
+	addTest(0);
 //	addSelfTest(0);
 //	subTest(0);
 //	subSelfTest(0);

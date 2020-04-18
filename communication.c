@@ -1,11 +1,6 @@
 #include "communication.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <sys/types.h> 
-#include <sys/time.h>
+
 
 struct sockaddr_in rx_addr; 
 struct sockaddr_in tx_addr; 
@@ -41,7 +36,7 @@ int init_socket(int tx_port, int rx_port, int timeout_sec) {
 	}
     
     struct timeval read_timeout;
-    read_timeout.tv_sec = 10;
+    read_timeout.tv_sec = timeout_sec;
     read_timeout.tv_usec = 0;
 
     setsockopt(fd_rx, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));

@@ -40,8 +40,8 @@
 #define WORD_3 uint64_t
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
-#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
-//#define SIZE 19
+//#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
+#define SIZE 200
 
 
 

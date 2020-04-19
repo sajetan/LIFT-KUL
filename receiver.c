@@ -30,9 +30,12 @@ int main(void)
 			case STS_send_1: 
 				state = STS_send_1_fct(buf, &buf_len, &memory);
 				break;
+			case STS_send_OK: 
+				state = STS_send_OK_fct(buf, &buf_len, &memory);
+				break;	
 			case STS_drone_completed: 
 				state = STS_drone_completed_fct();
-				break;
+ 				break;
 			case State_Exit: 
 				exit = 1;
 				break;

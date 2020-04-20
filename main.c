@@ -4,6 +4,7 @@
 
 #include"main.h"
 #include"p256.h"
+#include"chacha20_poly1305_interface.h"
 
 int main(){
 	
@@ -14,6 +15,10 @@ int main(){
       //p256TestDoubleAffine();  //test double affine
 
 
+      //padding_test();
+      //test_poly_key();
+
+	aead_test();
 
 	//demoEntropyPool();	// demo entropy pool
 

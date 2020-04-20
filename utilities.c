@@ -5,6 +5,9 @@
  */
 
 #include"utilities.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
 /* Converts a string of a hexadecimal numbers into an array of words.
  * out[0] contains the length
@@ -164,6 +167,35 @@ void array2text(char text[], WORD array[]){
 	text[i] = '\0';
 }
 
+
+
+
+#if 0
+/*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
+void print_num_size(WORD *in, size_t s){
+    printf("[");
+    for (WORD i = 0; i < s; i++) {
+		switch(BIT){
+			break;
+			case 32:
+    		printf("0x%08x,", in[i]);
+			break;
+			case 16:
+    		printf("0x%04x,", in[i]);
+			break;
+			case 8:
+    		printf("0x%02x,", in[i]);
+			break;
+			default:
+    		printf("0x%08x,", in[i]);
+			break;
+		}
+    }
+    printf("]");
+    printf("\n\r");
+}
+#endif
+
 /*prints an array; format: [size, lsb-> msb]*/
 void print_num(WORD *in){
     printf("[");
@@ -238,6 +270,58 @@ void print_array(WORD *in, uint64_t size){
 }
 
 
+
+
+/*below three are some fancy functions : sajetan */
+/*
+ * convert byte hex array to char array of type of 8/16/32bits
+ * */
+void byte2char(char *out, WORD *in, size_t type)
+{
+	size_t len=in[0];
+	uint32_t i =0;
+	if (type==8){
+		while(i<len){sprintf(out+strlen(out),"%02x",in[len-i]);i++;}
+	}
+	else if (type==16){
+		while(i<len){sprintf(out+strlen(out),"%04x",in[len-i]);i++;}
+	}
+	else if (type==32){
+		while(i<len){sprintf(out+strlen(out),"%08x",in[len-i]);i++;}
+	}
+}
+
+/*
+ * convert byte hex array to char array of type of 8/16/32bits
+ * */
+void byte2charWithSize(char *out, uint8_t *in, size_t len,size_t type)
+{
+	uint32_t i =0;
+	len=len-1;
+
+	if (type==8){
+		while(i<len+1){sprintf(out+strlen(out),"%02x",(uint8_t)in[len-i]);i++;}
+	}
+	else if (type==16){
+		while(i<len+1){sprintf(out+strlen(out),"%04x",(uint16_t)in[len-i]);i++;}
+	}
+	else if (type==32+1){
+		while(i<len){sprintf(out+strlen(out),"%08x",(uint32_t)in[len-i]);i++;}
+
+	}
+}
+
+
+/*
+ * convert char hex to 1 byte array
+ * */
+void char2byte(uint8_t *out, const char *in)
+{
+  while (*in) { sscanf(in, "%2hhx", out++); in += 2; }
+
+}
+
+
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyWord(WORD copy[], WORD w[]){
@@ -251,9 +335,32 @@ INPUT: 2 WORD[] arrays of length SIZE*/
 void copyArrayWithSize(WORD copy[], WORD w[]){
     for(WORD i = 0; i<w[0]+1; i++){
         copy[i] = w[i];
+
     }
 }
 
+
+
+#if 0
+//just added these functions will remove later while cleaning up code :sajetan
+/* copies array w to array copy
+INPUT: 2 WORD[] arrays of length SIZE
+but doesnt include the length bit in the first array index
+*/
+void copyArrayWithoutLength(WORD copy[], WORD w[]){
+    for(WORD i = 0; i<w[0]+1; i++){
+        copy[i] = w[i+1];
+    }
+}
+
+void copyArray(WORD copy[], WORD w[],size_t len){
+    for(WORD i = 0; i<len; i++){
+        copy[i] = w[i];
+        printf("%02x ",copy[i]);
+    }
+}
+
+#endif
 
 /*function for comparing two WORDS[].
 BEWARE: the lengreaterThanh field must be equal as well! 

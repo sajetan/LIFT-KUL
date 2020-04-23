@@ -41,7 +41,7 @@
 #define BYTE sizeof(WORD)
 #define BIT (BYTE*8)
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
-#define SIZE 200
+#define SIZE 66
 
 
 

@@ -311,6 +311,11 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 		x=k.word[i];
 
 		for (j=0;j<8;j++){
+			
+			initArray(tmpout.x,P256_MAX_SIZE);
+			initArray(tmpout.y,P256_MAX_SIZE);
+			initArray(tmpout.z,P256_MAX_SIZE);
+			
 			pointDoubleJacobian(&tmpout,&tmp);
 
 			if ((x&0x80)==0x80){

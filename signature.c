@@ -8,8 +8,17 @@
  */
 
 #include"signature.h"
+#include"p256.h"
 
-#if 1
+
+
+//INPUT: m is an array representing the message that needs to be signed
+//INPUT: n is an array representing the modulus
+//INPUT: key is an array representing the private key of the signer
+//INPUT: n is an array representing the modulus
+//INPUT: G_x and G_y are arrays representing the x and y coordinate of the generator
+//OUTPUT: output = r|s 
+
 //concatenating r+s and sending as the output.
 void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y){
 
@@ -87,8 +96,8 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
 	//r || s, this r and s will be extracted and during verification
 
-    printf("\n--In signature s----- ");print_hex_type(s,16);
-    printf("\n--In signature r----- ");print_hex_type(r_inter,16);
+    // printf("\n--In signature s----- ");print_hex_type(s,16);
+    // printf("\n--In signature r----- ");print_hex_type(r_inter,16);
 
     for(i=1;i<=16;i++){
         result[i] = r_inter[i];
@@ -96,109 +105,24 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
     }
 
     result[0]=s[0]+r_inter[0];
-    printf("\n--In signature r+s----- ");print_hex_type(result,16);
+    // printf("\n--In signature r+s----- ");print_hex_type(result,16);
     copyArrayWithSize(output, result);
-    printf("\n--In signature r+s =output=----- ");print_hex_type(output,16);
-
-}
-
-#endif
-
-// INPUT: n is an array representing the modulus
-// INPUT: G_x and G_y are arrays representing the x and y coordinate of the generator
-// OUTPUT: r is an array (needs to be sent together with the signature s)
-// OUTPUT: k is an array
-// sig_gen_pre = precomputation of the signature generation
-
-void sig_gen_pre(WORD *r, WORD *k, WORD *n, WORD *G_x, WORD *G_y){
-	WORD i;
-	WORD r_inter[SIZE] = {0};
-	uint8_t k_8[SIZE] = {0};
-	p256_affine point1 = {0};
-	p256_integer k_struct = {0};
-	uint32_t bits = 256;
-
-	p256_affine G = {0};
-	copyWord(G.x, G_x);
-	copyWord(G.y, G_y);
-
-
-    EntropyPool pool;
-	initPool(&pool);
-
-	while(r_inter[0] == 0){
-
-		// 1) k = random number in [1, n-1]
-		//random(k, bits, &pool);  --> problem gives number of wrong amount of bits
-		WORD k_fake[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f,};
-		copyWord(k, k_fake);
-
-		convertArray16toArray8(k_8, k);
-		for(i = 0; i<=k_8[0];i++){
-			k_struct.word[i] = k_8[i];
-		}
-
-		// 2) point1 = (x1, y1) = kG
-		pointScalarMultAffine(&point1, &G, k_struct);
-
-		// 3) r_inter = x1 mod n
-		mod(r_inter, point1.x, n);
-
-	}
-
-	// 4) if (r_inter==0): go back to step 1)
-	//    else: r = r_inter
-
-	copyWord(r, r_inter);
-}
-
-
-//INPUT: m is an array representing the message that needs to be signed
-//INPUT: k is an array = the output k of sig_gen_pre
-//INPUT: n is an array representing the modulus
-//INPUT: d is an array representing the private key of the signer
-//INPUT: r is an array = output of sig_gen_pre
-//OUTPUT: s is an integer representing the signature
-void sig_gen(WORD *s, WORD *m, WORD *k, WORD *n, WORD *d, WORD *r){
-	WORD e[SIZE] = {0};
-	WORD k_inv[SIZE] = {0};
-	WORD dr[SIZE] = {0};
-	WORD a[SIZE] = {0};
-	WORD b[SIZE] = {0};
-	WORD sb[SIZE] = {0};
-
-
-	// 1) e = hash(m)
-	hash(e, m, 256);
-
-	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
-
-	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
-
-	mult(dr,d,r);
-	mod(dr, dr, n);		//dr = d*r
-
-	add(a, e, dr);	// a = e + dr
-
-	mod(b, a, n);	//b = a mod n
-
-
-	//sb = k_inv * b
-	mult(sb, k_inv, b);
-	mod(s, sb, n);
+    // printf("\n--In signature r+s =output=----- ");print_hex_type(output,16);
 
 }
 
 
 
-//INPUT: r and s are arrays representing the received signature
+//INPUT: input = r|s 
 //OUTPUT: valid == 0 if signature is not valid, valid == 1 if signature is valid
-WORD sig_ver(WORD *r, WORD *s, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
+WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
 	WORD i;
 	WORD e[SIZE] = {0};
 	WORD c[SIZE] = {0};
 	WORD u1[SIZE] = {0};
 	WORD u2[SIZE] = {0};
+	WORD r[SIZE] = {0};
+	WORD s[SIZE] = {0};
 
 	p256_affine Q = {0};
 	p256_affine G = {0};
@@ -214,6 +138,17 @@ WORD sig_ver(WORD *r, WORD *s, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x
 	p256_integer u2_struct = {0};
 
 	WORD v[SIZE] = {0};
+
+	//extracting r and s from input
+
+	for(i=1;i<=16;i++){
+		r[i] = input[i];
+		s[i] = input[i+16];
+    }
+
+	r[0] = 16;
+	s[0] = 16;
+
 
 	// 1) if r not in [0,n-1]: signature is invalid, else: go to step 2)
 
@@ -289,11 +224,12 @@ WORD sig_ver(WORD *r, WORD *s, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x
 }
 
 
+
 void signatureTest(){
 	//1 OK
     signatureTestHelp("2a61a0703860585fe17420c244e1de5a6ac8c25146b208ef88ad51ae34c8cb8c",  //m
     		"ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",   		//n
-    		"c9806898a0334916c860748880a541f093b579a9b1f32934d86c363c39800357",		//d
+    		"c9806898a0334916c860748880a541f093b579a9b1f32934d86c363c39800357",		//key
     		"6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296",		//G_x
     		"4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5",		//G_y
     		"d0720dc691aa80096ba32fed1cb97c2b620690d06de0317b8618d5ce65eb728f",		//Q_x
@@ -351,32 +287,30 @@ void signatureTest(){
 
 
 
-void signatureTestHelp(char mChar[], char nChar[], char dChar[], char G_xChar[], char G_yChar[], char Q_xChar[], char Q_yChar[], WORD expected){
+void signatureTestHelp(char mChar[], char nChar[], char keyChar[], char G_xChar[], char G_yChar[], char Q_xChar[], char Q_yChar[], WORD expected){
 
     WORD m[SIZE] = {0};
     WORD n[SIZE] = {0};
-	WORD d[SIZE] = {0};
+	WORD key[SIZE] = {0};
     WORD G_x[SIZE] = {0};
     WORD G_y[SIZE] = {0};
     WORD Q_x[SIZE] = {0};
     WORD Q_y[SIZE] = {0};
-    WORD r[SIZE] = {0};
     WORD k[SIZE] = {0};
-    WORD s[SIZE] = {0};
+    WORD output[SIZE] = {0};
     WORD valid = 0;
 
     convert(m, mChar);
     convert(n, nChar);
-    convert(d, dChar);
+    convert(key, keyChar);
     convert(G_x, G_xChar);
     convert(G_y, G_yChar);
     convert(Q_x, Q_xChar);
     convert(Q_y, Q_yChar);
 
 
-    sig_gen_pre(r, k, n, G_x, G_y);
-    sig_gen(s, m, k, n, d, r);
-    valid = sig_ver(r, s, n, m, G_x, G_y, Q_x, Q_y);
+    signature_gen(output, key, m, n, G_x, G_y);
+    valid = sig_ver(output, n, m, G_x, G_y, Q_x, Q_y);
     if (valid == expected){
     	printf("signature test PASS \n");
     }
@@ -385,4 +319,3 @@ void signatureTestHelp(char mChar[], char nChar[], char dChar[], char G_xChar[],
     }
 
 }
-

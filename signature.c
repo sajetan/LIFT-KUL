@@ -9,6 +9,100 @@
 
 #include"signature.h"
 
+#if 1
+//concatenating r+s and sending as the output.
+void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y){
+
+	WORD i;
+	WORD r_inter[SIZE] = {0};
+	uint8_t k_8[SIZE] = {0};
+	p256_affine point1 = {0};
+	p256_integer k_struct = {0};
+	uint32_t bits = 256;
+	WORD e[SIZE] = {0};
+	WORD k_inv[SIZE] = {0};
+	WORD dr[SIZE] = {0};
+	WORD a[SIZE] = {0};
+	WORD b[SIZE] = {0};
+	WORD sb[SIZE] = {0};
+	WORD s[SIZE] = {0};
+	//WORD k[SIZE]={0};
+	WORD k[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
+	WORD result[SIZE] = {0};
+
+
+	p256_affine G = {0};
+	copyWord(G.x, G_x);
+	copyWord(G.y, G_y);
+
+
+    EntropyPool pool;
+	initPool(&pool);
+
+	while(r_inter[0] == 0){
+
+		// 1) k = random number in [1, n-1]
+		//random(k, bits, &pool);  --> problem gives number of wrong amount of bits
+		//WORD k[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
+	//	copyWord(k, k_fake);
+
+		convertArray16toArray8(k_8, k);
+		for(i = 0; i<=k_8[0];i++){
+			k_struct.word[i] = k_8[i];
+		}
+
+		// 2) point1 = (x1, y1) = kG
+		pointScalarMultAffine(&point1, &G, k_struct);
+
+		// 3) r_inter = x1 mod n
+		mod(r_inter, point1.x, n);
+
+	}
+
+	// 4) if (r_inter==0): go back to step 1)
+	//    else: r = r_inter
+
+	//copyWord(r, r_inter);
+
+
+
+	// 1) e = hash(m)
+	hash(e, message, 256);
+
+	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
+
+	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
+
+	mult(dr,key,r_inter);
+	mod(dr, dr, n);		//dr = d*r
+
+	add(a, e, dr);	// a = e + dr
+
+	mod(b, a, n);	//b = a mod n
+
+
+	//sb = k_inv * b
+	mult(sb, k_inv, b);
+	mod(s, sb, n);
+
+	//r || s, this r and s will be extracted and during verification
+
+    printf("\n--In signature s----- ");print_hex_type(s,16);
+    printf("\n--In signature r----- ");print_hex_type(r_inter,16);
+
+    for(i=1;i<=16;i++){
+        result[i] = r_inter[i];
+        result[i+16] = s[i];
+    }
+
+    result[0]=s[0]+r_inter[0];
+    printf("\n--In signature r+s----- ");print_hex_type(result,16);
+    copyArrayWithSize(output, result);
+    printf("\n--In signature r+s =output=----- ");print_hex_type(output,16);
+
+}
+
+#endif
 
 // INPUT: n is an array representing the modulus
 // INPUT: G_x and G_y are arrays representing the x and y coordinate of the generator

@@ -151,7 +151,7 @@ void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in){
 	mult(tmpz2.word, tmpz.word, tmpz.word); //tmpz=(y+z)(y+z)
 
 	mod(tmpz2.word,tmpz2.word,p256_curve_parameter_p); //tmpz=(y+z)(y+z) %p
-	//initArray(tmpz.word,SIZE);
+	initArray(tmpz.word,SIZE);
 	mod_sub(tmpz.word,tmpz2.word, tmpgamma.word,p256_curve_parameter_p); //tmpz=(y+z)2 - gamma
 
 	mod_sub(out->z,tmpz.word, delta.word,p256_curve_parameter_p); //y=((y+z)2 - gamma -delta) %p

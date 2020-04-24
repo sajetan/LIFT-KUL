@@ -25,6 +25,9 @@ typedef enum
     STS_send_0,
     STS_send_1,
     STS_send_2,
+    STS_receive_0,
+    STS_receive_1,
+    STS_receive_2,
     STS_send_OK,
     STS_receive_OK,
     STS_drone_completed,
@@ -43,9 +46,14 @@ struct Memory
 };
 
 void initMemory(Memory* mem, char* publicKey, char* secretKey);
+
 State STS_send_0_fct(uint8_t* buf, Memory* memory);
 State STS_send_1_fct(uint8_t* buf, Memory* memory);
 State STS_send_2_fct(uint8_t*,  Memory* memory);
+State STS_receive_0_fct(uint8_t* buf, Memory* mem);
+State STS_receive_1_fct(uint8_t* buf, Memory* mem);
+State STS_receive_2_fct(uint8_t* buf, Memory* mem);
+
 State STS_send_OK_fct(uint8_t* buf, Memory* mem);
 State STS_receive_OK_fct(uint8_t* buf,  Memory* mem);
 State STS_CC_completed_fct();

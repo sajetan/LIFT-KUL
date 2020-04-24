@@ -192,6 +192,54 @@ State STS_send_1_fct(uint8_t* buf, Memory* mem){
     }
 }
 
+
+
+/*
+    Here we wait for STS0 to arrive.
+    If there is a timeout or a wrong tag or 
+    an invalid signature,just stay in this state.
+    Otherwise, the packet is correct: Use the data
+    to perform computations and go to state STS_send_1
+    to send this new data
+*/
+State STS_receive_0_fct(uint8_t* buf, Memory* mem){
+    
+    // here we wait for STS1 to arrive
+
+    //if there is a timeout or a wrong tag or an invalid signature
+    return STS_send_1;
+}
+/*
+    Here we wait for STS1 to arrive.
+    If there is a timeout or a wrong tag or 
+    an invalid signature, go back to STS_send_0.
+    Otherwise, the packet is correct. Use the data
+    to perform computations and go to state STS_send_2
+    to send this new data
+*/
+State STS_receive_1_fct(uint8_t* buf, Memory* mem){
+    
+    // here we wait for STS1 to arrive
+
+    //if there is a timeout or a wrong tag or an invalid signature
+    return STS_send_2;
+}
+
+/*
+    Here we wait for STS2 to arrive.
+    If there is a timeout or a wrong tag or 
+    an invalid signature, go back to STS_receive_0.
+    Otherwise, the packet is correct. Use the data
+    to perform computations and go to state STS_drone_complete  
+*/
+State STS_receive_2_fct(uint8_t* buf, Memory* mem){
+    
+    // here we wait for STS1 to arrive
+
+    //if there is a timeout or a wrong tag or an invalid signature
+    return STS_drone_completed;
+}
+
 State STS_send_OK_fct(uint8_t* buf, Memory* mem){
     printf("\n//////\nState STS_send_OK \n");
 

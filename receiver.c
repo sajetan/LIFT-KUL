@@ -27,15 +27,21 @@ int main(void)
 
 	while(!exit){
 		switch(state){
+			case STS_receive_0: 
+				state = STS_receive_0_fct(buf, &memory);
+				break;
 			case STS_send_1: 
 				state = STS_send_1_fct(buf, &memory);
 				break;
-			case STS_send_OK: 
-				state = STS_send_OK_fct(buf, &memory);
+			case STS_receive_2: 
+				state = STS_receive_2_fct(buf, &memory);
 				break;	
 			case STS_drone_completed: 
 				state = STS_drone_completed_fct();
  				break;
+			case STS_send_OK: 
+				state = STS_send_OK_fct(buf, &memory);
+				break;	
 			case State_Exit: 
 				exit = 1;
 				break;

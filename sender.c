@@ -29,9 +29,12 @@ int main(void)
 			case STS_send_0: 
 				state = STS_send_0_fct(buf, &memory);
 				break;
+			case STS_receive_1: 
+				state = STS_receive_1_fct(buf, &memory);
+				break;
 			case STS_send_2: 
 				state = STS_send_2_fct(buf, &memory);
-				break;
+				break;			
 			case STS_receive_OK: 
 				state = STS_receive_OK_fct(buf, &memory);
 				break;				
@@ -48,3 +51,4 @@ int main(void)
 	close_sockets();
 	return 0;
 }
+

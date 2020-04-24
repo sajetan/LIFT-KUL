@@ -15,7 +15,7 @@
 // with a>= b !!! (we will never use negative numbers in our implementation)
 void sub(WORD *res, WORD *a, WORD *b)
 {
-        assert(geq(a, b));
+//         assert(geq(a, b));
 
     WORD length_a = a[0];
     WORD length_b = b[0];

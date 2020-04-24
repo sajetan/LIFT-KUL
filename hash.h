@@ -9,13 +9,11 @@
 #ifndef DEF_HASH
 #define DEF_HASH
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
+#include"sha3.h"
 
 void hash(WORD out[],  void* in, uint16_t sizeHash);
-WORD getNumberBytes(WORD w[]);
-void getNumberBytesTest(WORD print);
-WORD getNumberZeroBytes(WORD w);
-WORD getNumberBytesTestHelp(WORD exp, WORD w[], WORD print);
 void hash256Test(WORD print);
 void hash256TestHelp(char inchar[], char expchar[], WORD* pass, WORD print);
 

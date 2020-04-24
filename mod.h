@@ -8,7 +8,9 @@
 #ifndef MOD_H_
 #define MOD_H_
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
+#include"division.h"
 #include "add.h"
 #include "sub.h"
 

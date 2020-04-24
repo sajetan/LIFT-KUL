@@ -8,7 +8,8 @@
 #ifndef SUB_H_
 #define SUB_H_
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
 
 void sub(WORD *res, WORD *a, WORD *b);
 void subSelf( WORD *a, WORD *b);

@@ -41,6 +41,7 @@
 #define TAG_SAY_HELLO_TO_DRONE  (WORD_TAG) 5
 #define TAG_SAY_HELLO_TO_CC     (WORD_TAG) 6
 #define TAG_STS_OK   (WORD_TAG) 7
+#define TAG_TIMEOUT   (WORD_TAG) 8
 
 /*
 typedef struct Session Session;

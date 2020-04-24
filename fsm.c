@@ -7,31 +7,35 @@
 
 #include"fsm.h"
 
-void initMemory(Memory* mem){
+void initMemory(Memory* mem, char* publicKey, char* secretKey){
 
     mem->receiverID = 117;
-    // mem->G.x = {0x00000008,0xd898c296,0xf4a13945,0x2deb33a0,0x77037d81,0x63a440f2,0xf8bce6e5,0xe12c4247,0x6b17d1f2};
-    // mem->G.y = {0x00000008,0x37bf51f5,0xcbb64068,0x6b315ece,0x2bce3357,0x7c0f9e16,0x8ee7eb4a,0xfe1a7f9b,0x4fe342e2};
+    initPool(&mem->pool);
+    accumulate(&mem->pool, 100);
+    convert(mem->pk, publicKey);
+    convert(mem->sk, secretKey);
+    //convert(mem->G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
+    //convert(mem->G.y,  "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
 
   
 }
 
 
 
-State STS_send_0_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
+State STS_send_0_fct(uint8_t* buf, Memory* mem){
     printf("\n/////\n State STS_send_0 \n");
 
     // compute new message : 
     uint8_t data[64] = {0};    
-    make_STS_0_data(data);    //STS_0_data = pointc.x||pointc.y 
+    make_STS_0_data(data, mem);    //STS_0_data = pointc.x||pointc.y 
 
-	WORD_LEN len = 64;                  // making the buf
-    getTLV(buf, buf_len, TAG_STS_0, len, mem->receiverID, data);
-
-
+    // make the buffer
+	WORD_LEN len = 64;
+    uint16_t buf_len = 0;
+    getTLV(buf, &buf_len, TAG_STS_0, len, mem->receiverID, data);
 
     // send message
-    if(send_message(buf, *buf_len)==0) {
+    if(send_message(buf, buf_len)==0) {
 		close_sockets();
 		printf("Send failed at message tag %d\n", TAG_STS_0);
 		return 0;
@@ -39,16 +43,17 @@ State STS_send_0_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
 
     // print sent message
 	printf("Sent message STS 0:    \n");
-	for(int i = 0; i<*buf_len; i++){
+	for(int i = 0; i<buf_len; i++){
 		printf("%x ", buf[i]);
 	}
     return STS_send_2;
 }
 
-State STS_send_2_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
+State STS_send_2_fct(uint8_t* buf, Memory* mem){
     printf("\n//////\nState STS_send_2 \n");
 
     //prepare variables to store data
+    uint16_t buf_len = 0;
     uint16_t rcv_buf_len;
     WORD_LEN rcv_data_len;
     WORD_ID rcv_id;
@@ -62,7 +67,7 @@ State STS_send_2_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
 
     //receive message
     rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, *buf_len);
+    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, buf_len);
 
     // print received message
     printf("Received STS 1: \n");
@@ -103,10 +108,10 @@ State STS_send_2_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
             // make_STS_2_data(data,rcv_data); 
 
             WORD_LEN len = 64;                  // making the buf
-            getTLV(buf, buf_len, TAG_STS_2, len, mem->receiverID, data);
+            getTLV(buf, &buf_len, TAG_STS_2, len, mem->receiverID, data);
 
             // send message
-            if(send_message(buf, *buf_len)==0) {
+            if(send_message(buf, buf_len)==0) {
                 close_sockets();
                 printf("Send failed at message STS2 \n");
                 return 0;
@@ -114,7 +119,7 @@ State STS_send_2_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
             
             // print sent message
             printf("Sent message STS 2:    ");
-            for(int i = 0; i<*buf_len; i++){
+            for(int i = 0; i<buf_len; i++){
                 printf("%x ", buf[i]);
             }
 
@@ -124,10 +129,11 @@ State STS_send_2_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
     }
 }
 
-State STS_send_1_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
+State STS_send_1_fct(uint8_t* buf, Memory* mem){
     printf("\n//////\nState STS_send_1 \n");
 
     //prepare variables to store data
+    uint16_t buf_len = 0;
     uint16_t rcv_buf_len;
     WORD_LEN rcv_data_len;
     WORD_ID rcv_id;
@@ -141,7 +147,7 @@ State STS_send_1_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
 
     //receive message
     rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, *buf_len);
+    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, rcv_buf_len);
 
     // print received message
     printf("Received STS 0: \n");
@@ -166,11 +172,11 @@ State STS_send_1_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
         //make_STS_1_data(data, rcv_data);   
 
         WORD_LEN len = 128;                  // making the buf
-        getTLV(buf, buf_len, TAG_STS_1, len, mem->receiverID, data);    
+        getTLV(buf, &buf_len, TAG_STS_1, len, mem->receiverID, data);    
         
 
         // send message
-        if(send_message(buf, *buf_len)==0) {
+        if(send_message(buf, buf_len)==0) {
             close_sockets();
             printf("Send failed at message STS1 \n");
             return 0;
@@ -178,7 +184,7 @@ State STS_send_1_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
         
         // print sent message
         printf("Sent message STS 1:    ");
-        for(int i = 0; i<*buf_len; i++){
+        for(int i = 0; i<buf_len; i++){
             printf("%x ", buf[i]);
         }
 
@@ -186,10 +192,11 @@ State STS_send_1_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
     }
 }
 
-State STS_send_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
+State STS_send_OK_fct(uint8_t* buf, Memory* mem){
     printf("\n//////\nState STS_send_OK \n");
 
     //prepare variables to store data
+    uint16_t buf_len;
     uint16_t rcv_buf_len;
     WORD_LEN rcv_data_len;
     WORD_ID rcv_id;
@@ -203,7 +210,7 @@ State STS_send_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
 
     //receive message
     rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, *buf_len);
+    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, rcv_buf_len);
 
     // print received message
     printf("Received STS 2: \n");
@@ -241,10 +248,10 @@ State STS_send_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
             // compute new message
             
             WORD_LEN len = 1;                  // making the buf
-            getTLV(buf, buf_len, TAG_STS_OK, len, mem->receiverID, "ok");
+            getTLV(buf, &buf_len, TAG_STS_OK, len, mem->receiverID, "ok");
 
             // send message
-            if(send_message(buf, *buf_len)==0) {
+            if(send_message(buf, buf_len)==0) {
                 close_sockets();
                 printf("Send failed at message STS2 \n");
                 return 0;
@@ -252,7 +259,7 @@ State STS_send_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
             
             // print sent message
             printf("Sent message OK");
-            for(int i = 0; i<*buf_len; i++){
+            for(int i = 0; i<buf_len; i++){
                 printf("%x ", buf[i]);
             }
 
@@ -261,7 +268,7 @@ State STS_send_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
         }
     }
 }
-State STS_receive_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
+State STS_receive_OK_fct(uint8_t* buf,  Memory* mem){
     printf("\n//////\nState STS_receive_OK \n");
 
     //prepare variables to store data
@@ -278,7 +285,7 @@ State STS_receive_OK_fct(uint8_t* buf, uint16_t* buf_len, Memory* mem){
 
     //receive message
     rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, *buf_len);
+    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, rcv_buf_len);
 
     // print received message
     printf("Received OK: \n");
@@ -314,7 +321,7 @@ State STS_drone_completed_fct(){
 
 
 
-void make_STS_0_data(uint8_t *data){     //STS_0_data = pointc.x||pointc.y 
+void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||pointc.y 
 
     //to make STS_0, a random number c is generated, this is multiplied with the generator G, and results in pointc 
     //point1 = (pointc.x, pointc.y) = c*G, data of STS_0 is point1.x concatenated with pointc.y, pointc.x and pointc.y both have 256 bits, 
@@ -328,15 +335,15 @@ void make_STS_0_data(uint8_t *data){     //STS_0_data = pointc.x||pointc.y
 	p256_affine pointc = {0};
 
     //generating random c
-    EntropyPool pool;           
-	initPool(&pool);
-    random(c, bits_rng, &pool); 
+    random(c, bits_rng, &mem->pool);
+
     convertArray16toArray8(c_8, c);
     for(i = 0; i<=c_8[0];i++){
         c_struct.word[i] = c_8[i];
     }
 	
     //we should store G as a p256_affine structure in the memory
+    
     WORD G_x[SIZE] = {0};           
     WORD G_y[SIZE] = {0};
     p256_affine G = {0};
@@ -344,6 +351,7 @@ void make_STS_0_data(uint8_t *data){     //STS_0_data = pointc.x||pointc.y
     convert(G_y,  "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
     copyWord(G.x, G_x);
 	copyWord(G.y, G_y);
+    
 
     //pointc = c*G
     pointScalarMultAffine(&pointc, &G, c_struct);       

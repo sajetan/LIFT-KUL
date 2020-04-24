@@ -15,17 +15,23 @@
 // with a>= b !!! (we will never use negative numbers in our implementation)
 void sub(WORD *res, WORD *a, WORD *b)
 {
+        assert(geq(a, b));
+
     WORD length_a = a[0];
     WORD length_b = b[0];
     WORD c = 1;     		// for subtraction, begin with carry = 1
     WORD i;
     WORD max = ~0;			// wil be used to detect overflow 
 
-    for (i=1; i<=length_b|| i<=length_a; i++) {
+    for (i=1; i<=length_b; i++) {
         res[i] = a[i] + ((WORD)~b[i]) + c ; 
         c =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
     }
-    
+    while(i<=length_a) {
+        res[i] = a[i] + ((WORD)~0) + c ; 
+        c =  c ? a[i] >= 0 :a[i] > 0 ; // compute carry by detecting overflow
+        i++;
+    }   
     //setting res[0] right:
     while (res[i] == 0  && i>0){
         i--;
@@ -36,6 +42,8 @@ void sub(WORD *res, WORD *a, WORD *b)
 // Calculates a = a-b
 void subSelf( WORD *a, WORD *b)
 {
+    assert(geq(a, b));
+
     WORD length_a = a[0];
     WORD length_b = b[0];
     WORD c = 1;     // with subtraction, begin with carry = 1
@@ -43,12 +51,17 @@ void subSelf( WORD *a, WORD *b)
     WORD i;
     WORD max = ~0;
 
-    for (i=1; i<=length_b|| i<=length_a; i++) {
+    for (i=1; i<=length_b; i++) {
         cNext =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
         a[i] = a[i] + ((WORD)~b[i]) + c ; // if overflow, take back that extra bit
         c = cNext;
     }
-    
+    while( i<=length_a){
+        cNext =  c ? a[i] >= (max - ((WORD)~b[i]) ) :a[i] > (max - ((WORD)~b[i]) ) ; // compute carry by detecting overflow
+        a[i] = a[i] + ((WORD)~b[i]) + c ; // if overflow, take back that extra bit
+        c = cNext;
+        i++;
+    }    
     //setting a[0] right:
     while (a[i] == 0  && i>0){
         i--;

@@ -480,44 +480,95 @@ void convertTest(){
 	printf("---------end %s-------------\n\n", __func__);
 }
 
-/*
-void hex_decoder(const char *in, size_t len,uint32_t *out){
-	uint32_t padding_required=0;
-	uint32_t padzeros=0;
-	uint32_t i, t, bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7, index;
+/* returns 1 if a>=b, 0 otherwise*/
+WORD geq(WORD a[], WORD b[]){
+	WORD lenA = a[0];
+	WORD lenB = b[0];
+	WORD i = lenA;
 
-	if (len%8!=0) {padding_required=1;padzeros=8-len%8; len = len/8+1;}
-	//len=len/8+1; // I removed ceil() because even with the math.h library, it gave me an error, I didn't
-	for (t = len,i = 0; i < len*8-padzeros; i+=8,--t){
-		if (padding_required){
-			uint32_t t_arr[8]={0};
-			for (uint32_t offset = padzeros,index=0; offset < 8;offset++,index++ ){
-				t_arr[offset]=in[index] > '9' ? toupper(in[index]) - 'A' + 10 : in[index] - '0';
+	if(lenA > lenB){
+		return (WORD) 1;
+	} else if(lenA < lenB){
+		return (WORD) 0;
+	} else if (lenA == 0){
+		return (WORD) 1;
+	} else{
+		while(i>0){
+			if(a[i]>b[i]){
+				return (WORD) 1;
+			} else if (a[i]<b[i]){
+				return (WORD) 0;
+			} else{
+				i--;
 			}
-			out[t] = (t_arr[0]<<28)| (t_arr[1]<<24) | (t_arr[2]<<20) | (t_arr[3]<<16) | (t_arr[4]<<12) | (t_arr[5]<<8) | (t_arr[6]<<4) | t_arr[7];
-			padding_required=0;
-			i-=padzeros;
 		}
-		else{
-		bit7 = in[i] > '9' ? toupper(in[i]) - 'A' + 10 : in[i] - '0';
-		bit6 = in[i+1] > '9' ? toupper(in[i+1]) - 'A' + 10 : in[i+1] - '0';
-		bit5 = in[i+2] > '9' ? toupper(in[i+2]) - 'A' + 10 : in[i+2] - '0';
-		bit4 = in[i+3] > '9' ? toupper(in[i+3]) - 'A' + 10 : in[i+3] - '0';
-		bit3 = in[i+4] > '9' ? toupper(in[i+4]) - 'A' + 10 : in[i+4] - '0';
-		bit2 = in[i+5] > '9' ? toupper(in[i+5]) - 'A' + 10 : in[i+5] - '0';
-		bit1 = in[i+6] > '9' ? toupper(in[i+6]) - 'A' + 10 : in[i+6] - '0';
-		bit0 = in[i+7] > '9' ? toupper(in[i+7]) - 'A' + 10 : in[i+7] - '0';
-
-		out[t] = (bit7<<28)| (bit6<<24) | (bit5<<20) | (bit4<<16) | (bit3<<12) | (bit2<<8) | (bit1<<4) | bit0;
-		}
+		return (WORD) 1;
 	}
-	out[0]=len;
 }
 
-void test_convert_hex_array(){
-	char p[]= "10";
-	uint32_t c[1024]={0};
-	hex_decoder(p,strlen(p), c);
-	print_num(c);
+/*  Returns the amount of zero MSB bytes in one integer*/
+WORD getNumberZeroBytes(WORD w){
+    WORD nZeros = BIT/8;
+    if(w == 0){
+        return 0;
+    }
+    while(w != 0){
+        w >>= 8;
+        nZeros--;
+    }
+    return nZeros;
 }
-*/
+
+
+void getNumberBytesTest(WORD print){
+    WORD a[SIZE] = {0};
+    WORD pass = 1;
+
+    BEGINTEST(print)
+
+    convert(a, "1");
+    pass &= getNumberBytesTestHelp(1, a, print);
+
+    convert(a, "64");
+    pass &= getNumberBytesTestHelp(1, a, print);
+    
+    convert(a, "0000000000640000000000");
+    pass &= getNumberBytesTestHelp(6, a, print);
+    
+    convert(a, "0008726353700");
+    pass &= getNumberBytesTestHelp(5, a, print);
+
+    convert(a, "000000000055000000000055000000000055");
+    pass &= getNumberBytesTestHelp(13, a, print);
+   
+    convert(a, "00087977656000");
+    pass &= getNumberBytesTestHelp(6, a, print);
+
+    convert(a, "0008797765600BFCD0");
+    pass &= getNumberBytesTestHelp(8, a, print);
+
+    convert(a, "1000BC5D");
+    pass &= getNumberBytesTestHelp(4, a, print);
+
+    convert(a, "cdbf000c000cf");
+    pass &= getNumberBytesTestHelp(7, a, print);
+    
+    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf");
+    pass &= getNumberBytesTestHelp(26, a, print);
+
+    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf876543212345");
+    pass &= getNumberBytesTestHelp(32, a, print);
+    
+    TEST(pass)
+    ENDTEST(print)
+
+}
+
+WORD getNumberBytesTestHelp(WORD exp, WORD w[], WORD print){
+    WORD result = getNumberBytes(w);
+    if (print){
+        printf("expected %d, got %d  : ", exp, result);
+        print_num(w);
+    }
+    return exp == result;
+}

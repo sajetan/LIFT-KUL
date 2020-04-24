@@ -17,24 +17,23 @@ int main(void)
 	// FSM part
 	State state = STS_send_0;
 	Memory memory;
-	initMemory(&memory);
+	initMemory(&memory, "123", "123");
 	int exit = 0;
 
 	// udp part
 	uint8_t buf[MAX_TRANSFER_LENGTH] = {0};	// message buffer
-	uint16_t buf_len = 0;	// message buffer length
 	
 
 	while(!exit){
 		switch(state){
 			case STS_send_0: 
-				state = STS_send_0_fct(buf, &buf_len, &memory);
+				state = STS_send_0_fct(buf, &memory);
 				break;
 			case STS_send_2: 
-				state = STS_send_2_fct(buf, &buf_len, &memory);
+				state = STS_send_2_fct(buf, &memory);
 				break;
 			case STS_receive_OK: 
-				state = STS_receive_OK_fct(buf, &buf_len, &memory);
+				state = STS_receive_OK_fct(buf, &memory);
 				break;				
 			case STS_CC_completed: 
 				state = STS_CC_completed_fct();

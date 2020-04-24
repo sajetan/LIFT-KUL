@@ -8,7 +8,8 @@ purpose: contains the prototypes, defines and includes
 #ifndef DEF_SHIFT
 #define DEF_SHIFT
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
 
 void shiftl1(WORD w[]);
 void shiftr1(WORD w[]);

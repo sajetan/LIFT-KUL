@@ -160,7 +160,7 @@ void smallMultTest(WORD print){
     smallMultTestHelp(1, "0", "0", &pass,  print);
     smallMultTestHelp(2, "1", "2", &pass,  print);
     smallMultTestHelp(8, "2", "10", &pass,  print);
-    smallMultTestHelp(268435455, "32", "31FFFFFCE", &pass,  print);
+    //smallMultTestHelp(268435455, "32", "31FFFFFCE", &pass,  print);
     smallMultTestHelp(1, "B78BBFBFDBFDCD", "B78BBFBFDBFDCD", &pass,  print);
     smallMultTestHelp(21930, "2BDC545D6B5882", "EAD48530AADABF054", &pass,  print);
     smallMultTestHelp(24, "55AA54D38E5267EEA", "807F7F3D557B9BE5F0", &pass,  print);

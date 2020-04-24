@@ -9,7 +9,9 @@
 #ifndef RANDOM_H_
 #define RANDOM_H_
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
+#include"hash.h"
 
 
 #define SINGLEITEMS 4       // number of non-array values

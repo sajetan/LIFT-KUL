@@ -8,9 +8,11 @@
 #ifndef P256_H_
 #define P256_H_
 
-#include "main.h"
+#include "globals.h"
+#include "utilities.h"
 #include "mult.h"
 #include "mod.h"
+#include "inverse.h"
 
 /*  */
 typedef uint16_t p256_word;

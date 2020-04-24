@@ -17,7 +17,7 @@ int main(void)
 	// FSM part
 	State state = STS_send_1;
 	Memory memory;
-	initMemory(&memory);
+	initMemory(&memory, "456", "456");
 	int exit = 0;
 
 	// udp part
@@ -28,10 +28,10 @@ int main(void)
 	while(!exit){
 		switch(state){
 			case STS_send_1: 
-				state = STS_send_1_fct(buf, &buf_len, &memory);
+				state = STS_send_1_fct(buf, &memory);
 				break;
 			case STS_send_OK: 
-				state = STS_send_OK_fct(buf, &buf_len, &memory);
+				state = STS_send_OK_fct(buf, &memory);
 				break;	
 			case STS_drone_completed: 
 				state = STS_drone_completed_fct();

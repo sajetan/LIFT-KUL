@@ -55,18 +55,7 @@ WORD getNumberBytes(WORD w[]){
     return len*(BIT/8)-nZeros;
 }
 
-/*  Returns the amount of zero MSB bytes in one integer*/
-WORD getNumberZeroBytes(WORD w){
-    WORD nZeros = BIT/8;
-    if(w == 0){
-        return 0;
-    }
-    while(w != 0){
-        w >>= 8;
-        nZeros--;
-    }
-    return nZeros;
-}
+
 
 void hash256Test(WORD print){
     WORD pass = 1;
@@ -102,56 +91,3 @@ void hash256TestHelp(char inchar[], char expchar[], WORD* pass, WORD print){
     *pass &= equalWord(exp, myHash);
 }
 
-
-void getNumberBytesTest(WORD print){
-    WORD a[SIZE] = {0};
-    WORD pass = 1;
-
-    BEGINTEST(print)
-
-    convert(a, "1");
-    pass &= getNumberBytesTestHelp(1, a, print);
-
-    convert(a, "64");
-    pass &= getNumberBytesTestHelp(1, a, print);
-    
-    convert(a, "0000000000640000000000");
-    pass &= getNumberBytesTestHelp(6, a, print);
-    
-    convert(a, "0008726353700");
-    pass &= getNumberBytesTestHelp(5, a, print);
-
-    convert(a, "000000000055000000000055000000000055");
-    pass &= getNumberBytesTestHelp(13, a, print);
-   
-    convert(a, "00087977656000");
-    pass &= getNumberBytesTestHelp(6, a, print);
-
-    convert(a, "0008797765600BFCD0");
-    pass &= getNumberBytesTestHelp(8, a, print);
-
-    convert(a, "1000BC5D");
-    pass &= getNumberBytesTestHelp(4, a, print);
-
-    convert(a, "cdbf000c000cf");
-    pass &= getNumberBytesTestHelp(7, a, print);
-    
-    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf");
-    pass &= getNumberBytesTestHelp(26, a, print);
-
-    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf876543212345");
-    pass &= getNumberBytesTestHelp(32, a, print);
-    
-    TEST(pass)
-    ENDTEST(print)
-
-}
-
-WORD getNumberBytesTestHelp(WORD exp, WORD w[], WORD print){
-    WORD result = getNumberBytes(w);
-    if (print){
-        printf("expected %d, got %d  : ", exp, result);
-        print_num(w);
-    }
-    return exp == result;
-}

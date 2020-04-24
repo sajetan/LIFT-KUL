@@ -8,7 +8,6 @@
  */
 
 #include"signature.h"
-#include"p256.h"
 
 
 // INPUT: n is an array representing the modulus

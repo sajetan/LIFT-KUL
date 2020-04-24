@@ -180,7 +180,7 @@ void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in){
 // See https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#addition-add-2007-bl
 p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian *in2){
 
-	p256_integer z1z1, z2z2, s1, s2, u1, u2, h, i, j, r, r2, v, tmpv,tmp,tmpx,tmpy,tmpz, tmpj;
+	p256_integer z1z1, z2z2, s1, s2, u1, u2, h, i, j, r, r2, v, tmpv,tmp,tmpx,tmpy,tmpz, tmpj, tmpx123, tmpx456;
 
 	if (checkIfZero(in1->z) == TRUE){
 		copyArrayWithSize(out->x,in2->x);
@@ -210,6 +210,10 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	initArray(v.word,SIZE);
 	initArray(tmp.word,SIZE);
 	initArray(tmpj.word,SIZE);
+	initArray(tmpx123.word,SIZE);
+	initArray(tmpx456.word,SIZE);
+
+
 
 	initArray(tmpv.word,SIZE);
 	initArray(tmpx.word,SIZE);
@@ -240,9 +244,11 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mult(s1.word, in1->y,in2->z);
 	mult(s1.word, s1.word, z2z2.word);
 	mod(s1.word,s1.word,p256_curve_parameter_p);
+
 	mult(s2.word, in2->y,in1->z);
 	mult(s2.word, s2.word, z1z1.word);
 	mod(s2.word,s2.word,p256_curve_parameter_p);
+
 	mod_sub(r.word, s2.word, s1.word,p256_curve_parameter_p);
 
 
@@ -251,21 +257,28 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	shiftl1(r.word);
 
 	mult(tmpv.word,u1.word, i.word);
-	copyArrayWithSize(v.word, tmpv.word);
 
+	copyArrayWithSize(v.word, tmpv.word);
+ 
 	mult(r2.word,r.word,r.word);
 	copyArrayWithSize(tmpx.word, r2.word);
 	copyArrayWithSize(tmpj.word, j.word);
 
 	mod(j.word, j.word,p256_curve_parameter_p);
 	mod(tmpx.word,tmpx.word,p256_curve_parameter_p);
-	mod_sub(tmpx.word,tmpx.word,j.word, p256_curve_parameter_p);
+	mod_sub(tmpx123.word,tmpx.word,j.word, p256_curve_parameter_p);
+	copyArrayWithSize(tmpx.word, tmpx123.word);
+
 
 	mod(tmpv.word, tmpv.word,p256_curve_parameter_p);
+	mod_sub(tmpx456.word,tmpx.word,tmpv.word, p256_curve_parameter_p);
+	copyArrayWithSize(tmpx.word, tmpx456.word);
 
-	mod_sub(tmpx.word,tmpx.word,tmpv.word, p256_curve_parameter_p);
+
 	mod(tmpx.word,tmpx.word,p256_curve_parameter_p);
+
 	mod_sub(out->x,tmpx.word,tmpv.word,p256_curve_parameter_p);
+
 
 	/////////////////////////////////////////////////
 	copyArrayWithSize(tmpy.word, r.word);
@@ -307,18 +320,22 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 	p256_word i, j;
 	p256_word x=0;
 
+	
+
 	for (i=k.word[0];i>0;i--){
 		x=k.word[i];
 
 		for (j=0;j<8;j++){
-			
 			initArray(tmpout.x,P256_MAX_SIZE);
 			initArray(tmpout.y,P256_MAX_SIZE);
 			initArray(tmpout.z,P256_MAX_SIZE);
-			
 			pointDoubleJacobian(&tmpout,&tmp);
-
+			
 			if ((x&0x80)==0x80){
+				
+				initArray(tmp.x,P256_MAX_SIZE);
+				initArray(tmp.y,P256_MAX_SIZE);
+				initArray(tmp.z,P256_MAX_SIZE);
 				pointAddJacobian(&tmp,in, &tmpout);
 			}
 			else{

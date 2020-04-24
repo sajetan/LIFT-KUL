@@ -20,9 +20,7 @@
 #include"hash.h"
 
 void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y);
-void sig_gen_pre(WORD *r, WORD *k, WORD *n, WORD *G_x, WORD *G_y);
-void sig_gen(WORD *s, WORD *m, WORD *k, WORD *n, WORD *d, WORD *r);
-WORD sig_ver(WORD *r, WORD *s, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y);
+WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y);
 
 //testfunctions
 

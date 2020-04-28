@@ -70,6 +70,44 @@ void convertArray16toArray8(uint8_t *out, uint16_t *in){
 	out[0] = w;
 }
 
+//added for debugging! need to clean up this code
+void convertArray16toArray8withoutLen(uint8_t *out, uint16_t *in){
+	WORD i;
+	for(i=0; i<in[0]; i++){
+		out[i*2] = in[i+1];
+		out[i*2+1] = in[i+1] >> 8;
+	}
+
+//	WORD w = 2*in[0];
+//	while (out[w] == 0  && w>0){
+//		w--;
+//	}
+//	out[0] = w;
+}
+
+
+void convertArray8toArray16withoutLen(uint16_t *out, uint8_t *in, size_t len){
+	WORD i;
+	for(i=0; i<len; i++){
+		out[i/2]=(((uint16_t)((in)[i])) | ((uint16_t)((in)[i+1]) << 8));
+		i++;
+	}
+
+	//out[0] = in[0]/2;
+}
+
+void convertArray8toArray16(uint16_t *out, uint8_t *in, size_t len){
+	WORD i;
+	for(i=0; i<in[0]; i++){
+		out[i/2]=(((uint16_t)((in)[i])) | ((uint16_t)((in)[i+1]) << 8));
+		i++;
+	}
+
+	out[0] = in[0]/2;
+}
+
+
+
 void convertWithSize(WORD *out, const char *in, size_t size){
 	WORD len = strlen(in);
 
@@ -194,6 +232,33 @@ void print_num_size(WORD *in, size_t s){
     printf("]");
     printf("\n\r");
 }
+
+
+/*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
+void print_num_size_type(WORD *in, size_t s, size_t type){
+    printf("[");
+    for (WORD i = 0; i < s; i++) {
+		switch(type){
+			break;
+			case 32:
+    		printf("0x%08x,", in[i]);
+			break;
+			case 16:
+    		printf("0x%04x,", in[i]);
+			break;
+			case 8:
+    		printf("0x%02x,", in[i]);
+			break;
+			default:
+    		printf("0x%08x,", in[i]);
+			break;
+		}
+    }
+    printf("]");
+    printf("\n\r");
+}
+
+
 #endif
 
 /*prints an array; format: [size, lsb-> msb]*/
@@ -226,6 +291,56 @@ void print_hex(WORD *in)
     printf("0x");
     for (i = in[0]; i >= 1; i--) {
     	switch(BIT){
+			break;
+			case 32:
+    		printf("%08x", in[i]);
+			break;
+			case 16:
+    		printf("%04x", in[i]);
+			break;
+			case 8:
+    		printf("%02x", in[i]);
+			break;
+			default:
+    		printf("%08x", in[i]);
+			break;
+    	}
+    }
+    printf("\n\r");
+}
+
+void print_hex_type(WORD *in, size_t type)
+{
+    WORD i;
+
+    printf("0x");
+    for (i = in[0]; i >= 1; i--) {
+    	switch(type){
+			break;
+			case 32:
+    		printf("%08x", in[i]);
+			break;
+			case 16:
+    		printf("%04x", in[i]);
+			break;
+			case 8:
+    		printf("%02x", in[i]);
+			break;
+			default:
+    		printf("%08x", in[i]);
+			break;
+    	}
+    }
+    printf("\n\r");
+}
+
+void print_hex_size_type(WORD *in,size_t size, size_t type)
+{
+    WORD i;
+
+    printf("0x");
+    for (i = size; i >= 1; i--) {
+    	switch(type){
 			break;
 			case 32:
     		printf("%08x", in[i]);

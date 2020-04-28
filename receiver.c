@@ -17,7 +17,7 @@ int main(void)
 	// FSM part
 	State state = STS_send_1;
 	Memory memory;
-	initMemory(&memory, "456", "456");
+	initMemory(&memory); //, "456", "456");
 	int exit = 0;
 
 	// udp part

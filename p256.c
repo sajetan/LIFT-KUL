@@ -8,7 +8,7 @@
 #include "p256.h"
 #include "p256_parameters.h"
 #include "test.h"
-#include<stdint.h>      // for uint32_t
+#include <stdint.h>      // for uint32_t
 
 
 p256_word checkIfZero( p256_word* in) {
@@ -28,6 +28,7 @@ void affineToJacobian(p256_jacobian *out,p256_affine *in) {
     }
     else
     	printf("flase \n");
+    	return;
 }
 
 
@@ -326,16 +327,18 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 		x=k.word[i];
 
 		for (j=0;j<8;j++){
-			initArray(tmpout.x,P256_MAX_SIZE);
-			initArray(tmpout.y,P256_MAX_SIZE);
-			initArray(tmpout.z,P256_MAX_SIZE);
+
+			initArray(tmpout.x, P256_MAX_SIZE);
+			initArray(tmpout.y, P256_MAX_SIZE);
+			initArray(tmpout.z, P256_MAX_SIZE);
+
 			pointDoubleJacobian(&tmpout,&tmp);
-			
-			if ((x&0x80)==0x80){
-				
+
+			if ((x&0x80)==0x80){				
 				initArray(tmp.x,P256_MAX_SIZE);
 				initArray(tmp.y,P256_MAX_SIZE);
 				initArray(tmp.z,P256_MAX_SIZE);
+
 				pointAddJacobian(&tmp,in, &tmpout);
 			}
 			else{

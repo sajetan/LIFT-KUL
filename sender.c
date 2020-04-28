@@ -1,5 +1,5 @@
 
-#include "main.h"
+#include "fsm.h"
 
 // number of messages to send
 #define MSGS 5	
@@ -17,7 +17,7 @@ int main(void)
 	// FSM part
 	State state = STS_send_0;
 	Memory memory;
-	initMemory(&memory, "123", "123");
+	initMemory(&memory); //, "123", "123");
 	int exit = 0;
 
 	// udp part

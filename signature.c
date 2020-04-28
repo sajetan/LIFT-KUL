@@ -54,17 +54,27 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 		//random(k, bits, &pool);  --> problem gives number of wrong amount of bits
 		//WORD k[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
 	//	copyWord(k, k_fake);
-
+		//printf("key in sig- ");print_num_type_length(k,32,16);
 		convertArray16toArray8(k_8, k);
 		for(i = 0; i<=k_8[0];i++){
 			k_struct.word[i] = k_8[i];
 		}
 
 		// 2) point1 = (x1, y1) = kG
+//		printf("keystruct- ");print_num_type_length(k_struct.word,32,8);
+		printf("\n----in signature coordinates \n");
+		print_num(G.x);
+		print_num(G.y);
+		print_num(n);
+
+
 		pointScalarMultAffine(&point1, &G, k_struct);
+//	     printf("\n--In signature STEP2--X--- ");print_hex_type(point1.x,16);
+//	     printf("\n--In signature STEP2- Y---- ");print_hex_type(point1.y,16);
 
 		// 3) r_inter = x1 mod n
 		mod(r_inter, point1.x, n);
+//		printf("\n--In signature STEP3----- ");print_hex_type(r_inter,16);
 
 	}
 
@@ -77,27 +87,35 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
 	// 1) e = hash(m)
 	hash(e, message, 256);
-
+//	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
 	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
 
 	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
 
+//	printf("\n--In signature STEP2--kInv--- ");print_hex_type(k_inv,16);
+//	printf("\n--In signature STEP2--key--- ");print_hex_type(key,16);
+//	printf("\n--In signature STEP2--r_inter--- ");print_hex_type(r_inter,16);
+
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
 
+//	printf("\n--In signature STEP2--dr--- ");print_hex_type(dr,16);
 	add(a, e, dr);	// a = e + dr
 
 	mod(b, a, n);	//b = a mod n
 
+//	printf("\n--In signature STEP2--b--- ");print_hex_type(b,16);
 
 	//sb = k_inv * b
 	mult(sb, k_inv, b);
 	mod(s, sb, n);
 
+//	printf("\n--In signature STEP2--s--- ");print_hex_type(s,16);
+
 	//r || s, this r and s will be extracted and during verification
 
-    // printf("\n--In signature s----- ");print_hex_type(s,16);
-    // printf("\n--In signature r----- ");print_hex_type(r_inter,16);
+//    printf("\n--In signature s----- ");print_hex_type(s,16);
+//    printf("\n--In signature r----- ");print_hex_type(r_inter,16);
 
     for(i=1;i<=16;i++){
         result[i] = r_inter[i];
@@ -105,9 +123,9 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
     }
 
     result[0]=s[0]+r_inter[0];
-    // printf("\n--In signature r+s----- ");print_hex_type(result,16);
+//     printf("\n--In signature r+s----- ");print_hex_type(result,16);
     copyArrayWithSize(output, result);
-    // printf("\n--In signature r+s =output=----- ");print_hex_type(output,16);
+//     printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
 
 }
 
@@ -308,8 +326,16 @@ void signatureTestHelp(char mChar[], char nChar[], char keyChar[], char G_xChar[
     convert(Q_x, Q_xChar);
     convert(Q_y, Q_yChar);
 
+    printf("\n signature input message---- ");print_num(m);
+    printf("\n signature Gx ---- ");print_num(G_x);
+    printf("\n signature Gy ---- ");print_num(G_y);
+    printf("\n signature key ---- ");print_num(key);
+    printf("\n signature Qx---- ");print_num(Q_x);
+    printf("\n signature Qy---- ");print_num(Q_y);
+
 
     signature_gen(output, key, m, n, G_x, G_y);
+    printf("\n signature output---- ");print_num(output);
     valid = sig_ver(output, n, m, G_x, G_y, Q_x, Q_y);
     if (valid == expected){
     	printf("signature test PASS \n");

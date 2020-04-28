@@ -43,6 +43,26 @@
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
 #define SIZE 66
 
+//maybe in future i'll use this and remove all the array size issues
+typedef struct{
+	uint64_t len;
+	uint8_t word[SIZE*8];
+} bigint8;
+
+typedef struct{
+	uint64_t len;
+	uint16_t word[SIZE];
+} bigint16;
+
+typedef struct{
+	uint64_t len;
+	uint32_t word[SIZE];
+} bigint32;
+
+typedef struct{
+	uint64_t len;
+	uint64_t word[SIZE];
+} bigint64;
 
 
 #define TEST(pass)          if(pass)\

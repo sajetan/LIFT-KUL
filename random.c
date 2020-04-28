@@ -16,7 +16,7 @@
                             obviously, it mut be smaller than the maximum allowed number of bits given the type and length of the output rray
     OUTPUTS:    -rand   :   array of WORD of size SIZE, contains a number that is "bit" bits long (or less since the MSB's are also random and thus can be zero)
 */
-void random(WORD rand[], uint32_t bit, EntropyPool* pool){
+void random(WORD *rand, uint32_t bit, EntropyPool* pool){
     assert(bit<=NUMBEROFBITS);
 
     WORD intermediate[SIZE] = {0};  // will contain the 128 bit random output
@@ -426,12 +426,12 @@ void randomTest(){
     //printPool(&pool);
     printf("random number of n = 256 bits:"); print_num(a);
 
-    n = 257;
+    n = 256;
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 257 bits:"); print_num(a);
 
-    n = 258;
+    n = 256;
     random(a, n, &pool);
     //printPool(&pool);
     printf("random number of n = 258 bits:"); print_num(a);

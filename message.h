@@ -63,6 +63,7 @@ struct User
     Session         sessions[MAX_NUMBER_SESSIONS];  // all sessions are listed here
     EntropyPool     pool;                           // entropy pool used for generating pseudorandom numbers
 };
+
 */
 void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data);
 void decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, WORD_ID* id, uint8_t* data, uint8_t* buf, uint16_t buf_len);

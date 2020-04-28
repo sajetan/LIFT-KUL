@@ -22,7 +22,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <stdint.h>
 #include <stddef.h>
-#include "main.h"
+//#include "main.h"
 
 #define ROTL32(v, n) ((v) << (n)) | ((v) >> (32 - (n)))
 
@@ -34,10 +34,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
+
 
 
 #ifdef __cplusplus

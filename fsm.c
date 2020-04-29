@@ -403,13 +403,15 @@ void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||p
 //    EntropyPool pool;           
 //	initPool(&pool);
     random(c, bits_rng, &mem->pool);
+    copyArrayWithSize(mem->SK,c); //copy to  memory
     convertArray16toArray8(c_8, c);
+
     for(i = 0; i<=c_8[0];i++){
     	cc_secret_key.word[i] = c_8[i];
-    	mem->SK[i]=c_8[i];
+    	//mem->SK[i]=c_8[i];
     }
 	
-    printf("in the memory----");print_hex_type(mem->SK,8);
+    printf("in the memory----");print_hex_type(mem->SK,16);
     print_hex_type(cc_secret_key.word,8);
     //we should store G as a p256_affine structure in the memory
     WORD G_x[SIZE] = {0};           
@@ -719,7 +721,7 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
 	WORD public_key_ccx_dronex[64] = {0};
 	WORD signed_message[64] = {0};
     uint8_t signed_message_8[SIZE] = {0};
-
+    WORD cc_secret_key_copy[SIZE]={0};
 
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t ciphertext[MAX_MSG_SIZE]={0};
@@ -769,8 +771,9 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
     public_key_ccx_dronex[0]=64/sizeof(WORD);
     printf("\n make_STS_2_data concatenated [cc+drone key] ----- ");print_hex_type(public_key_ccx_dronex,16);
     print_num(public_key_ccx_dronex);
+    copyArrayWithSize(cc_secret_key_copy, mem->SK);
 
-    signature_gen(signed_message, mem->SK, public_key_ccx_dronex, N.word, G.x, G.y);
+    signature_gen(signed_message, cc_secret_key_copy, public_key_ccx_dronex, N.word, G.x, G.y);
     printf("\nmake_STS_2_data SIGNATURE OUTPUT---- ");print_num(signed_message);
     convertArray16toArray8withoutLen(signed_message_8, signed_message);
     P(1);
@@ -820,7 +823,7 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
 
 
 uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_data = pointd.x||pointd.y||nonce||Encryption[signature(pointd.x||pointc.x)]||MAC
-    printf("in verify the memory----");print_hex_type(mem->SK,8);
+    printf("in verify the memory----");print_hex_type(mem->SK,16);
 
 	//clean this up later
 
@@ -902,7 +905,18 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 
 
 //	cc_secret_key
-    copyArrayWithSize(cc_secret_key.word, mem->SK);
+//	convertArray16toArray8(cc_secret_key.word, mem->SK);
+
+	cc_secret_key.word[0]=mem->SK[0]*sizeof(WORD);
+	for(i=1;i <=mem->SK[0];i++){
+		cc_secret_key.word[i*2-1]=mem->SK[i] & 0x00ff;
+		cc_secret_key.word[i*2]=mem->SK[i]>>8;
+    }
+
+
+//    printf("\n printing cc secret key againx----- ");print_hex_type(cc_secret_key.word,16);
+
+    //copyArrayWithSize(cc_secret_key.word, mem->SK);
     copyArrayWithSize(cc_public_key.x,mem->PKCX);
 	copyArrayWithSize(cc_public_key.y,mem->PKCY);
 
@@ -969,30 +983,28 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_data = Encryption[signature(pointc.x||pointd.x)]
 
 	//clean this up later by removing unwanted items
+    p256_affine G = {0};
+	p256_affine cc_public_key = {0};
+	p256_affine session_key_affine = {0};
 
    	p256_integer drone_secret_key = {0};
    	p256_integer cc_secret_key = {0};
-    WORD i;
-
-	WORD public_key_ccx_dronex[64] = {0};
-	WORD signed_message[64] = {0};
-    uint8_t signed_message_8[SIZE] = {0};
-
-	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
-	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
-
-    uint8_t ciphertext[MAX_MSG_SIZE]={0};
-    uint8_t plaintext[MAX_MSG_SIZE]={0};
-    uint32_t message_length=0;
-
-	p256_affine cc_public_key = {0};
-	p256_affine session_key_affine = {0};
-	uint8_t session_key_8[CHACHA_KEY_LENGTH] = {0};
 	p256_integer session_key = {0};
-	p256_affine G = {0};
 	p256_integer N={0};
 
+   	WORD i;
+    WORD plaintext_word[MAX_MSG_SIZE]={0};
+   	WORD public_key_ccx_dronex[64] = {0};
+	WORD signed_message[64] = {0};
+    uint32_t message_length=0;
+
+    uint8_t session_key_8[CHACHA_KEY_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
+    uint8_t signed_message_8[SIZE] = {0};
+	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
+	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
+    uint8_t ciphertext[MAX_MSG_SIZE]={0};
+    uint8_t plaintext[MAX_MSG_SIZE]={0};
 
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
@@ -1041,9 +1053,26 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     printf("\n verify_STS_2 Concatenated [drone+cc key ]----- ");print_hex_type(public_key_ccx_dronex,16);
     print_num(public_key_ccx_dronex);
 
+	printf("\n----BEFORE signature coordinates originall\n");
+	print_num(G.x);
+	print_num(G.y);
+	print_num(N.word);
+
+    //signature message plaintext to verify
+    for(i=0;i<message_length;i++){
+    	plaintext_word[i+1]    = ((plaintext[i*2+1]<< 8) |plaintext[i*2]);
+    }
+    plaintext_word[0]=message_length/2;
+
+	printf("\n----BEFORE [1] signature coordinates originall\n");
+	print_num(G.x);
+	print_num(G.y);
+	print_num(N.word);
+
+
 
     /*---------------- verify the signature with the public key of the control center, if signature valid --> STS_2 valid --------------*/
-	WORD v=sig_ver(plaintext, N.word, public_key_ccx_dronex, G.x, G.y, mem->PKCX,mem->PKCY);
+	WORD v=sig_ver(plaintext_word, N.word, public_key_ccx_dronex, G.x, G.y, mem->PKCX,mem->PKCY);
 
 	printf("--verify_STS_2--SAJETAN--SIGNATURE VERIFICATION ------ [ %d ] \n", v);
 

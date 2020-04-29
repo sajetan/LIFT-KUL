@@ -41,7 +41,6 @@ struct Memory
 {
     WORD_ID receiverID;
     EntropyPool pool;
-    WORD SK[SIZE];     // secret key
     WORD PKCX[SIZE];
     WORD PKCY[SIZE]; // public key of control center
     WORD PKDX[SIZE];
@@ -49,6 +48,7 @@ struct Memory
     WORD GX[SIZE];
     WORD GY[SIZE]; // Generator parameters
     WORD N[SIZE]; //N parameter
+    WORD SK[SIZE];     // secret key
     uint8_t SESSION_KEY[32]; // public key of drone
 
 };

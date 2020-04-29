@@ -93,24 +93,24 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
 
 //	printf("\n--In signature STEP2--kInv--- ");print_hex_type(k_inv,16);
-//	printf("\n--In signature STEP2--key--- ");print_hex_type(key,16);
-//	printf("\n--In signature STEP2--r_inter--- ");print_hex_type(r_inter,16);
+	printf("\n--In signature STEP2--key--- ");print_hex_type(key,16);
+	printf("\n--In signature STEP2--r_inter--- ");print_hex_type(r_inter,16);
 
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
 
-//	printf("\n--In signature STEP2--dr--- ");print_hex_type(dr,16);
+	printf("\n--In signature STEP2--dr--- ");print_hex_type(dr,16);
 	add(a, e, dr);	// a = e + dr
 
 	mod(b, a, n);	//b = a mod n
 
-//	printf("\n--In signature STEP2--b--- ");print_hex_type(b,16);
+	printf("\n--In signature STEP2--b--- ");print_hex_type(b,16);
 
 	//sb = k_inv * b
 	mult(sb, k_inv, b);
 	mod(s, sb, n);
 
-//	printf("\n--In signature STEP2--s--- ");print_hex_type(s,16);
+	printf("\n--In signature STEP2--s--- ");print_hex_type(s,16);
 
 	//r || s, this r and s will be extracted and during verification
 

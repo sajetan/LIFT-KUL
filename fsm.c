@@ -34,11 +34,13 @@ State STS_send_0_fct(uint8_t* buf, Memory* mem){
     printf("\n/////\n State STS_send_0 \n");
 
     // compute new message : 
-    uint8_t data[64] = {0};    
-    make_STS_0_data(data, mem);    //STS_0_data = pointc.x||pointc.y 
+    uint8_t data[MAX_DATA_LENGTH] = {0};
+	WORD_LEN len = 0;
+    make_STS_0_data(data, mem, &len);    //STS_0_data = pointc.x||pointc.y
 
+    P(len);
     // make the buffer
-	WORD_LEN len = 64;
+
     uint16_t buf_len = 0;
     getTLV(buf, &buf_len, TAG_STS_0, len, mem->receiverID, data);
 
@@ -111,11 +113,11 @@ State STS_send_2_fct(uint8_t* buf, Memory* mem){
            
             // compute new message
             
-            uint8_t data[64] = {0}; 
+            uint8_t data[MAX_DATA_LENGTH] = {0};
+            WORD_LEN len = 0;                  // making the buf will change this in next version
 
-            make_STS_2_data(data,rcv_data, mem);
+            make_STS_2_data(data,rcv_data, mem, &len);
 
-            WORD_LEN len = 92;                  // making the buf will change this in next version
             getTLV(buf, &buf_len, TAG_STS_2, len, mem->receiverID, data);
 
             // send message
@@ -176,10 +178,9 @@ State STS_send_1_fct(uint8_t* buf, Memory* mem){
         printf("Valid tag, send next message\n");
         // compute new message
         uint8_t data[MAX_DATA_LENGTH] = {0};
-       
-        make_STS_1_data(data, rcv_data, mem);
+        WORD_LEN len = 0;                  // making the buf sajetan: needs to get this from the function
+        make_STS_1_data(data, rcv_data, mem, &len);
 
-        WORD_LEN len = 158;                  // making the buf sajetan: needs to get this from the function
         getTLV(buf, &buf_len, TAG_STS_1, len, mem->receiverID, data);    
         
 
@@ -377,7 +378,7 @@ State STS_drone_completed_fct(){
 
 
 
-void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||pointc.y 
+void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len){     //STS_0_data = pointc.x||pointc.y
 
     //to make STS_0, a random number c is generated, this is multiplied with the generator G, and results in pointc 
     //point1 = (pointc.x, pointc.y) = c*G, data of STS_0 is point1.x concatenated with pointc.y, pointc.x and pointc.y both have 256 bits, 
@@ -439,11 +440,14 @@ void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||p
     printf("control center public keyy----- ");print_hex_type(cc_public_key.y,16);
 
 
-    //concatenating point1.x and point1.y , in the next step while constructing data, make sure the concatetanation is similar to the state1
+    //concatenating point1.x and point1.y , in the next step while constructing data, make sure the concatetanation is similar to the state1 :TODO
     for(i=0;i<32;i++){
         data[i] = data1[i+1];
         data[32+i] = data2[i+1];
     }
+
+    *len=(cc_public_key.x[0]+cc_public_key.x[0])*sizeof(p256_word);
+
 //    printf("\nfinal data-----");print_num_size_type(data,64,8);
 //
 //    printf("data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",data[0],data[1],data[2],data[3],data[4], data[5],data[6],data[7],data[8],data[9]);
@@ -457,7 +461,7 @@ void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||p
 }
 
 
-void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_data = pointd.x||pointc.x||Encryption[signature(pointd.x||pointc.x)]
+void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){   //STS_1_data = pointd.x||pointc.x||Encryption[signature(pointd.x||pointc.x)]
                                                           //rcv_data = STS_0_data = pointc.x||pointc.y  
     //generate random d                                   
 
@@ -487,15 +491,7 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
-    //we should store G as a p256_affine structure in the memory
-//    convert(G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
-//    convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
-//    convert(N.word, "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
-//    printf("----coordinates \n");
-//    print_num(G.x);
-//    print_num(G.y);
-//    print_num(N.word);
-
+    //copy gen values from memory
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
@@ -506,48 +502,30 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 	initPool(&pool);
     random(generate_random_key, bits_rng, &pool);
     print_hex_type(generate_random_key,16);
-    random(generate_random_key, bits_rng, &pool);
-    print_hex_type(generate_random_key,16);
-
-
 
     copyArrayWithSize(drone_secret_key_copy,generate_random_key);
     convertArray16toArray8(generate_random_key_8, generate_random_key);
-    P(1)
 
     for(i = 0; i<=generate_random_key_8[0];i++){
     	drone_secret_key.word[i]=generate_random_key_8[i];
-
     }
 
 
-//    print_hex_type(drone_secret_key.word,8);
-
-//    print_num_size(generate_random_key,33);
-//    print_num_size(generate_random_key_8,33);
-//    printf("inside --- make_STS_1_data \n  lol \n");
-
-//    print_hex_type(drone_secret_key.word,8);
 
     /*---------------------------------compute pointd = d*G--------------------------------------------------*/
 
-//    printf("key workd----------");print_hex_type(drone_secret_key.word,8);
     printf("drone secret key ------- ");print_hex_type(drone_secret_key.word,8);
+
     //pointc = c*G
     pointScalarMultAffine(&drone_public_key, &G, drone_secret_key);
 
-//    printf("----coordinates checking again\n");
-//        print_num(G.x);
-//        print_num(G.y);
-//        print_num(N.word);
+
+    printf("drone public key [x]--------\n"); print_num(drone_public_key.x);
+    printf("drone public key [y]--------\n"); print_num(drone_public_key.y);
 
 
-    printf("drone public key \n");
-    print_num(drone_public_key.x);
-    print_num(drone_public_key.y);
-
-    printf("\nmake_STS_1_data drone public keyx----- ");print_hex_type(drone_public_key.x,16);
-    printf("make_STS_1_data drone public keyy----- ");print_hex_type(drone_public_key.y,16);
+    printf("\n[make_STS_1_data] drone public key [x]----- ");print_hex_type(drone_public_key.x,16);
+    printf("[make_STS_1_data] drone public key [y]----- ");print_hex_type(drone_public_key.y,16);
     copyArrayWithSize(mem->PKDX,drone_public_key.x); //copy to memory
  	copyArrayWithSize(mem->PKDY,drone_public_key.y); //copy to memory
 
@@ -555,14 +533,13 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
     uint16_t cc_pk[64]={0};
     convertArray8toArray16withoutLen(cc_pk, rcv_data,64);
 
-    printf("received cc public key data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",rcv_data[0],rcv_data[1],rcv_data[2],rcv_data[3],rcv_data[4], rcv_data[5],rcv_data[6],rcv_data[7],rcv_data[8],rcv_data[9]);
-    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",rcv_data[10],rcv_data[11],rcv_data[12],rcv_data[13],rcv_data[14], rcv_data[15],rcv_data[16],data[17],rcv_data[18],rcv_data[19]);
-    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",rcv_data[20],rcv_data[21],rcv_data[22],rcv_data[23],rcv_data[24], rcv_data[25],rcv_data[26],data[27],rcv_data[28],rcv_data[29]);
-    printf(" %04x %04x %04x  \n",rcv_data[30],rcv_data[31],rcv_data[32]);
+//    printf("received cc public key data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",rcv_data[0],rcv_data[1],rcv_data[2],rcv_data[3],rcv_data[4], rcv_data[5],rcv_data[6],rcv_data[7],rcv_data[8],rcv_data[9]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",rcv_data[10],rcv_data[11],rcv_data[12],rcv_data[13],rcv_data[14], rcv_data[15],rcv_data[16],data[17],rcv_data[18],rcv_data[19]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",rcv_data[20],rcv_data[21],rcv_data[22],rcv_data[23],rcv_data[24], rcv_data[25],rcv_data[26],data[27],rcv_data[28],rcv_data[29]);
+//    printf(" %04x %04x %04x  \n",rcv_data[30],rcv_data[31],rcv_data[32]);
 
     cc_public_key.x[0]=16;
     cc_public_key.y[0]=16;
-
 
     for(i=0;i<32;i++){
     	cc_public_key.x[i+1] = cc_pk[i];
@@ -574,26 +551,24 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 
 
     //printf("---recvd data - pkc 16\n");print_num(pkc);
-    printf("make_STS_1_data [control center public keyx]----- ");print_hex_type(cc_public_key.x,16);
-    printf(" %04x %04x %04x  \n",cc_public_key.x[0],cc_public_key.x[1],cc_public_key.x[2]);
-    printf("make_STS_1_data [control center public keyy]----- ");print_hex_type(cc_public_key.y,16);
+    printf("[make_STS_1_data] control center public key [x]----- ");print_hex_type(cc_public_key.x,16);
+    printf("[make_STS_1_data] control center public key [y]----- ");print_hex_type(cc_public_key.y,16);
 
 
     /*--------------------------------- compute session key = (x,y) = d*pointc ------------------------------------*/
     pointScalarMultAffine(&session_key_affine, &cc_public_key, drone_secret_key);
 
-    printf("make_STS_1_data session_key x affine----- ");print_hex_type(session_key_affine.x,16);
-    printf("make_STS_1_data session_key y affine----- ");print_hex_type(session_key_affine.y,16);
+    printf("[make_STS_1_data] session_key x affine----- ");print_hex_type(session_key_affine.x,16);
+    printf("[make_STS_1_data] session_key y affine----- ");print_hex_type(session_key_affine.y,16);
 
-    printf("data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",session_key_affine.x[0],session_key_affine.x[1],session_key_affine.x[2],session_key_affine.x[3],session_key_affine.x[4], session_key_affine.x[5],session_key_affine.x[6],session_key_affine.x[7],session_key_affine.x[8],session_key_affine.x[9]);
-    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",session_key_affine.x[10],session_key_affine.x[11],session_key_affine.x[12],session_key_affine.x[13],session_key_affine.x[14], session_key_affine.x[15],session_key_affine.x[16],data[17],session_key_affine.x[18],session_key_affine.x[19]);
-    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",session_key_affine.x[20],session_key_affine.x[21],session_key_affine.x[22],session_key_affine.x[23],session_key_affine.x[24], session_key_affine.x[25],session_key_affine.x[26],data[27],session_key_affine.x[28],session_key_affine.x[29]);
-    printf(" %04x %04x %04x  \n",session_key_affine.x[30],session_key_affine.x[31],session_key_affine.x[32]);
-
+//    printf("data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",session_key_affine.x[0],session_key_affine.x[1],session_key_affine.x[2],session_key_affine.x[3],session_key_affine.x[4], session_key_affine.x[5],session_key_affine.x[6],session_key_affine.x[7],session_key_affine.x[8],session_key_affine.x[9]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",session_key_affine.x[10],session_key_affine.x[11],session_key_affine.x[12],session_key_affine.x[13],session_key_affine.x[14], session_key_affine.x[15],session_key_affine.x[16],data[17],session_key_affine.x[18],session_key_affine.x[19]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",session_key_affine.x[20],session_key_affine.x[21],session_key_affine.x[22],session_key_affine.x[23],session_key_affine.x[24], session_key_affine.x[25],session_key_affine.x[26],data[27],session_key_affine.x[28],session_key_affine.x[29]);
+//    printf(" %04x %04x %04x  \n",session_key_affine.x[30],session_key_affine.x[31],session_key_affine.x[32]);
     
     //compute session key by taking hash of session key x coordinate
     hash(session_key.word,session_key_affine.x,256);
-    printf("\nmake_STS_1_data SESSION KEY----- ");print_hex_type(session_key.word,16);
+    printf("\n[make_STS_1_data] SESSION KEY ----- ");print_hex_type(session_key.word,16);
 
 
     //
@@ -606,23 +581,16 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
     public_key_dronex_ccx[0]=64/sizeof(WORD);
 
 
-    printf("\nmake_STS_1_data concatenated [drone+cc key]----- ");print_hex_type(public_key_dronex_ccx,16);
+    printf("\n[make_STS_1_data] concatenated [drone_x + cc_x key]----- ");print_hex_type(public_key_dronex_ccx,16);
     print_num(public_key_dronex_ccx);
 
 
 
     /*---------------------------------sign (pointd.x||pointc.x) with the private key of the drone --------------------*/
-    //printf("drone secret key ------- ");print_hex_type(drone_secret_key_8,8);// print_num(drone_secret_key_8);
-
-    printf("gx,gy, n----coordinates again again\n");
-        print_num(G.x);P(1)
-        print_num(G.y);P(2)
-        print_num(N.word);P(3)
-
 
 	signature_gen(signed_message,drone_secret_key_copy,public_key_dronex_ccx, N.word, G.x, G.y);
     //signature_gen(signed_message,drone_secret_key.word,public_key_dronex_ccx, N.word, G.x, G.y);
-    printf("\n make_STS_1_data SIGNATURE GENERATED---- ");print_num(signed_message);
+    printf("\n [make_STS_1_data] SIGNATURE GENERATED---- ");print_num(signed_message);
 
     convertArray16toArray8withoutLen(signed_message_8, signed_message);
 
@@ -630,23 +598,22 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 
     memcpy(mem->SESSION_KEY,session_key_8, CHACHA_KEY_LENGTH); //copy to memory
 
-    printf("make_STS_1_data signed message_8- ");print_num_type_length(signed_message_8,signed_message[0]*2,8);
-    printf("make_STS_1_data session_key_8- ");print_num_type_length(session_key_8,32,8);
+    printf("[make_STS_1_data] signed message_8- ");print_num_type_length(signed_message_8,signed_message[0]*2,8);
+    printf("[make_STS_1_data] session_key_8- ");print_num_type_length(session_key_8,32,8);
 
     char2byte(nonce, "4041424344454647"); // should be changed to random number
 
     /*---------------------------------encrypt the signature with the session key k //need to manage lengths of plaintext here! --------------------------*/
 	aead_chacha20_poly1305(mac_tag,ciphertext, session_key_8, 32, nonce, signed_message_8, signed_message[0]*2, "50515253c0c1c2c3c4c5c6c7");
 
-	printf("make_STS_1_data MAC GENERATED- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
-	printf("make_STS_1_data CIPHERTEXT GENERATED- ");print_num_type_length(ciphertext,signed_message[0]*2,8);
+	printf("[make_STS_1_data] MAC GENERATED- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
+	printf("[make_STS_1_data] CIPHERTEXT GENERATED- ");print_num_type_length(ciphertext,signed_message[0]*2,8);
 
 	//testing by deciphering the ciphertext and checking if it mataches signed message
-//	aead_chacha20_poly1305(rcv_mac_tag,vciphertext, session_key_8, 32, nonce, ciphertext, signed_message[0]*2, "50515253c0c1c2c3c4c5c6c7");
+	//aead_chacha20_poly1305(rcv_mac_tag,vciphertext, session_key_8, 32, nonce, ciphertext, signed_message[0]*2, "50515253c0c1c2c3c4c5c6c7");
 	//encrypt_init(vciphertext,session_key_8, 32, nonce, ciphertext,64, 0);
-//	printf("mac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
-//	printf("-\n--vciphertext- ");print_num_type_length(vciphertext,signed_message[0]*2,8);
-
+	//printf("mac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
+	//printf("-\n--vciphertext- ");print_num_type_length(vciphertext,signed_message[0]*2,8);
 
 
 	/*---------------------------------concatenate everything in data -----------------------------------------------*/
@@ -667,7 +634,6 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 
 	data[5]=MAC_TAG_LENGTH;
 
-//	printf("length of public key %d \n",data[1]);
 
 	for(i=0;i<data[1];i++){
 		data[total_data+i] = nonce[i];
@@ -677,7 +643,6 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 	for(i=0;i<data[2]/2;i++){
 		data[total_data+data[1]+i*2] = drone_public_key.x[i+1];
         data[total_data+data[1]+i*2+1] = drone_public_key.x[i+1] >> 8 ;
-	//	printf("length of public key %d %02x %d %02x [%d]\n",total_data+i*2, data[total_data+i*2],total_data+i*2+1,data[total_data+i*2+1],i);
 	}
 
 	for(i=0;i<data[3]/2;i++){
@@ -694,12 +659,13 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 		data[total_data+data[1]+data[2]+data[3]+data[4]+i] = mac_tag[i];
     }
 
-	printf("-\n make_STS_1_data concatenated data- length [ %d ] \n to be sent: ", total_data+data[1]+data[2]+data[3]+data[4]+data[5]);print_num_type_length(data,total_data+data[1]+data[2]+data[3]+data[4]+data[5],8);
+	*len=total_data+data[1]+data[2]+data[3]+data[4]+data[5];
+	printf("-\n [make_STS_1_data] concatenated data- length [ %d ] \n to be sent: ", total_data+data[1]+data[2]+data[3]+data[4]+data[5]);print_num_type_length(data,total_data+data[1]+data[2]+data[3]+data[4]+data[5],8);
 
 
 }
 
-void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_data = Encryption[signature(pointc.x||pointd.x)]
+void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem, WORD *len){   //STS_2_data = Encryption[signature(pointc.x||pointd.x)]
                                                           //rcv_data = STS_1_data = pointd.x||pointd.y||Encryption[signature(pointd.x||pointc.x)]
     //generate random d
 	p256_affine G = {0};
@@ -728,20 +694,9 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
-
-//    //need to make this available from outside
-//    convert(G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
-//    convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
-//    convert(N.word, "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
-//    printf("----coordinates \n");print_num(G.x);
-//    print_num(G.y);
-//    print_num(N.word);
-
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
-
-
 
 	//compute (x,y) = c*pointd -- taken from memory
 
@@ -753,28 +708,28 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
     	public_key_ccx_dronex[i+16] = mem->PKDX[i]; //drone_public_key.x[i];
     }
 
-    printf("make_STS_2_data PKC x----- ");print_hex_type(mem->PKCX,16);
-    printf("make_STS_2_data PKD y----- ");print_hex_type(mem->PKDX,16);
-    printf("make_STS_2_data Secret key y----- ");print_hex_type(mem->SK,16);
+    printf("[make_STS_2_data] PKC x----- ");print_hex_type(mem->PKCX,16);
+    printf("[make_STS_2_data] PKD y----- ");print_hex_type(mem->PKDX,16);
+    printf("[make_STS_2_data] Secret key y----- ");print_hex_type(mem->SK,16);
     //printf("Session key y----- ");print_hex_type(mem->SESSION_KEY,16);
-    printf("make_STS_2_data session_key_8- ");print_num_type_length(mem->SESSION_KEY,32,8);
+    printf("[make_STS_2_data] session_key_8- ");print_num_type_length(mem->SESSION_KEY,32,8);
 
     public_key_ccx_dronex[0]=64/sizeof(WORD);
-    printf("\n make_STS_2_data concatenated [cc+drone key] ----- ");print_hex_type(public_key_ccx_dronex,16);
+    printf("\n [make_STS_2_data] concatenated [cc_x+drone_x key] ----- ");print_hex_type(public_key_ccx_dronex,16);
     print_num(public_key_ccx_dronex);
     copyArrayWithSize(cc_secret_key_copy, mem->SK);
 
     signature_gen(signed_message, cc_secret_key_copy, public_key_ccx_dronex, N.word, G.x, G.y);
-    printf("\nmake_STS_2_data SIGNATURE OUTPUT---- ");print_num(signed_message);
+    printf("\n[make_STS_2_data] SIGNATURE OUTPUT---- ");print_num(signed_message);
     convertArray16toArray8withoutLen(signed_message_8, signed_message);
-    P(1);
+
     char2byte(nonce, "4041424344454647"); // should be changed to random number using this for testing only
-    P(2);
+
     //encrypt the signature with the session key k
    	aead_chacha20_poly1305(mac_tag,ciphertext, mem->SESSION_KEY, 32, nonce, signed_message_8, signed_message[0]*2, "50515253c0c1c2c3c4c5c6c7");
-   	P(3);
-   	printf("make_STS_2_data MAC GENERATED- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
-	printf("make_STS_2_data CIPHERTEXT GENERATED- ");print_num_type_length(ciphertext,signed_message[0]*2,8);
+
+   	printf("[make_STS_2_data] MAC GENERATED- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
+	printf("[make_STS_2_data] CIPHERTEXT GENERATED- ");print_num_type_length(ciphertext,signed_message[0]*2,8);
 
 
 
@@ -808,14 +763,13 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_
 		data[total_data+data[1]+data[2]+i] = mac_tag[i];
     }
 
+	*len=total_data+data[1]+data[2]+data[3];
 	printf("-\n-- make_STS_2_data concatenated data after encryption- length [ %d ] \n to be sent:  ", total_data+data[1]+data[2]+data[3]);print_num_type_length(data,total_data+data[1]+data[2]+data[3],8);
 
 }
 
 
 uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_data = pointd.x||pointd.y||nonce||Encryption[signature(pointd.x||pointc.x)]||MAC
-    printf("in verify the memory----");print_hex_type(mem->SK,16);
-
 	//clean this up later
 
 	p256_affine G = {0};
@@ -843,18 +797,10 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     uint8_t generate_random_key_8[SIZE] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
-//    //we should store G as a p256_affine structure in the memory
-//    convert(G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
-//    convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
-//    convert(N.word, "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
-//    printf("----coordinates \n");print_num(G.x);
-//    print_num(G.y);
-//    print_num(N.word);
 
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
-
 
    // if (recv_data[0]!=6) return; //number of tags should be 5
     WORD total_data =recv_data[0];
@@ -866,17 +812,12 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 	drone_public_key.x[0]=16;
 	drone_public_key.y[0]=16;
 
-
 	for(i=0;i<recv_data[2]/2;i++){
-		//drone_public_key.x[i+1] = data[total_data+recv_data[1]+i*2] ;
 		drone_public_key.x[i+1] = ((recv_data[total_data+recv_data[1]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+i*2]);
-	//	printf("length of public key %d %02x %d %02x [%d]\n",total_data+i*2, data[total_data+i*2],total_data+i*2+1,data[total_data+i*2+1],i);
 	}
 
 	for(i=0;i<recv_data[3]/2;i++){
 		drone_public_key.y[i+1] = ((recv_data[total_data+recv_data[1]+recv_data[2]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+recv_data[2]+i*2]);
-		//data[total_data+data[1]+data[2]+i*2] = drone_public_key.y[i+1];
-        //data[total_data+data[1]+data[2]+i*2+1] = drone_public_key.y[i+1] >> 8 ;
     }
 
 	message_length=recv_data[4];
@@ -888,11 +829,11 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 		rcv_mac_tag[i]=recv_data[total_data+recv_data[1]+recv_data[2]+recv_data[3]+recv_data[4]+i];
     }
 
-    printf("\ndrone public keyx----- ");print_hex_type(drone_public_key.x,16);
-    printf("drone public keyy----- ");print_hex_type(drone_public_key.y,16);
+    printf("\ndrone public key [x]----- ");print_hex_type(drone_public_key.x,16);
+    printf("drone public key [y]----- ");print_hex_type(drone_public_key.y,16);
 
-	printf("mac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
-	printf("ciphertext- ");print_num_type_length(ciphertext,recv_data[4],8);
+	printf("MAC RECEIVED- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
+	printf("CIPHERTEXT RECEIVED- ");print_num_type_length(ciphertext,recv_data[4],8);
 
 
 //	cc_secret_key
@@ -924,13 +865,13 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     //compute session key k = hash(x)
     //compute session key by taking hash of session key x coordinate
     hash(session_key.word,session_key_affine.x,256);
-    printf("\n verify_STS_1SESSION KEY----- ");print_hex_type(session_key.word,16);
+    printf("\n [verify_STS_1] SESSION KEY----- ");print_hex_type(session_key.word,16);
 
     convertArray16toArray8withoutLen(session_key_8, session_key.word);
-    printf("verify_STS_1 session_key_8 in bytes- ");print_num_type_length(session_key_8,32,8);
+    printf("[verify_STS_1] session_key_8 in bytes- ");print_num_type_length(session_key_8,32,8);
 
     memcpy(mem->SESSION_KEY,session_key_8, CHACHA_KEY_LENGTH); //copy to memory
-    printf("verify_STS_1 copy SESSION KEY - ");print_num_type_length(mem->SESSION_KEY,32,8);
+    //printf("verify_STS_1 copy SESSION KEY - ");print_num_type_length(mem->SESSION_KEY,32,8);
 
     verify_mac_aead_chacha20_poly1305(rcv_mac_tag, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
 
@@ -939,14 +880,14 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 //    aead_chacha20_poly1305(mac_tag,plaintext, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7");
     encrypt_init(plaintext,session_key_8, 32, nonce, ciphertext,64, 0);
 //	printf("mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
-	printf("verify_STS_1 Plaintext sign(pkdx || pkcx) ");print_num_type_length(plaintext,message_length,8);
+	printf("[verify_STS_1] Plaintext sign(pkdx || pkcx) ");print_num_type_length(plaintext,message_length,8);
 
     for(i=1;i<=16;i++){
     	public_key_dronex_ccx[i]    = drone_public_key.x[i];
     	public_key_dronex_ccx[i+16] = cc_public_key.x[i];
     }
     public_key_dronex_ccx[0]=64/sizeof(WORD);
-    printf("\n verify_STS_1 concatenated [drone+cc key]----- ");print_hex_type(public_key_dronex_ccx,16);
+    printf("\n [verify_STS_1] concatenated [drone+cc key]----- ");print_hex_type(public_key_dronex_ccx,16);
     print_num(public_key_dronex_ccx);
 
     //signature message plaintext to verify
@@ -955,18 +896,10 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     }
     plaintext_word[0]=message_length/2;
 
-	printf("\n----BEFORE [3] signature coordinates originall\n");
-	print_num(G.x);
-	print_num(G.y);
-	print_num(N.word);
 
-
-//    convertArray8toArray16withoutLen(plaintext_word, plaintext,message_length);
-    P(1);
     //verify the signature with the public key of the drone, if signature valid --> STS_1 valid
 	WORD v=sig_ver(plaintext_word, N.word, public_key_dronex_ccx, G.x, G.y, drone_public_key.x,drone_public_key.y);
-	P(2);
-	printf("--verify_STS_1-SAJETAN---SIGNATURE VERIFICATION ------ [ %d ] \n", v);
+	printf("--[verify_STS_1]----------------------SIGNATURE VERIFICATION -------------------------- [ %d ] \n", v);
 
 }
 
@@ -1028,11 +961,11 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     verify_mac_aead_chacha20_poly1305(rcv_mac_tag, mem->SESSION_KEY, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
 
     //decrypt the signature with k
-//    aead_chacha20_poly1305(mac_tag,plaintext, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7");
+    //aead_chacha20_poly1305(mac_tag,plaintext, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7");
     //decrypt the signature with the session key k (which is computed in the make_STS_1_data-function)
     encrypt_init(plaintext,mem->SESSION_KEY, 32, nonce, ciphertext,message_length, 0);
 //	printf("mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
-	printf("verify_STS_2 PLAINTEXT sign(pkcx || pkdx )- ");print_num_type_length(plaintext,message_length,8);
+	printf("[verify_STS_2] PLAINTEXT sign(pkcx || pkdx )- ");print_num_type_length(plaintext,message_length,8);
 
     for(i=1;i<=16;i++){
     	public_key_ccx_dronex[i]    = mem->PKCX[i];
@@ -1040,13 +973,8 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     }
 
     public_key_ccx_dronex[0]=64/sizeof(WORD);
-    printf("\n verify_STS_2 Concatenated [drone+cc key ]----- ");print_hex_type(public_key_ccx_dronex,16);
+    printf("\n [verify_STS_2] Concatenated [drone_x+cc_x key ]----- ");print_hex_type(public_key_ccx_dronex,16);
     print_num(public_key_ccx_dronex);
-
-	printf("\n----BEFORE signature coordinates originall\n");
-	print_num(G.x);
-	print_num(G.y);
-	print_num(N.word);
 
     //signature message plaintext to verify
     for(i=0;i<message_length;i++){
@@ -1054,17 +982,9 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     }
     plaintext_word[0]=message_length/2;
 
-	printf("\n----BEFORE [1] signature coordinates originall\n");
-	print_num(G.x);
-	print_num(G.y);
-	print_num(N.word);
-
-
-
     /*---------------- verify the signature with the public key of the control center, if signature valid --> STS_2 valid --------------*/
 	WORD v=sig_ver(plaintext_word, N.word, public_key_ccx_dronex, G.x, G.y, mem->PKCX,mem->PKCY);
-
-	printf("--verify_STS_2--SAJETAN--SIGNATURE VERIFICATION ------ [ %d ] \n", v);
+	printf("--[verify_STS_2]----------------------SIGNATURE VERIFICATION -------------------------- [ %d ] \n", v);
 
 
 

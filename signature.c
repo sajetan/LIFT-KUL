@@ -22,12 +22,13 @@
 //concatenating r+s and sending as the output.
 void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y){
 
-	WORD i;
-	WORD r_inter[SIZE] = {0};
-	uint8_t k_8[SIZE] = {0};
 	p256_affine point1 = {0};
+	p256_affine G = {0};
 	p256_integer k_struct = {0};
 	uint32_t bits = 256;
+
+	WORD i;
+	WORD r_inter[SIZE] = {0};
 	WORD e[SIZE] = {0};
 	WORD k_inv[SIZE] = {0};
 	WORD dr[SIZE] = {0};
@@ -35,53 +36,34 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	WORD b[SIZE] = {0};
 	WORD sb[SIZE] = {0};
 	WORD s[SIZE] = {0};
-	//WORD k[SIZE]={0};
-	WORD k[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
+	WORD k[SIZE]={0}; // if test: {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
 	WORD result[SIZE] = {0};
+	uint8_t k_8[SIZE] = {0};
 
-
-	p256_affine G = {0};
 	copyWord(G.x, G_x);
 	copyWord(G.y, G_y);
 
-
-    EntropyPool pool;
+    EntropyPool pool; //change this wrt the memory function
 	initPool(&pool);
 
 	while(r_inter[0] == 0){
 
 		// 1) k = random number in [1, n-1]
-		//random(k, bits, &pool);  --> problem gives number of wrong amount of bits
-		//WORD k[SIZE] = {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
-	//	copyWord(k, k_fake);
-		//printf("key in sig- ");print_num_type_length(k,32,16);
+	    random(k, 256, &pool);
 		convertArray16toArray8(k_8, k);
 		for(i = 0; i<=k_8[0];i++){
 			k_struct.word[i] = k_8[i];
 		}
 
 		// 2) point1 = (x1, y1) = kG
-//		printf("keystruct- ");print_num_type_length(k_struct.word,32,8);
-		printf("\n----in signature coordinates \n");
-		print_num(G.x);
-		print_num(G.y);
-		print_num(n);
-
 
 		pointScalarMultAffine(&point1, &G, k_struct);
-//	     printf("\n--In signature STEP2--X--- ");print_hex_type(point1.x,16);
-//	     printf("\n--In signature STEP2- Y---- ");print_hex_type(point1.y,16);
 
 		// 3) r_inter = x1 mod n
 		mod(r_inter, point1.x, n);
-//		printf("\n--In signature STEP3----- ");print_hex_type(r_inter,16);
 
 	}
 
-	// 4) if (r_inter==0): go back to step 1)
-	//    else: r = r_inter
-
-	//copyWord(r, r_inter);
 
 
 
@@ -92,30 +74,20 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
 	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
 
-//	printf("\n--In signature STEP2--kInv--- ");print_hex_type(k_inv,16);
-	printf("\n--In signature STEP2--key--- ");print_hex_type(key,16);
-	printf("\n--In signature STEP2--r_inter--- ");print_hex_type(r_inter,16);
 
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
 
-	printf("\n--In signature STEP2--dr--- ");print_hex_type(dr,16);
 	add(a, e, dr);	// a = e + dr
-
 	mod(b, a, n);	//b = a mod n
 
-	printf("\n--In signature STEP2--b--- ");print_hex_type(b,16);
 
 	//sb = k_inv * b
 	mult(sb, k_inv, b);
 	mod(s, sb, n);
 
-	printf("\n--In signature STEP2--s--- ");print_hex_type(s,16);
 
 	//r || s, this r and s will be extracted and during verification
-
-    printf("\n--In signature s----- ");print_hex_type(s,16);
-    printf("\n--In signature r----- ");print_hex_type(r_inter,16);
 
     for(i=1;i<=16;i++){
         result[i] = r_inter[i];
@@ -123,9 +95,8 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
     }
 
     result[0]=s[0]+r_inter[0];
-     printf("\n--In signature r+s----- ");print_hex_type(result,16);
     copyArrayWithSize(output, result);
-//     printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
+     printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
 
 }
 
@@ -135,6 +106,15 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 //OUTPUT: valid == 0 if signature is not valid, valid == 1 if signature is valid
 //WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
 WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
+	p256_affine Q = {0};
+	p256_affine G = {0};
+	p256_affine point1 = {0};
+	p256_affine point2 = {0};
+	p256_affine point_res = {0};
+	p256_integer u1_struct = {0};
+	p256_integer u2_struct = {0};
+
+	WORD v[SIZE] = {0};
 	WORD i;
 	WORD e[SIZE] = {0};
 	WORD c[SIZE] = {0};
@@ -143,31 +123,11 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 	WORD r[SIZE] = {0};
 	WORD s[SIZE] = {0};
 
-	p256_affine Q = {0};
-	p256_affine G = {0};
-
-	p256_affine point_res = {0};
-
 	uint8_t u1_8[SIZE] = {0};
-	p256_affine point1 = {0};
-	p256_integer u1_struct = {0};
-
 	uint8_t u2_8[SIZE] = {0};
-	p256_affine point2 = {0};
-	p256_integer u2_struct = {0};
-
-	WORD v[SIZE] = {0};
 
 	//extracting r and s from input
-
-	    printf("data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",data[0],data[1],data[2],data[3],data[4], data[5],data[6],data[7],data[8],data[9]);
-	    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",data[10],data[11],data[12],data[13],data[14], data[15],data[16],data[17],data[18],data[19]);
-	    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",data[20],data[21],data[22],data[23],data[24], data[25],data[26],data[27],data[28],data[29]);
-	    printf(" %04x %04x %04x  \n",data[30],data[31],data[32]);
-
-
-
-//	printf("\n--In [signature verify input = ]----- ");print_hex_type(input,16);
+	//printf("\n--In [signature verify input = ]----- ");print_hex_type(input,16);
 	r[0] = 16;
 	s[0] = 16;
 
@@ -176,18 +136,6 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 		s[i] = data[i+16];
     }
 
-	printf("\n----in signature coordinates originall\n");
-	print_num(G_x);
-	print_num(G_y);
-
-
-
-	printf("\n--In [signature verify Qx = ]----- ");print_hex_type(Q_x,16);
-	printf("\n--In [signature verify Qy = ]----- ");print_hex_type(Q_y,16);
-
-
-	printf("\n--In [signature verify r = ]----- ");print_hex_type(r,16);
-	printf("\n--In [signature verify s = ]----- ");print_hex_type(s,16);
 
 	// 1) if r not in [0,n-1]: signature is invalid, else: go to step 2)
 
@@ -206,28 +154,15 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 	// 3) e = hash(m)
 	hash(e, m, 256);
 
-	printf("\n--In [signature verify hash(m) = ]----- ");print_hex_type(e,16);
-
-
-
 	// 4) c = s^-1 mod n
 	inverse(c, s, n);
-
-	printf("\n--In [signature verify s^-1modn = ]----- ");print_hex_type(c,16);
-
 
 	// 5) u1 = ec mod n, u2 = rc mod n
 	mult(u1, c, e);
 	mod(u1, u1, n);
 
-	printf("\n--In [signature verify u1 = ]----- ");print_hex_type(u1,16);
-
-
 	mult(u2, r, c);
 	mod(u2, u2, n);
-
-	printf("\n--In [signature verify u2 = ]----- ");print_hex_type(u2,16);
-
 
 	// 6) point_res = (x,y) = u1G + u2Q
 
@@ -241,23 +176,10 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 		u2_struct.word[i] = u2_8[i];
 	}
 
-	printf("\n--In [signature verify u1struct = ]----- ");print_hex_type(u1_struct.word,16);
-	printf("\n--In [signature verify u2struct = ]----- ");print_hex_type(u2_struct.word,16);
-
-
 	// point1 = (x_1,y_1) = u1G
 	copyWord(G.x, G_x);
 	copyWord(G.y, G_y);
 	pointScalarMultAffine(&point1, &G, u1_struct);
-
-
-
-	printf("\n----in signature coordinates \n");
-	print_num(G.x);
-	print_num(G.y);
-
-	printf("\n--In [signature verify point1x = ]----- ");print_hex_type(point1.x,16);
-	printf("\n--In [signature verify point1y = ]----- ");print_hex_type(point1.y,16);
 
 
 	// point2 = (x_2,y_2) = u2Q
@@ -265,17 +187,8 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 	copyWord(Q.y, Q_y);
 	pointScalarMultAffine(&point2, &Q, u2_struct);
 
-	printf("\n--In [signature verify point2x = ]----- ");print_hex_type(point2.x,16);
-	printf("\n--In [signature verify point2y = ]----- ");print_hex_type(point2.y,16);
-
-
 	//point_res = point1 + pont2
 	pointAddAffine(&point_res, &point1, &point2);
-
-	printf("\n--In [signature verify point_sresx = ]----- ");print_hex_type(point_res.x,16);
-	printf("\n--In [signature verify point_resy = ]----- ");print_hex_type(point_res.y,16);
-
-	printf("\n--In [signature verify point_resx compare with r = ]----- ");print_hex_type(r,16);
 
 	// 7) if point_res is the infinity point: signature invalid, else: step 8)
 	if (pointValidOnCurve(&point_res) == 0){

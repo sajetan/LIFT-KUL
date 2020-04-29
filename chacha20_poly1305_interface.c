@@ -194,11 +194,11 @@ void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key
  	poly1305_msg_construction(poly_msg, &poly_struct); //constructing message for calculating mac tag
 //	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
 
-	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
-	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
-	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
+//	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
+//	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
+//	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
 	poly1305_auth(output, poly_msg, poly_struct.total_len, poly_key); //calculating mac tag
-	printf("@@@@@@ mac- ");print_num_type_length(output,MAC_TAG_LENGTH,8);
+//	printf("@@@@@@ mac- ");print_num_type_length(output,MAC_TAG_LENGTH,8);
 }
 
 
@@ -210,13 +210,11 @@ void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint3
 	uint8_t mac_tag[MAC_TAG_LENGTH]={0};
 	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
 
-	printf("\n@@@@@@ key1- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	poly1305_key_gen(poly_key, key,nonce); //generate one time key for poly1305
 
 	memset(poly_struct.msg, 0x00, len);
 	memset(poly_struct.aad,0x00,strlen(aad));
 	memcpy(poly_struct.aad,aad,strlen(aad));
-	printf("\n@@@@@@ key2- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	byte2charWithSize(poly_struct.msg, plaintext_in, len,8); //convert ciphertext byte array to string array for padding check
 
 //below is from reference
@@ -228,14 +226,14 @@ void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint3
 	paddingCheck(&poly_struct, POLY_PADDING_LENGTH); //padding check
  	poly1305_msg_construction(poly_msg, &poly_struct); //constructing message for calculating mac tag
 //	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
-	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
-	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
-	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
+//	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
+//	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
+//	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
 	poly1305_auth(mac_tag, poly_msg, poly_struct.total_len, poly_key); //calculating mac tag
-	printf("@@@@@@ mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
-	printf("@@@@@ rcvmac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
-	int val = poly1305_verify(mac_tag, rcv_mac_tag);
-	printf("@@@@@ ---------------------------  MAC VERIFICATION [ %d ] \n", val);
+//	printf("@@@@@@ mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
+//	printf("@@@@@ rcvmac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
+	WORD val = poly1305_verify(mac_tag, rcv_mac_tag);
+	printf(" ---------------------------  MAC VERIFICATION [ %d ] -------------------------------------\n", val);
 
 }
 

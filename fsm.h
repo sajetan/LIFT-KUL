@@ -67,9 +67,9 @@ State STS_receive_OK_fct(uint8_t* buf,  Memory* mem);
 State STS_CC_completed_fct();
 State STS_drone_completed_fct();
 
-void make_STS_0_data(uint8_t *data, Memory* mem);
-void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem);
-void make_STS_2_data(uint8_t *data, uint8_t *rcv_data, Memory* mem);
+void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len);
+void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len);
+void make_STS_2_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len);
 uint8_t verify_STS_1(uint8_t *rcv_data, Memory* mem);
 uint8_t verify_STS_2(uint8_t *rcv_data, Memory* mem);
 

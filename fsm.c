@@ -389,34 +389,29 @@ void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||p
 	 * as part of precomputation.
 	 * */
 
-   	uint32_t bits_rng = 256;        //initialization
-	uint8_t c_8[SIZE] = {0};
-    WORD c[SIZE] = {0};
-    WORD i;
-    p256_integer c_struct = {0};
-	p256_affine pointc = {0};
-
-	p256_integer cc_secret_key = {0};
+    p256_affine G = {0};
 	p256_affine cc_public_key={0};
+	p256_integer cc_secret_key = {0};
 
-    //generating random c
-//    EntropyPool pool;           
-//	initPool(&pool);
-    random(c, bits_rng, &mem->pool);
-    copyArrayWithSize(mem->SK,c); //copy to  memory
-    convertArray16toArray8(c_8, c);
+	uint32_t bits_rng = 256;        //initialization
+    WORD generate_random_key[SIZE] = {0};
+    WORD i;
+	uint8_t generate_random_key_8[SIZE] = {0};
 
-    for(i = 0; i<=c_8[0];i++){
-    	cc_secret_key.word[i] = c_8[i];
+    random(generate_random_key, bits_rng, &mem->pool);
+    copyArrayWithSize(mem->SK,generate_random_key); //copy to  memory
+    convertArray16toArray8(generate_random_key_8, generate_random_key);
+
+    for(i = 0; i<=generate_random_key_8[0];i++){
+    	cc_secret_key.word[i] = generate_random_key_8[i];
     	//mem->SK[i]=c_8[i];
     }
 	
     printf("in the memory----");print_hex_type(mem->SK,16);
     print_hex_type(cc_secret_key.word,8);
     //we should store G as a p256_affine structure in the memory
-    WORD G_x[SIZE] = {0};           
-    WORD G_y[SIZE] = {0};
-    p256_affine G = {0};
+
+
 //    convert(G_x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
 //    convert(G_y,  "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
 //    copyWord(G.x, G_x);
@@ -465,35 +460,31 @@ void make_STS_0_data(uint8_t *data, Memory* mem){     //STS_0_data = pointc.x||p
 void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_data = pointd.x||pointc.x||Encryption[signature(pointd.x||pointc.x)]
                                                           //rcv_data = STS_0_data = pointc.x||pointc.y  
     //generate random d                                   
-   	uint32_t bits_rng = 256;        //initialization
-	p256_affine G = {0};
-	p256_integer N={0};
 
+	p256_affine G = {0};
+	p256_affine drone_public_key = {0};
+	p256_affine cc_public_key = {0};
+	p256_affine session_key_affine = {0};
+
+	p256_integer N={0};
    	p256_integer drone_secret_key = {0};
+	p256_integer session_key = {0};
+
+	uint32_t bits_rng = 256;        //initialization
+	WORD drone_secret_key_copy[SIZE]={0};
     WORD i;
     WORD generate_random_key[SIZE] = {0};
-    uint8_t generate_random_key_8[SIZE] = {0};
-	p256_affine drone_public_key = {0};
 	WORD public_key_dronex_ccx[64] = {0};
 	WORD signed_message[64] = {0};
+
     uint8_t signed_message_8[SIZE] = {0};
-
-
+    uint8_t generate_random_key_8[SIZE] = {0};
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t ciphertext[MAX_MSG_SIZE]={0};
     uint8_t vciphertext[MAX_MSG_SIZE]={0};
-//    WORD encrypted_message[2048] = {0};
-//	WORD encrypted_message[2048] = {0};
-
-	p256_affine cc_public_key = {0};
-	p256_affine session_key_affine = {0};
 	uint8_t session_key_8[CHACHA_KEY_LENGTH] = {0};
-	WORD drone_secret_key_copy[SIZE]={0};
 	uint8_t drone_secret_key_8[CHACHA_KEY_LENGTH] = {0};
-
-	p256_integer session_key = {0};
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
-
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
     //we should store G as a p256_affine structure in the memory
@@ -711,30 +702,30 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem){   //STS_1_d
 void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem){   //STS_2_data = Encryption[signature(pointc.x||pointd.x)]
                                                           //rcv_data = STS_1_data = pointd.x||pointd.y||Encryption[signature(pointd.x||pointc.x)]
     //generate random d
-   	uint32_t bits_rng = 256;        //initialization
+	p256_affine G = {0};
+	p256_affine cc_public_key = {0};
+	p256_affine session_key_affine = {0};
+	p256_affine drone_public_key = {0};
 
    	p256_integer drone_secret_key = {0};
+   	p256_integer N={0};
+   	p256_integer session_key = {0};
+
+	uint32_t bits_rng = 256;        //initialization
+
     WORD i;
     WORD generate_random_key[SIZE] = {0};
-    uint8_t generate_random_key_8[SIZE] = {0};
-	p256_affine drone_public_key = {0};
 	WORD public_key_ccx_dronex[64] = {0};
 	WORD signed_message[64] = {0};
-    uint8_t signed_message_8[SIZE] = {0};
     WORD cc_secret_key_copy[SIZE]={0};
 
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t ciphertext[MAX_MSG_SIZE]={0};
     uint8_t vciphertext[MAX_MSG_SIZE]={0};
-
-	p256_affine cc_public_key = {0};
-	p256_affine session_key_affine = {0};
+    uint8_t signed_message_8[SIZE] = {0};
 	uint8_t session_key_8[CHACHA_KEY_LENGTH] = {0};
-	p256_integer session_key = {0};
-	p256_affine G = {0};
-	p256_integer N={0};
+	uint8_t generate_random_key_8[SIZE] = {0};
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
-
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
 
@@ -941,8 +932,7 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     memcpy(mem->SESSION_KEY,session_key_8, CHACHA_KEY_LENGTH); //copy to memory
     printf("verify_STS_1 copy SESSION KEY - ");print_num_type_length(mem->SESSION_KEY,32,8);
 
-
-    //verify_mac_aead_chacha20_poly1305(rcv_mac_tag, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
+    verify_mac_aead_chacha20_poly1305(rcv_mac_tag, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
 
    // verify_mac_aead_chacha20_poly1305(rcv_mac_tag, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7");
     //decrypt the signature with k
@@ -1035,7 +1025,7 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     //compute session key by taking hash of session key x coordinate
     printf("verify_STS_2 SESSION KEY");print_num_type_length(mem->SESSION_KEY,32,8);
 
-    //verify_mac_aead_chacha20_poly1305(rcv_mac_tag, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
+    verify_mac_aead_chacha20_poly1305(rcv_mac_tag, mem->SESSION_KEY, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7"); //this is not working
 
     //decrypt the signature with k
 //    aead_chacha20_poly1305(mac_tag,plaintext, session_key_8, 32, nonce, ciphertext, message_length, "50515253c0c1c2c3c4c5c6c7");

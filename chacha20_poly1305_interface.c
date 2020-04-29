@@ -90,7 +90,7 @@ void poly1305_key_gen(uint8_t *poly_key, uint8_t *key,uint8_t *nonce ){
 	memset(poly_key, 0x00,32);
 	memcpy(poly_key, out, 32);
 
-	printf("key- len %d - ",strlen(poly_key));print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
+	printf("[POLY KEY] - len %d - ",strlen(poly_key));print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
 }
 
 
@@ -107,8 +107,8 @@ void poly1305_msg_construction(u8 *poly_msg,poly1305_msg_struct *in){
 	*(uint64_t*)&msg_len=in->msg_len;  //convert uint64 to little endian of 8 bytes
 	*(uint64_t*)&aad_len=in->aad_len;  //convert uint64 to little endian of 8 bytes
 
-	printf("aad len %02x%02x%02x%02x%02x%02x%02x%02x \n",aad_len[0],aad_len[1],aad_len[2],aad_len[3],aad_len[4],aad_len[5],aad_len[6],aad_len[7]);
-	printf("message len %02x%02x%02x%02x%02x%02x%02x%02x \n",msg_len[0],msg_len[1],msg_len[2],msg_len[3],msg_len[4],msg_len[5],msg_len[6],msg_len[7]);
+//	printf("aad len %02x%02x%02x%02x%02x%02x%02x%02x \n",aad_len[0],aad_len[1],aad_len[2],aad_len[3],aad_len[4],aad_len[5],aad_len[6],aad_len[7]);
+//	printf("message len %02x%02x%02x%02x%02x%02x%02x%02x \n",msg_len[0],msg_len[1],msg_len[2],msg_len[3],msg_len[4],msg_len[5],msg_len[6],msg_len[7]);
 
 
 
@@ -129,36 +129,34 @@ void poly1305_msg_construction(u8 *poly_msg,poly1305_msg_struct *in){
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
 //padding check- [AAD + pad1] [MSG + pad2] should be multiple of 16
 void paddingCheck(poly1305_msg_struct  *in, uint8_t padding_length){
-	uint8_t zeros_req1 = padding_length-(strlen(in->aad)/2)%padding_length;
+	uint8_t zeros_req1=0;
+	uint8_t zeros_req2=0;
+	zeros_req1 = padding_length-(strlen(in->aad)/2)%padding_length;
 	if (zeros_req1 == padding_length)
 		zeros_req1=0;
 
-	//zeros_req1 == padding_length ? 0 : (zeros_req1);
 
-	uint8_t zeros_req2 = padding_length-(strlen(in->msg)/2)%padding_length;
+	zeros_req2 = padding_length-(strlen(in->msg)/2)%padding_length;
 	if (zeros_req2 == padding_length)
 		zeros_req2=0;
-
-//	zeros_req2 == padding_length ? 0 : (zeros_req2);
-
 
 
 	in->msg_len=strlen(in->msg)/2;
 	in->aad_len=strlen(in->aad)/2;
-	printf("########aad pad1 len %d %s %d pad[ %s %d ] aad len = [ %d ]\n", zeros_req1, in->aad, strlen(in->aad), in->pad1, strlen(in->pad1), in->aad_len);
+//	printf("########aad pad1 len %d %s %d pad[ %s %d ] aad len = [ %d ]\n", zeros_req1, in->aad, strlen(in->aad), in->pad1, strlen(in->pad1), in->aad_len);
 	while(zeros_req1 > 0){
 		sprintf(in->pad1+strlen(in->pad1),"%s","00");
 		zeros_req1--;
 	}
 
-	printf("########3mesg pad2 len %d %s %d pad[ %s %d ] mesg len = [ %d ]\n", zeros_req2, in->msg, strlen(in->msg), in->pad2, strlen(in->pad2),in->msg_len);
-	printf("value of zeros in message = [%d] \n",zeros_req2);
+//	printf("########3mesg pad2 len %d %s %d pad[ %s %d ] mesg len = [ %d ]\n", zeros_req2, in->msg, strlen(in->msg), in->pad2, strlen(in->pad2),in->msg_len);
+//	printf("value of zeros in message = [%d] \n",zeros_req2);
 	while(zeros_req2 > 0){
 		sprintf(in->pad2+strlen(in->pad2),"%s","00");
 		zeros_req2--;
 	}
-	printf("########aad pad1 len %d %s %d pad[ %s %d ] aad len = [ %d ]\n", zeros_req1, in->aad, strlen(in->aad), in->pad1, strlen(in->pad1), in->aad_len);
-	printf("########3mesg pad2 len %d %s %d pad[ %s %d ] mesg len = [ %d ]\n", zeros_req2, in->msg, strlen(in->msg), in->pad2, strlen(in->pad2),in->msg_len);
+//	printf("########aad pad1 len %d %s %d pad[ %s %d ] aad len = [ %d ]\n", zeros_req1, in->aad, strlen(in->aad), in->pad1, strlen(in->pad1), in->aad_len);
+//	printf("########3mesg pad2 len %d %s %d pad[ %s %d ] mesg len = [ %d ]\n", zeros_req2, in->msg, strlen(in->msg), in->pad2, strlen(in->pad2),in->msg_len);
 
 
 }
@@ -167,12 +165,10 @@ void paddingCheck(poly1305_msg_struct  *in, uint8_t padding_length){
 
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
 void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
-	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
 	poly1305_msg_struct poly_struct={0};
-	//uint8_t ciphertext_out[MAX_MSG_SIZE]={0};
-
 	uint64_t counter=0;
 	uint8_t poly_msg[MAX_MSG_SIZE]={0};
+	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
 
 	poly1305_key_gen(poly_key, key,nonce); //generate one time key for poly1305
 
@@ -192,47 +188,46 @@ void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key
 //	char test[]="d31a8d34648e60db7b86afbc53ef7ec2a4aded51296e08fea9e2b5a736ee62d63dbea45e8ca9671282fafb69da92728b1a71de0a9e060b2905d6a5b67ecd3b3692ddbd7f2d778b8c9803aee328091b58fab324e4fad675945585808b4831d7bc3ff4def08e4b7a9de576d26586cec64b6116";
 //	memcpy(poly_struct.msg, test, strlen(test));
 
-	printf("##############cipher text = %s \n",poly_struct.msg);
+//	printf("##############cipher text = %s \n",poly_struct.msg);
 
 	paddingCheck(&poly_struct, POLY_PADDING_LENGTH); //padding check
  	poly1305_msg_construction(poly_msg, &poly_struct); //constructing message for calculating mac tag
-	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
+//	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
 
 	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
 	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
 	poly1305_auth(output, poly_msg, poly_struct.total_len, poly_key); //calculating mac tag
-
+	printf("@@@@@@ mac- ");print_num_type_length(output,MAC_TAG_LENGTH,8);
 }
 
 
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
 void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
-	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
 	poly1305_msg_struct poly_struct={0};
-
 	uint64_t counter=0;
 	uint8_t poly_msg[MAX_MSG_SIZE]={0};
 	uint8_t mac_tag[MAC_TAG_LENGTH]={0};
+	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
 
+	printf("\n@@@@@@ key1- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	poly1305_key_gen(poly_key, key,nonce); //generate one time key for poly1305
-
 
 	memset(poly_struct.msg, 0x00, len);
 	memset(poly_struct.aad,0x00,strlen(aad));
 	memcpy(poly_struct.aad,aad,strlen(aad));
-
+	printf("\n@@@@@@ key2- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	byte2charWithSize(poly_struct.msg, plaintext_in, len,8); //convert ciphertext byte array to string array for padding check
 
 //below is from reference
 //	char test[]="d31a8d34648e60db7b86afbc53ef7ec2a4aded51296e08fea9e2b5a736ee62d63dbea45e8ca9671282fafb69da92728b1a71de0a9e060b2905d6a5b67ecd3b3692ddbd7f2d778b8c9803aee328091b58fab324e4fad675945585808b4831d7bc3ff4def08e4b7a9de576d26586cec64b6116";
 //	memcpy(poly_struct.msg, test, strlen(test));
 
-	printf("##############cipher text = %s \n",poly_struct.msg);
+//	printf("##############cipher text = %s \n",poly_struct.msg);
 
 	paddingCheck(&poly_struct, POLY_PADDING_LENGTH); //padding check
  	poly1305_msg_construction(poly_msg, &poly_struct); //constructing message for calculating mac tag
-	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
+//	printf("##################finished const len=%d \n",poly_struct.total_len);print_num_type(poly_msg, 8);print_num_type_length(poly_msg,poly_struct.total_len,8);
 	printf("\n@@@@@@ key- ");print_num_type_length(key,CHACHA_KEY_LENGTH,8);
 	printf("\n@@@@@@ nonce- ");print_num_type_length(nonce,8,8);
 	printf("@@@@@@ poly_key- ");print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
@@ -240,10 +235,9 @@ void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint3
 	printf("@@@@@@ mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
 	printf("@@@@@ rcvmac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
 	int val = poly1305_verify(mac_tag, rcv_mac_tag);
-	printf("@@@@@ MAC VERIFICATION [ %d ] \n", val);
+	printf("@@@@@ ---------------------------  MAC VERIFICATION [ %d ] \n", val);
 
 }
-
 
 /**
  * Test functions

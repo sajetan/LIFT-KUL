@@ -28,226 +28,248 @@ void initMemory(Memory* mem){
 
 }
 
-
-
-State STS_send_0_fct(uint8_t* buf, Memory* mem){
-    printf("\n/////\n State STS_send_0 \n");
-
-    // compute new message : 
+/*  Depending on which is the current state, the according packet will be constructed here.
+    For the STS-related states, STS message 0, 1 and 2 are constructed here.
+    The resulting packet will be stored in the memory, as well as its length. */
+void make_packet(Memory* mem, State state){
+    
     uint8_t data[MAX_DATA_LENGTH] = {0};
 	WORD_LEN len = 0;
-    make_STS_0_data(data, mem, &len);    //STS_0_data = pointc.x||pointc.y
+    WORD_TAG tag = 0;
+    
+    // depending on which is the current state, the according packet is constructed
+    switch (state){
+        case STS_make_0:
+            make_STS_0_data(data, mem, &len);    //STS_0_data = pointc.x||pointc.y
+            tag = TAG_STS_0;
+            break;
+        case STS_make_1:
+            make_STS_1_data(data, mem->rcv_data, mem, &len);    //STS_1_data = pointd.x||pointc.x||Encryption[signature(pointd.x||pointc.x)]
+            tag = TAG_STS_1;
+            break;
+        case STS_make_2:
+            make_STS_2_data(data, mem->rcv_data, mem, &len);    //STS_2_data = Encryption[signature(pointc.x||pointd.x)]
+            tag = TAG_STS_2;
+            break;
+        default:
+            printf("problem here: a make function is not defined for this state (%s)\n", __func__);
+            printf("tag: %d\n", state);
+            assert(0);
+            break;
+    }
+    // assemble the packet (TLV format)
+    getTLV(mem->send_buf, &mem->send_buf_len, tag, len, mem->receiverID, data);
+}
 
-    P(len);
-    // make the buffer
-
-    uint16_t buf_len = 0;
-    getTLV(buf, &buf_len, TAG_STS_0, len, mem->receiverID, data);
-
-    // send message
-    if(send_message(buf, buf_len)==0) {
+/*  This function sends the packet over the udp socket */
+void send_packet(Memory* mem){
+    
+    if(send_message(mem->send_buf, mem->send_buf_len)==0) {
 		close_sockets();
-		printf("Send failed at message tag %d\n", TAG_STS_0);
+		printf("Send failed in %s\n", __func__);
 		return 0;
 	}
-
     // print sent message
-	printf("Sent message STS 0:    \n");
-	for(int i = 0; i<buf_len; i++){
-		printf("%x ", buf[i]);
-	}
+    if(1){
+        printf("Sent message:    \n");
+        for(int i = 0; i<mem->send_buf_len; i++){
+            printf("%x ", mem->send_buf[i]);
+        }
+    }
+}
+
+/*  Here we receive messages and verify their correctness.
+    Returns 0 if incorrect message, 1 otherwise.
+    Following checks are performed: id, tag and signature(only for STS messages)  */
+uint16_t receive_packet(Memory* mem, WORD_TAG expectedTag){
+    WORD_LEN rcv_data_len = 0;
+    WORD_ID rcv_id = 0;
+    WORD_TAG rcv_tag = 0;
+    uint8_t rcv_data[MAX_DATA_LENGTH] = {0};
+    uint16_t valid = 1;
+
+    //receive message
+    mem->rcv_buf_len = receive_message(mem->rcv_buf);
+    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, mem->rcv_buf, mem->rcv_buf_len);
+    copyWord(mem->rcv_data,rcv_data );
+
+    // print received message
+    printf("Received: \n");
+    printf("\t tag = %d\n", rcv_tag);
+    printf("\t len = %d\n", rcv_data_len);
+    printf("\t id  = %d\n", rcv_id);
+    printf("\t data = ");
+	print_array(rcv_data, rcv_data_len);
+    printf("\n");
+
+    // perform the checks
+    if(rcv_tag != expectedTag){
+        printf("Invalid tag field (due to timeout or error)\n");
+        valid = 0;
+    }
+    else if(rcv_id != mem->receiverID){
+        printf("Invalid id field\n");
+        valid = 0;
+    }
+    else{
+        switch (expectedTag){
+            case TAG_STS_0:
+                // here the verification for STS_0 should be added when the signature will be implemented
+                valid = 1;
+                //valid = verify_STS_0(mem->rcv_data, mem);
+                break;
+            case TAG_STS_1:
+                valid = verify_STS_1(mem->rcv_data, mem);
+                break;
+            case TAG_STS_2:
+                valid = verify_STS_2(mem->rcv_data, mem);
+                break;
+            default:
+                printf("problem here: no verification instructions are defined for this tag %s\n", __func__);
+                assert(0);
+                break;
+            }
+
+        if(valid){
+            printf("valid signature\n");
+        }
+        else{
+            printf("invalid signature\n");
+        }
+    }
+    return valid;
+}
+
+/* idle state of the control center, its FSM always starts here */
+State idle_CC_fct( Memory* mem){
+    S()
+    return STS_make_0;
+}
+
+/* idle state of the drone, its FSM always starts here */
+State idle_drone_fct( Memory* mem){
+    S()
+    return STS_receive_0;
+}
+
+State STS_make_0_fct( Memory* mem){
+    S()
+    make_packet(mem, STS_make_0);
+    return STS_send_0;
+}
+
+State STS_make_1_fct( Memory* mem){
+    S()
+    make_packet(mem, STS_make_1);
+    return STS_send_1;
+}
+
+State STS_make_2_fct(Memory* mem){
+    S()
+    make_packet(mem, STS_make_2);
     return STS_send_2;
 }
 
-State STS_send_2_fct(uint8_t* buf, Memory* mem){
-    printf("\n//////\nState STS_send_2 \n");
 
-    //prepare variables to store data
-    uint16_t buf_len = 0;
-    uint16_t rcv_buf_len;
-    WORD_LEN rcv_data_len;
-    WORD_ID rcv_id;
-    WORD_TAG rcv_tag;
-    uint8_t rcv_data[MAX_DATA_LENGTH];
+State STS_send_0_fct(Memory* mem){
+    S()
+    send_packet(mem);
+    return STS_receive_1;
+}
 
-    // initialize buffer (otherwise it contains precedent data)
-    for(int i = 0; i<MAX_TRANSFER_LENGTH; i++){
-        buf[i] = 0;
-    }
+State STS_send_1_fct(Memory* mem){
+    S()
+    send_packet(mem);
+    return STS_receive_2;
+}
 
-    //receive message
-    rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, buf_len);
+State STS_send_2_fct(Memory* mem){
+    S()
+    send_packet(mem);
+    return STS_receive_OK;
+}
 
-    // print received message
-    printf("Received STS 1: \n");
-    printf("\t tag = %d\n", rcv_tag);
-    printf("\t len = %d\n", rcv_data_len);
-    printf("\t id  = %d\n", rcv_id);
-    printf("\t data = ");
-	for(int i = 0; i<rcv_data_len; i++){
-		printf("%x ", rcv_data[i]);
-	}
-    printf("\n");
+/*  Here we wait for STS0 to arrive.
+    Based on the validity of the message, the next state is defined */
+State STS_receive_0_fct(Memory* mem){
+    S()
+    uint16_t valid= receive_packet( mem, TAG_STS_0);
 
-    if(rcv_tag != TAG_STS_1){
-        printf("Invalid tag due to timeout or error, return in first state\n");
-        return STS_send_0;
-    }
-    else{
-        printf("Valid tag, verify STS_1\n");
-        
-        //verify STS_1
-        uint8_t valid_STS1 = 1;
+    if(!valid){
+        // do sth, here I put garbage
+        assert(0);
+        return STS_make_0;
+    } else{
+        return STS_make_1;
+    }   
+}
 
-        valid_STS1 = verify_STS_1(rcv_data, mem);
 
-        if(valid_STS1 == 0){
-            printf("STS_1 invalid, return in first state\n");
-            return STS_send_0;
-        }
+/*  Here we wait for STS1 to arrive.
+    Based on the validity of the message, the next state is defined */
+State STS_receive_1_fct(Memory* mem){
+    S()
+    uint16_t valid = receive_packet( mem, TAG_STS_1);
 
-        else{
-
-            printf("Valid STS_1, send next message\n");
-           
-            // compute new message
-            
-            uint8_t data[MAX_DATA_LENGTH] = {0};
-            WORD_LEN len = 0;                  // making the buf will change this in next version
-
-            make_STS_2_data(data,rcv_data, mem, &len);
-
-            getTLV(buf, &buf_len, TAG_STS_2, len, mem->receiverID, data);
-
-            // send message
-            if(send_message(buf, buf_len)==0) {
-                close_sockets();
-                printf("Send failed at message STS2 \n");
-                return 0;
-            }
-            
-            // print sent message
-            printf("Sent message STS 2:    ");
-            for(int i = 0; i<buf_len; i++){
-                printf("%x ", buf[i]);
-            }
-
-            return STS_receive_OK;
-
-        }
+    if(!valid){
+        // do sth, here I put garbage
+        assert(0);
+        return STS_make_0;
+    } else{
+        return STS_make_2;
     }
 }
 
-State STS_send_1_fct(uint8_t* buf, Memory* mem){
-    printf("\n//////\nState STS_send_1 \n");
+/*  Here we wait for STS2 to arrive.
+    Based on the validity of the message, the next state is defined */
+State STS_receive_2_fct(Memory* mem){
+    S()
+    uint16_t valid = receive_packet( mem, TAG_STS_2);
 
-    //prepare variables to store data
-    uint16_t buf_len = 0;
-    uint16_t rcv_buf_len;
-    WORD_LEN rcv_data_len;
-    WORD_ID rcv_id;
-    WORD_TAG rcv_tag;
-    uint8_t rcv_data[MAX_DATA_LENGTH];
-
-    // initialize buffer (otherwise it contains precedent data)
-    for(int i = 0; i<MAX_TRANSFER_LENGTH; i++){
-        buf[i] = 0;
-    }
-
-    //receive message
-    rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, rcv_buf_len);
-
-    // print received message
-    printf("Received STS 0: \n");
-    printf("\t tag = %d\n", rcv_tag);
-    printf("\t len = %d\n", rcv_data_len);
-    printf("\t id  = %d\n", rcv_id);
-    printf("\t data = ");
-	for(int i = 0; i<rcv_data_len; i++){
-		printf("%x ", rcv_data[i]);
-	}
-    printf("\n");
-
-    if(rcv_tag != TAG_STS_0){
-        printf("Invalid tag due to timeout or error, return in first state\n");
-        return STS_drone_listening;
-    }
-    else{
-        printf("Valid tag, send next message\n");
-        // compute new message
-        uint8_t data[MAX_DATA_LENGTH] = {0};
-        WORD_LEN len = 0;                  // making the buf sajetan: needs to get this from the function
-        make_STS_1_data(data, rcv_data, mem, &len);
-
-        getTLV(buf, &buf_len, TAG_STS_1, len, mem->receiverID, data);    
-        
-
-        // send message
-        if(send_message(buf, buf_len)==0) {
-            close_sockets();
-            printf("Send failed at message STS1 \n");
-            return 0;
-        }
-        
-        // print sent message
-        printf("Sent message STS 1:    ");
-        for(int i = 0; i<buf_len; i++){
-            printf("%x ", buf[i]);
-        }
-
+    if(!valid){
+        // do sth, here I put garbage
+        assert(0);
+        return STS_make_0;
+    } else{
         return STS_send_OK;
     }
 }
 
 
 
-/*
-    Here we wait for STS0 to arrive.
-    If there is a timeout or a wrong tag or 
-    an invalid signature,just stay in this state.
-    Otherwise, the packet is correct: Use the data
-    to perform computations and go to state STS_send_1
-    to send this new data
-*/
-State STS_receive_0_fct(uint8_t* buf, Memory* mem){
-    
-    // here we wait for STS1 to arrive
 
-    //if there is a timeout or a wrong tag or an invalid signature
-    return STS_send_1;
-}
-/*
-    Here we wait for STS1 to arrive.
-    If there is a timeout or a wrong tag or 
-    an invalid signature, go back to STS_send_0.
-    Otherwise, the packet is correct. Use the data
-    to perform computations and go to state STS_send_2
-    to send this new data
-*/
-State STS_receive_1_fct(uint8_t* buf, Memory* mem){
-    
-    // here we wait for STS1 to arrive
 
-    //if there is a timeout or a wrong tag or an invalid signature
-    return STS_send_2;
-}
 
-/*
-    Here we wait for STS2 to arrive.
-    If there is a timeout or a wrong tag or 
-    an invalid signature, go back to STS_receive_0.
-    Otherwise, the packet is correct. Use the data
-    to perform computations and go to state STS_drone_complete  
-*/
-State STS_receive_2_fct(uint8_t* buf, Memory* mem){
-    
-    // here we wait for STS1 to arrive
 
-    //if there is a timeout or a wrong tag or an invalid signature
-    return STS_drone_completed;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 State STS_send_OK_fct(uint8_t* buf, Memory* mem){
     printf("\n//////\nState STS_send_OK \n");
@@ -265,44 +287,7 @@ State STS_send_OK_fct(uint8_t* buf, Memory* mem){
         buf[i] = 0;
     }
 
-    //receive message
-    rcv_buf_len = receive_message(buf);
-    decomposeTLV( &rcv_tag,  &rcv_data_len, &rcv_id, rcv_data, buf, rcv_buf_len);
-
-    // print received message
-    printf("Received STS 2: \n");
-    printf("\t tag = %d\n", rcv_tag);
-    printf("\t len = %d\n", rcv_data_len);
-    printf("\t id  = %d\n", rcv_id);
-    printf("\t data = ");
-	for(int i = 0; i<rcv_data_len; i++){
-		printf("%x ", rcv_data[i]);
-	}
-    printf("\n");
-
-    if(rcv_tag != TAG_STS_2){
-        printf("Invalid tag due to timeout or error, return in first state\n");
-        return STS_send_1;
-    }
-    else{
-        printf("Valid tag, verify STS_2\n");
-        
-        //verify STS_2
-        
-        uint8_t valid_STS2 = 1;
-        
-        valid_STS2 = verify_STS_2(rcv_data, mem);
-
-        if(valid_STS2 == 0){
-            printf("STS_2 invalid, return in first state\n");
-            return STS_send_1;
-        }
-
-        else{
-
-            printf("Valid STS_2, send next message\n");
-           
-            // compute new message
+//compute new message
             
             WORD_LEN len = 1;                  // making the buf
             getTLV(buf, &buf_len, TAG_STS_OK, len, mem->receiverID, "ok");
@@ -322,8 +307,6 @@ State STS_send_OK_fct(uint8_t* buf, Memory* mem){
 
             return STS_drone_completed;
 
-        }
-    }
 }
 State STS_receive_OK_fct(uint8_t* buf,  Memory* mem){
     printf("\n//////\nState STS_receive_OK \n");
@@ -693,20 +676,24 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem, WORD *len){
 	uint8_t generate_random_key_8[SIZE] = {0};
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
-
+P(1)
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
+P(1)
 
 	//compute (x,y) = c*pointd -- taken from memory
 
     //compute session key k = hash(x) -- taken from memory
     //sign (pointc.x||pointd.x) with the private key of the control center -- taken from memory
+P(1)
 
     for(i=1;i<=16;i++){
     	public_key_ccx_dronex[i]    = mem->PKCX[i]; // cc_public_key.x[i];
     	public_key_ccx_dronex[i+16] = mem->PKDX[i]; //drone_public_key.x[i];
     }
+P(1)
+print_array(mem->PKCX, SIZE);
 
     printf("[make_STS_2_data] PKC x----- ");print_hex_type(mem->PKCX,16);
     printf("[make_STS_2_data] PKD y----- ");print_hex_type(mem->PKDX,16);

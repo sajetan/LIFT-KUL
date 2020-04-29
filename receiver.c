@@ -1,8 +1,7 @@
 
 #include "main.h"
 
-// number of messages to send
-#define MSGS 5
+
 
 int main(void)
 {
@@ -15,9 +14,10 @@ int main(void)
 	// init_socket(21235, 21237, 5);
     
 	// FSM part
-	State state = STS_send_1;
+	State state = idle_drone;
 	Memory memory;
 	initMemory(&memory); //, "456", "456");
+
 	int exit = 0;
 
 	// udp part
@@ -27,14 +27,20 @@ int main(void)
 
 	while(!exit){
 		switch(state){
+			case idle_drone: 
+				state = idle_drone_fct(&memory);
+				break;
 			case STS_receive_0: 
-				state = STS_receive_0_fct(buf, &memory);
+				state = STS_receive_0_fct(&memory);
+				break;
+			case STS_make_1: 
+				state = STS_make_1_fct(&memory);
 				break;
 			case STS_send_1: 
-				state = STS_send_1_fct(buf, &memory);
+				state = STS_send_1_fct(&memory);
 				break;
 			case STS_receive_2: 
-				state = STS_receive_2_fct(buf, &memory);
+				state = STS_receive_2_fct(&memory);
 				break;	
 			case STS_drone_completed: 
 				state = STS_drone_completed_fct();

@@ -950,7 +950,7 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    	//clean this up later
     //verify the signature with the public key of the drone, if signature valid --> STS_1 valid
 	WORD v=sig_ver(plaintext_word, N.word, public_key_dronex_ccx, mem->G.x, mem->G.y, drone_public_key->x,drone_public_key->y);
 	printf("--[verify_STS_1]----------------------SIGNATURE VERIFICATION -------------------------- [ %d ] \n", v);
-
+    return v;
 }
 
 uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_data = Encryption[signature(pointc.x||pointd.x)]
@@ -1035,7 +1035,6 @@ uint8_t verify_STS_2(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_2_dat
     /*---------------- verify the signature with the public key of the control center, if signature valid --> STS_2 valid --------------*/
 	WORD v=sig_ver(plaintext_word, N.word, public_key_ccx_dronex, G.x, G.y, mem->PKCX,mem->PKCY);
 	printf("--[verify_STS_2]----------------------SIGNATURE VERIFICATION -------------------------- [ %d ] \n", v);
-
-
+    return v;
 
 }

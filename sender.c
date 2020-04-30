@@ -21,7 +21,6 @@ int main(void)
 	// udp part
 	uint8_t buf[MAX_TRANSFER_LENGTH] = {0};	// message buffer
 	
-
 	while(!exit){
 		switch(state){
 			case idle_CC: 

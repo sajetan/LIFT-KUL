@@ -8,7 +8,8 @@
 #ifndef MULT_H_
 #define MULT_H_
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
 
 void mult(WORD *res, WORD *a, WORD *b);
 void smallMult(WORD *res, WORD a, WORD *b);

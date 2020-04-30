@@ -18,6 +18,7 @@
 #include "p256.h"
 #include "random.h"
 #include "hash.h"
+#include "signature.h"
 #include "chacha20_poly1305_interface.h"
 
 #define S()     printf("\nCurrent state:  %s\n", __func__);
@@ -46,28 +47,44 @@ typedef enum
 typedef struct Memory Memory;
 struct Memory
 {
-    WORD_ID receiverID;
-    EntropyPool pool;
+    // I think we should avoid this...
     WORD PKCX[SIZE];
     WORD PKCY[SIZE]; // public key of control center
     WORD PKDX[SIZE];
     WORD PKDY[SIZE]; // public key of drone
     WORD GX[SIZE];
     WORD GY[SIZE]; // Generator parameters
-    WORD N[SIZE]; //N parameter
     WORD SK[SIZE];     // secret key
+    /////////////////////////
+
+    // ... and instead use the structures in memory to keep it cleaner, there is no need to have the individual arrays
+    // I know that only one of the 2 secret keys should be here, but for the sake of debugging I leave them both
+    p256_affine G;
+    p256_affine drone_PK;
+    p256_affine control_PK;
+    WORD drone_SK[SIZE];
+    WORD control_SK[SIZE];
+    WORD N[SIZE]; //N parameter
+
+    WORD_ID receiverID;
+    EntropyPool pool;
 
     // communication specific
-    WORD send_buf[MAX_TRANSFER_LENGTH];
-    WORD rcv_buf[MAX_TRANSFER_LENGTH];
-    WORD rcv_data[MAX_DATA_LENGTH];
+    uint8_t send_buf[MAX_TRANSFER_LENGTH];
+    uint8_t rcv_buf[MAX_TRANSFER_LENGTH];
+    uint8_t rcv_data[MAX_DATA_LENGTH];
     uint16_t send_buf_len;
     uint16_t rcv_buf_len;
 
-    // session specific
-    WORD point_C[SIZE];     // first point computed by CC
-    WORD point_D[SIZE];     // second point computed by drone
-    uint8_t SESSION_KEY[32]; // public key of drone
+    // session specific : these are the public and secret keys for 1 session
+    WORD        drone_secret[SIZE];     // secret key used to generate the public key (=xy point)
+    WORD        control_secret[SIZE];     // secret key used to generate the public key (=xy point)
+    p256_affine pointc;     // first point computed by CC
+    p256_affine pointd;     // second point computed by drone
+    WORD        session_key[SIZE];     // session key
+
+    // why is this uint8_t?
+    uint8_t SESSION_KEY[32]; // session key
 
 };
 

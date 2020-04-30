@@ -9,9 +9,13 @@
 
 void initMemory(Memory* mem){
 
-    mem->receiverID = 117;
+    // entropy pool
     initPool(&mem->pool);
     accumulate(&mem->pool, 100);
+
+    mem->receiverID = 117;
+
+    ////// to avoid
     initArray(mem->SK,SIZE);
     initArray(mem->PKCX,SIZE);
     initArray(mem->PKCY,SIZE);
@@ -19,14 +23,57 @@ void initMemory(Memory* mem){
     initArray(mem->PKDY,SIZE);
     initArray(mem->GX,SIZE);
     initArray(mem->GY,SIZE);
-    initArray(mem->N,SIZE);
-    initArray(mem->SESSION_KEY,32);
-
     convert(mem->GX, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
     convert(mem->GY, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+    //////////
+
+    initArray(mem->N,SIZE);
+    initArray(mem->SESSION_KEY,32);
     convert(mem->N,  "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
 
-}
+    // instead, the structures
+    initArray(mem->G.x,SIZE);
+    initArray(mem->G.y,SIZE);
+    initArray(mem->drone_SK,SIZE);
+    initArray(mem->drone_PK.x,SIZE);
+    initArray(mem->drone_PK.y,SIZE);
+    initArray(mem->control_SK,SIZE);
+    initArray(mem->control_PK.x,SIZE);
+    initArray(mem->control_PK.y,SIZE);
+
+    convert(mem->G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
+    convert(mem->G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+    
+    // taken from testvector 1 in signature.c, Lien can you check if I took the right values?
+    convert(mem->drone_SK, "c9806898a0334916c860748880a541f093b579a9b1f32934d86c363c39800357");
+    convert(mem->drone_PK.x, "d0720dc691aa80096ba32fed1cb97c2b620690d06de0317b8618d5ce65eb728f");
+    convert(mem->drone_PK.y, "9681b517b1cda17d0d83d335d9c4a8a9a9b0b1b3c7106d8f3c72bc5093dc275f");
+    
+    // taken from testvector 7 in signature.c
+    convert(mem->control_SK, "f257a192dde44227b3568008ff73bcf599a5c45b32ab523b5b21ca582fef5a0a");
+    convert(mem->control_PK.x, "d2e01411817b5512b79bbbe14d606040a4c90deb09e827d25b9f2fc068997872");
+    convert(mem->control_PK.y, "503f138f8bab1df2c4507ff663a1fdf7f710e7adb8e7841eaa902703e314e793");
+
+    // session specific
+    initArray(mem->drone_secret,SIZE);
+    initArray(mem->pointd.x,SIZE);
+    initArray(mem->pointd.y,SIZE);
+    initArray(mem->control_secret,SIZE);
+    initArray(mem->pointc.x,SIZE);
+    initArray(mem->pointc.y,SIZE);
+    initArray(mem->SESSION_KEY,SIZE);
+    initArray(mem->session_key,SIZE);
+
+    // communication specific
+    initArray(mem->send_buf,MAX_TRANSFER_LENGTH);
+    initArray(mem->rcv_buf,MAX_TRANSFER_LENGTH);
+    initArray(mem->rcv_data,MAX_DATA_LENGTH);
+    mem->send_buf_len = 0;
+    mem->rcv_buf_len = 0;
+
+} // end initMemory
+
+
 
 /*  Depending on which is the current state, the according packet will be constructed here.
     For the STS-related states, STS message 0, 1 and 2 are constructed here.
@@ -236,39 +283,15 @@ State STS_receive_2_fct(Memory* mem){
 }
 
 
+State STS_CC_completed_fct(){
+    printf("\n/////\nState STS_CC_completed \n");
+    return State_Exit;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+State STS_drone_completed_fct(){
+    printf("\n/////\nState STS_drone_completed \n");
+    return State_Exit;
+}
 
 
 State STS_send_OK_fct(uint8_t* buf, Memory* mem){
@@ -276,11 +299,6 @@ State STS_send_OK_fct(uint8_t* buf, Memory* mem){
 
     //prepare variables to store data
     uint16_t buf_len;
-    uint16_t rcv_buf_len;
-    WORD_LEN rcv_data_len;
-    WORD_ID rcv_id;
-    WORD_TAG rcv_tag;
-    uint8_t rcv_data[MAX_DATA_LENGTH];
 
     // initialize buffer (otherwise it contains precedent data)
     for(int i = 0; i<MAX_TRANSFER_LENGTH; i++){
@@ -349,15 +367,16 @@ State STS_receive_OK_fct(uint8_t* buf,  Memory* mem){
 }    
 
 
-State STS_CC_completed_fct(){
-    printf("\n/////\nState STS_CC_completed \n");
-    return State_Exit;
-}
 
-State STS_drone_completed_fct(){
-    printf("\n/////\nState STS_drone_completed \n");
-    return State_Exit;
-}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -373,55 +392,40 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len){     //STS_0_data = 
 	 * as part of precomputation.
 	 * */
 
-    p256_affine G = {0};
-	p256_affine cc_public_key={0};
+    WORD* privateKey        = mem->control_secret; // this is to make life (and writing) easier, privateKey and publicKey are the private and public key stored in the memory
+	p256_affine* publicKey  = &mem->pointc;
 	p256_integer cc_secret_key = {0};
-
 	uint32_t bits_rng = 256;        //initialization
-    WORD generate_random_key[SIZE] = {0};
     WORD i;
 	uint8_t generate_random_key_8[SIZE] = {0};
 
-    random(generate_random_key, bits_rng, &mem->pool);
-    copyArrayWithSize(mem->SK,generate_random_key); //copy to  memory
-    convertArray16toArray8(generate_random_key_8, generate_random_key);
+    // normally random should be used
+    random(privateKey, bits_rng, &mem->pool);
+    
+    // but for checks I use the global private key
+    convert(privateKey, "f257a192dde44227b3568008ff73bcf599a5c45b32ab523b5b21ca582fef5a0a");
+    
+    // this should be removed later
+    copyArrayWithSize(mem->SK,privateKey); //copy to  memory
+   
 
+    convertArray16toArray8(generate_random_key_8, privateKey);
     for(i = 0; i<=generate_random_key_8[0];i++){
     	cc_secret_key.word[i] = generate_random_key_8[i];
-    	//mem->SK[i]=c_8[i];
     }
 	
-    printf("in the memory----");print_hex_type(mem->SK,16);
-    print_hex_type(cc_secret_key.word,8);
-    //we should store G as a p256_affine structure in the memory
-
-
-//    convert(G_x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
-//    convert(G_y,  "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
-//    copyWord(G.x, G_x);
-//	copyWord(G.y, G_y);
-
-    copyArrayWithSize(G.x,mem->GX); //copying from memory
-    copyArrayWithSize(G.y,mem->GY); //copying from memory
-//    copyArrayWithSize(N.word,mem->N); //copying from memory
-
 
     //pointc = c*G
-    pointScalarMultAffine(&cc_public_key, &G, cc_secret_key);
+    pointScalarMultAffine(publicKey, &mem->G, cc_secret_key);
 
     //converting to uint8_t arrays
     uint8_t data1[32+1] = {0}; //sajetan:manage this better to handle the damn array size
-    convertArray16toArray8(data1, cc_public_key.x);
+    convertArray16toArray8(data1, publicKey->x);
     uint8_t data2[32+1] = {0}; //sajetan:manage this better to handle the damn array size
-    convertArray16toArray8(data2, cc_public_key.y);
+    convertArray16toArray8(data2, publicKey->y);
 
-    copyArrayWithSize(mem->PKCX,cc_public_key.x);
-	copyArrayWithSize(mem->PKCY,cc_public_key.y);
-
-
-    printf("control center public keyx----- ");print_hex_type(cc_public_key.x,16);
-    printf("control center public keyy----- ");print_hex_type(cc_public_key.y,16);
-
+    copyArrayWithSize(mem->PKCX,publicKey->x);
+	copyArrayWithSize(mem->PKCY,publicKey->y);
 
     //concatenating point1.x and point1.y , in the next step while constructing data, make sure the concatetanation is similar to the state1 :TODO
     for(i=0;i<32;i++){
@@ -429,7 +433,15 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len){     //STS_0_data = 
         data[32+i] = data2[i+1];
     }
 
-    *len=(cc_public_key.x[0]+cc_public_key.x[0])*sizeof(p256_word);
+    *len=(publicKey->x[0]+publicKey->x[0])*sizeof(p256_word);
+
+    // print result
+    printf("control center private key        :"); print_hex_type(privateKey,16);
+    printf("control center private key (p256) :"); print_hex_type(cc_secret_key.word,8);
+    printf("control center public key.x-----  :");print_hex_type(publicKey->x,16);
+    printf("control center public key.y-----  :");print_hex_type(publicKey->y,16);
+
+
 
 //    printf("\nfinal data-----");print_num_size_type(data,64,8);
 //
@@ -442,27 +454,92 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len){     //STS_0_data = 
 //    printf("data2 tpkc %04x %04x %04x %04x %04x %04x %04x %04x  \n",data2[0],data2[1],data2[2],data2[3],data2[4], data2[5],data2[6],data2[7],data2[8],data2[9]);
 
 }
+/*
 
+void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len){    
+
+    //to make STS_0, a random number c is generated, this is multiplied with the generator G, and results in pointc 
+    //point1 = (pointc.x, pointc.y) = c*G, data of STS_0 is point1.x concatenated with pointc.y, pointc.x and pointc.y both have 256 bits, 
+    //              thus the data has 512 bits 
+
+
+    printf("make_STS_0_data \n");
+
+    //initialization
+	p256_integer cc_secret_key = {0};
+	p256_affine* public_key = &mem->session_Q_cc; // to make life easier
+	WORD* private_key = &mem->session_d_cc;   // to make life easier
+    WORD small[SIZE] = {0};
+
+	uint32_t bits_rng = 256;        
+    WORD i=0;
+    // generate the secret key d that will be used to compute the public key Q
+    random(private_key, bits_rng, &mem->pool);
+    copyWord(private_key, mem->d_cc); // I take the global secret key here to check, this line can be removed
+    copyArrayWithSize(mem->SK,private_key); // has to be removed later
+
+    // copy secret key d to p256 format in order to compute pointc = c*G
+    convertArray16toArray8(small, private_key);
+
+    for(i = 0; i<=private_key[0];i++){
+    	cc_secret_key.word[i] = small[i];
+    }
+
+    pointScalarMultAffine(public_key, &mem->G, cc_secret_key);
+    P(4)
+    //converting to uint8_t arrays
+    uint8_t data1[32+1] = {0}; //sajetan:manage this better to handle the damn array size
+    convertArray16toArray8(data1, public_key->x);
+    uint8_t data2[32+1] = {0}; //sajetan:manage this better to handle the damn array size
+    convertArray16toArray8(data2, public_key->y);
+
+    //concatenating point1.x and point1.y , in the next step while constructing data, make sure the concatetanation is similar to the state1 :TODO
+    for(i=0;i<32;i++){
+        data[i] = data1[i+1];
+        data[32+i] = data2[i+1];
+    }
+
+    *len=(public_key->x[0]+public_key->y[0])*sizeof(p256_word);
+
+    // print result
+    printf("control center private key       :\n"); print_hex_type(private_key,16);
+    printf("control center private key (p256):\n"); print_hex_type(cc_secret_key.word,8);
+    printf("control center public keyx-----  :");print_hex_type(public_key->x,16);
+    printf("control center public keyy-----  :");print_hex_type(public_key->y,16);
+
+
+
+//    printf("\nfinal data-----");print_num_size_type(data,64,8);
+//
+//    printf("data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",data[0],data[1],data[2],data[3],data[4], data[5],data[6],data[7],data[8],data[9]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",data[10],data[11],data[12],data[13],data[14], data[15],data[16],data[17],data[18],data[19]);
+//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",data[20],data[21],data[22],data[23],data[24], data[25],data[26],data[27],data[28],data[29]);
+//    printf(" %04x %04x %04x  \n",data[30],data[31],data[32]);
+//
+//    printf("data1 %04x %04x %04x %04x %04x %04x %04x %04x  \n",data1[0],data1[1],data1[2],data1[3],data1[4], data1[5],data1[6],data1[7],data1[8],data1[9]);
+//    printf("data2 tpkc %04x %04x %04x %04x %04x %04x %04x %04x  \n",data2[0],data2[1],data2[2],data2[3],data2[4], data2[5],data2[6],data2[7],data2[8],data2[9]);
+
+}
+*/
 
 void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){   //STS_1_data = pointd.x||pointc.x||Encryption[signature(pointd.x||pointc.x)]
                                                           //rcv_data = STS_0_data = pointc.x||pointc.y  
-    //generate random d                                   
 
-	p256_affine G = {0};
-	p256_affine drone_public_key = {0};
-	p256_affine cc_public_key = {0};
-	p256_affine session_key_affine = {0};
+	WORD*           drone_private_key   = &mem->drone_secret; // private session key of drone
+   	p256_affine*    drone_public_key    = &mem->pointd; // public session key of drone
+   	p256_affine*    control_public_key  = &mem->pointc; // public session key of drone
+    p256_affine     session_key_affine  = {0};
 
 	p256_integer N={0};
    	p256_integer drone_secret_key = {0};
-	p256_integer session_key = {0};
 
 	uint32_t bits_rng = 256;        //initialization
-	WORD drone_secret_key_copy[SIZE]={0};
+	//WORD drone_secret_key_copy[SIZE]={0};
     WORD i;
     WORD generate_random_key[SIZE] = {0};
 	WORD public_key_dronex_ccx[64] = {0};
 	WORD signed_message[64] = {0};
+	WORD rcv_data_big[SIZE] = {0};
 
     uint8_t signed_message_8[SIZE] = {0};
     uint8_t generate_random_key_8[SIZE] = {0};
@@ -474,72 +551,65 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){ 
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
-    //copy gen values from memory
-    copyArrayWithSize(G.x,mem->GX); //copying from memory
-    copyArrayWithSize(G.y,mem->GY); //copying from memory
+
+
     copyArrayWithSize(N.word,mem->N); //copying from memory
 
 
-	//generating random c
-    EntropyPool pool; //change this wrt the memory function
-	initPool(&pool);
-    random(generate_random_key, bits_rng, &pool);
-    print_hex_type(generate_random_key,16);
-
-    copyArrayWithSize(drone_secret_key_copy,generate_random_key);
-    convertArray16toArray8(generate_random_key_8, generate_random_key);
-
-    for(i = 0; i<=generate_random_key_8[0];i++){
-    	drone_secret_key.word[i]=generate_random_key_8[i];
-    }
+	//generating random c ( use private key of drone for the moment)
+        //random(drone_private_key, bits_rng, &mem->pool);
+    convert(drone_private_key, "c9806898a0334916c860748880a541f093b579a9b1f32934d86c363c39800357");
 
 
 
     /*---------------------------------compute pointd = d*G--------------------------------------------------*/
 
-    printf("drone secret key ------- ");print_hex_type(drone_secret_key.word,8);
+    convertArray16toArray8(generate_random_key_8, drone_private_key);
 
-    //pointc = c*G
-    pointScalarMultAffine(&drone_public_key, &G, drone_secret_key);
-
-
-    printf("drone public key [x]--------\n"); print_num(drone_public_key.x);
-    printf("drone public key [y]--------\n"); print_num(drone_public_key.y);
-
-
-    printf("\n[make_STS_1_data] drone public key [x]----- ");print_hex_type(drone_public_key.x,16);
-    printf("[make_STS_1_data] drone public key [y]----- ");print_hex_type(drone_public_key.y,16);
-    copyArrayWithSize(mem->PKDX,drone_public_key.x); //copy to memory
- 	copyArrayWithSize(mem->PKDY,drone_public_key.y); //copy to memory
-
-
-    uint16_t cc_pk[64]={0};
-    convertArray8toArray16withoutLen(cc_pk, rcv_data,64);
-
-//    printf("received cc public key data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",rcv_data[0],rcv_data[1],rcv_data[2],rcv_data[3],rcv_data[4], rcv_data[5],rcv_data[6],rcv_data[7],rcv_data[8],rcv_data[9]);
-//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",rcv_data[10],rcv_data[11],rcv_data[12],rcv_data[13],rcv_data[14], rcv_data[15],rcv_data[16],data[17],rcv_data[18],rcv_data[19]);
-//    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",rcv_data[20],rcv_data[21],rcv_data[22],rcv_data[23],rcv_data[24], rcv_data[25],rcv_data[26],data[27],rcv_data[28],rcv_data[29]);
-//    printf(" %04x %04x %04x  \n",rcv_data[30],rcv_data[31],rcv_data[32]);
-
-    cc_public_key.x[0]=16;
-    cc_public_key.y[0]=16;
-
-    for(i=0;i<32;i++){
-    	cc_public_key.x[i+1] = cc_pk[i];
-    	cc_public_key.y[i+1] = cc_pk[i+16];
+    for(i = 0; i<=generate_random_key_8[0];i++){
+    	drone_secret_key.word[i]=generate_random_key_8[i];
     }
-    copyArrayWithSize(mem->PKCX,cc_public_key.x); //copy to memory
-   	copyArrayWithSize(mem->PKCY,cc_public_key.y); //copy to memory
+    
+    //compute pointc = c*G
+    pointScalarMultAffine(drone_public_key, &mem->G, drone_secret_key);
+
+    // print
+    printf("drone secret key ---: ");print_hex_type(drone_secret_key.word,8);
+    printf("drone public key [x]: "); print_num(drone_public_key->x);
+    printf("drone public key [y]: "); print_num(drone_public_key->y);
 
 
+    printf("\n[make_STS_1_data] drone public key [x]----- ");print_hex_type(drone_public_key->x,16);
+    printf("[make_STS_1_data] drone public key [y]----- ");print_hex_type(drone_public_key->y,16);
+    
+    // to be removed later on
+    copyArrayWithSize(mem->PKDX,drone_public_key->x); //copy to memory
+ 	copyArrayWithSize(mem->PKDY,drone_public_key->y); //copy to memory
 
-    //printf("---recvd data - pkc 16\n");print_num(pkc);
-    printf("[make_STS_1_data] control center public key [x]----- ");print_hex_type(cc_public_key.x,16);
-    printf("[make_STS_1_data] control center public key [y]----- ");print_hex_type(cc_public_key.y,16);
+
+    /*---------------------------------retreive public key from STS_0 message--------------------------------------------------*/
+    //    printf("received cc public key data %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x  ",rcv_data[0],rcv_data[1],rcv_data[2],rcv_data[3],rcv_data[4], rcv_data[5],rcv_data[6],rcv_data[7],rcv_data[8],rcv_data[9]);
+    //    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x ",rcv_data[10],rcv_data[11],rcv_data[12],rcv_data[13],rcv_data[14], rcv_data[15],rcv_data[16],data[17],rcv_data[18],rcv_data[19]);
+    //    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x",rcv_data[20],rcv_data[21],rcv_data[22],rcv_data[23],rcv_data[24], rcv_data[25],rcv_data[26],data[27],rcv_data[28],rcv_data[29]);
+    //    printf(" %04x %04x %04x  \n",rcv_data[30],rcv_data[31],rcv_data[32]);
+
+
+    convertArray8toArray16withoutLen(rcv_data_big, rcv_data,64); // expand to 16 bits
+
+    control_public_key->x[0]=16;
+    control_public_key->y[0]=16;
+    for(i=0;i<32;i++){
+    	control_public_key->x[i+1] = rcv_data_big[i];
+    	control_public_key->y[i+1] = rcv_data_big[i+16];
+    }
+
+    printf("[make_STS_1_data] control center public key [x]----- ");print_hex_type(control_public_key->x,16);
+    printf("[make_STS_1_data] control center public key [y]----- ");print_hex_type(control_public_key->y,16);
 
 
     /*--------------------------------- compute session key = (x,y) = d*pointc ------------------------------------*/
-    pointScalarMultAffine(&session_key_affine, &cc_public_key, drone_secret_key);
+    
+    pointScalarMultAffine(&session_key_affine, control_public_key, drone_secret_key);
 
     printf("[make_STS_1_data] session_key x affine----- ");print_hex_type(session_key_affine.x,16);
     printf("[make_STS_1_data] session_key y affine----- ");print_hex_type(session_key_affine.y,16);
@@ -550,16 +620,16 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){ 
 //    printf(" %04x %04x %04x  \n",session_key_affine.x[30],session_key_affine.x[31],session_key_affine.x[32]);
     
     //compute session key by taking hash of session key x coordinate
-    hash(session_key.word,session_key_affine.x,256);
-    printf("\n[make_STS_1_data] SESSION KEY ----- ");print_hex_type(session_key.word,16);
+    hash(mem->session_key,session_key_affine.x,256);
+    printf("\n[make_STS_1_data] SESSION KEY ----- ");print_hex_type(mem->session_key,16);
 
 
     //
     WORD data_for_sign[32]={0};
 
     for(i=1;i<=16;i++){
-    	public_key_dronex_ccx[i]    = drone_public_key.x[i];
-    	public_key_dronex_ccx[i+16] = cc_public_key.x[i];
+    	public_key_dronex_ccx[i]    = drone_public_key->x[i];
+    	public_key_dronex_ccx[i+16] = control_public_key->x[i];
     }
     public_key_dronex_ccx[0]=64/sizeof(WORD);
 
@@ -571,13 +641,14 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){ 
 
     /*---------------------------------sign (pointd.x||pointc.x) with the private key of the drone --------------------*/
 
-	signature_gen(signed_message,drone_secret_key_copy,public_key_dronex_ccx, N.word, G.x, G.y);
-    //signature_gen(signed_message,drone_secret_key.word,public_key_dronex_ccx, N.word, G.x, G.y);
+    //signature_gen(signed_message,drone_secret_key_copy,public_key_dronex_ccx, N.word, mem->G.x, mem->G.y);
+    signature_gen(signed_message,drone_private_key,public_key_dronex_ccx, N.word, mem->G.x, mem->G.y);
+    //signature_gen(signed_message,drone_secret_key.word,public_key_dronex_ccx, N.word, mem->G.x, mem->G.y);
     printf("\n [make_STS_1_data] SIGNATURE GENERATED---- ");print_num(signed_message);
 
     convertArray16toArray8withoutLen(signed_message_8, signed_message);
 
-    convertArray16toArray8withoutLen(session_key_8, session_key.word);
+    convertArray16toArray8withoutLen(session_key_8, mem->session_key);
 
     memcpy(mem->SESSION_KEY,session_key_8, CHACHA_KEY_LENGTH); //copy to memory
 
@@ -609,9 +680,9 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){ 
 
 	data[1]=CHACHA_NONCE_LENGTH;
 
-	data[2]=drone_public_key.x[0]*2;
+	data[2]=drone_public_key->x[0]*2;
 
-	data[3]=drone_public_key.y[0]*2;
+	data[3]=drone_public_key->y[0]*2;
 
 	data[4]=signed_message[0]*2;
 
@@ -624,13 +695,13 @@ void make_STS_1_data(uint8_t *data, uint8_t *rcv_data, Memory* mem, WORD *len){ 
 
 
 	for(i=0;i<data[2]/2;i++){
-		data[total_data+data[1]+i*2] = drone_public_key.x[i+1];
-        data[total_data+data[1]+i*2+1] = drone_public_key.x[i+1] >> 8 ;
+		data[total_data+data[1]+i*2] = drone_public_key->x[i+1];
+        data[total_data+data[1]+i*2+1] = drone_public_key->x[i+1] >> 8 ;
 	}
 
 	for(i=0;i<data[3]/2;i++){
-		data[total_data+data[1]+data[2]+i*2] = drone_public_key.y[i+1];
-        data[total_data+data[1]+data[2]+i*2+1] = drone_public_key.y[i+1] >> 8 ;
+		data[total_data+data[1]+data[2]+i*2] = drone_public_key->y[i+1];
+        data[total_data+data[1]+data[2]+i*2+1] = drone_public_key->y[i+1] >> 8 ;
     }
 
 
@@ -676,24 +747,20 @@ void make_STS_2_data(uint8_t *data, uint8_t *recv_data, Memory* mem, WORD *len){
 	uint8_t generate_random_key_8[SIZE] = {0};
 	uint8_t rcv_mac_tag[MAC_TAG_LENGTH] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
-P(1)
+
     copyArrayWithSize(G.x,mem->GX); //copying from memory
     copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
-P(1)
 
 	//compute (x,y) = c*pointd -- taken from memory
 
     //compute session key k = hash(x) -- taken from memory
     //sign (pointc.x||pointd.x) with the private key of the control center -- taken from memory
-P(1)
 
     for(i=1;i<=16;i++){
     	public_key_ccx_dronex[i]    = mem->PKCX[i]; // cc_public_key.x[i];
     	public_key_ccx_dronex[i+16] = mem->PKDX[i]; //drone_public_key.x[i];
     }
-P(1)
-print_array(mem->PKCX, SIZE);
 
     printf("[make_STS_2_data] PKC x----- ");print_hex_type(mem->PKCX,16);
     printf("[make_STS_2_data] PKD y----- ");print_hex_type(mem->PKDX,16);
@@ -755,12 +822,11 @@ print_array(mem->PKCX, SIZE);
 
 }
 
-
-uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_data = pointd.x||pointd.y||nonce||Encryption[signature(pointd.x||pointc.x)]||MAC
-	//clean this up later
+/* rcv_data = STS_1_data = pointd.x||pointd.y||nonce||Encryption[signature(pointd.x||pointc.x)]||MAC */
+uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    	//clean this up later
 
 	p256_affine G = {0};
-	p256_affine drone_public_key = {0};
+	p256_affine *drone_public_key = &mem->pointd;
 	p256_affine cc_public_key = {0};
 	p256_affine session_key_affine = {0};
 	p256_integer drone_secret_key = {0};
@@ -784,27 +850,24 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     uint8_t generate_random_key_8[SIZE] = {0};
     uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 
-
-    copyArrayWithSize(G.x,mem->GX); //copying from memory
-    copyArrayWithSize(G.y,mem->GY); //copying from memory
     copyArrayWithSize(N.word,mem->N); //copying from memory
 
-   // if (recv_data[0]!=6) return; //number of tags should be 5
+    // ----------------Retreive data
     WORD total_data =recv_data[0];
 
 	for(i=0;i<recv_data[1];i++){
 		nonce[i] = recv_data[total_data+i];
 	}
 
-	drone_public_key.x[0]=16;
-	drone_public_key.y[0]=16;
+	drone_public_key->x[0]=16;
+	drone_public_key->y[0]=16;
 
 	for(i=0;i<recv_data[2]/2;i++){
-		drone_public_key.x[i+1] = ((recv_data[total_data+recv_data[1]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+i*2]);
+		drone_public_key->x[i+1] = ((recv_data[total_data+recv_data[1]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+i*2]);
 	}
 
 	for(i=0;i<recv_data[3]/2;i++){
-		drone_public_key.y[i+1] = ((recv_data[total_data+recv_data[1]+recv_data[2]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+recv_data[2]+i*2]);
+		drone_public_key->y[i+1] = ((recv_data[total_data+recv_data[1]+recv_data[2]+i*2+1]<< 8) | recv_data[total_data+recv_data[1]+recv_data[2]+i*2]);
     }
 
 	message_length=recv_data[4];
@@ -816,8 +879,8 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 		rcv_mac_tag[i]=recv_data[total_data+recv_data[1]+recv_data[2]+recv_data[3]+recv_data[4]+i];
     }
 
-    printf("\ndrone public key [x]----- ");print_hex_type(drone_public_key.x,16);
-    printf("drone public key [y]----- ");print_hex_type(drone_public_key.y,16);
+    printf("\ndrone public key [x]----- ");print_hex_type(drone_public_key->x,16);
+    printf("drone public key [y]----- ");print_hex_type(drone_public_key->y,16);
 
 	printf("MAC RECEIVED- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
 	printf("CIPHERTEXT RECEIVED- ");print_num_type_length(ciphertext,recv_data[4],8);
@@ -839,13 +902,13 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
     copyArrayWithSize(cc_public_key.x,mem->PKCX);
 	copyArrayWithSize(cc_public_key.y,mem->PKCY);
 
-    copyArrayWithSize(mem->PKDX,drone_public_key.x);
-	copyArrayWithSize(mem->PKDY,drone_public_key.y);
+    copyArrayWithSize(mem->PKDX,drone_public_key->x);
+	copyArrayWithSize(mem->PKDY,drone_public_key->y);
 
 	/* lets now extract all the components from rcv_data */
 
     //compute (x,y) = c*pointd
-    pointScalarMultAffine(&session_key_affine, &drone_public_key, cc_secret_key);
+    pointScalarMultAffine(&session_key_affine, drone_public_key, cc_secret_key);
     printf("session_key x affine----- ");print_hex_type(session_key_affine.x,16);
     printf("session_key y affine----- ");print_hex_type(session_key_affine.y,16);
 
@@ -870,7 +933,7 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 	printf("[verify_STS_1] Plaintext sign(pkdx || pkcx) ");print_num_type_length(plaintext,message_length,8);
 
     for(i=1;i<=16;i++){
-    	public_key_dronex_ccx[i]    = drone_public_key.x[i];
+    	public_key_dronex_ccx[i]    = drone_public_key->x[i];
     	public_key_dronex_ccx[i+16] = cc_public_key.x[i];
     }
     public_key_dronex_ccx[0]=64/sizeof(WORD);
@@ -885,7 +948,7 @@ uint8_t verify_STS_1(uint8_t *recv_data, Memory* mem){    //rcv_data = STS_1_dat
 
 
     //verify the signature with the public key of the drone, if signature valid --> STS_1 valid
-	WORD v=sig_ver(plaintext_word, N.word, public_key_dronex_ccx, G.x, G.y, drone_public_key.x,drone_public_key.y);
+	WORD v=sig_ver(plaintext_word, N.word, public_key_dronex_ccx, mem->G.x, mem->G.y, drone_public_key->x,drone_public_key->y);
 	printf("--[verify_STS_1]----------------------SIGNATURE VERIFICATION -------------------------- [ %d ] \n", v);
 
 }

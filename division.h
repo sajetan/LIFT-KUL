@@ -9,7 +9,11 @@
 #ifndef DIVISION_H_
 #define DIVISION_H_
 
-#include"main.h"
+#include"globals.h"
+#include"utilities.h"
+#include"mult.h"
+#include"add.h"
+#include"sub.h"
 
 void division(WORD *q, WORD *r, WORD *x, WORD *y);
 void shiftBase(WORD *res, WORD a, WORD *y);

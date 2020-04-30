@@ -42,6 +42,7 @@
 #define BIT (BYTE*8)
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
 #define SIZE 66
+#define SIZEPOINT 33
 
 //maybe in future i'll use this and remove all the array size issues
 typedef struct{

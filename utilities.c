@@ -56,13 +56,18 @@ void initArray(WORD *in, size_t size){
 	}
 }
 
+void initArray8(uint8_t *in, size_t size){
+	for(WORD i = 0; i<size; i++){ // set array to zero
+		in[i] = 0;
+	}
+}
+
 void convertArray16toArray8(uint8_t *out, uint16_t *in){
 	WORD i;
 	for(i=1; i<=in[0]; i++){
 		out[i*2-1] = in[i];
 		out[i*2] = in[i] >> 8;
 	}
-
 	WORD w = 2*in[0];
 	while (out[w] == 0  && w>0){
 		w--;
@@ -94,6 +99,46 @@ void convertArray8toArray16withoutLen(uint16_t *out, uint8_t *in, size_t len){
 	}
 
 	//out[0] = in[0]/2;
+}
+
+/* transforms uint8_t array without length into an array of word (length = SIZE) with length field*/
+void rawbyte2word(WORD *out, uint8_t *in, size_t len){
+	assert((SIZE-1)*BYTE>= len); // to avoid that inside the uint8_t array there is too much to store in out
+	uint16_t i = 0;
+	uint16_t index = 0;
+	WORD t = 0;
+	initArray(out, SIZE);
+	for(i=0; i<len; i++){
+		index = i/(BIT/8)+1;
+		t = in[i];
+		out[index] |= t<< (8*(i%(BIT/8)));
+	}
+	while(out[index]==0 && index>0){
+		index--;
+	}
+	out[0] = index;
+}
+
+/* transforms an array of word of length SIZE with a length field into an array of bytes without length. Out is maximum "max_len" long.
+	The assert below treats a corner case where the byte array ends in the middle of the word array.*/
+void word2rawbyte(uint8_t *out, WORD *in, size_t max_len){
+	uint16_t i = 0;
+	uint16_t index = 1;
+	uint8_t t = 0;
+	initArray8(out, max_len);
+	while(i<max_len){
+		t = in[index]>> (8*(i%(BIT/8)));
+		out[i] = t;
+		i++;
+		index = i/(BIT/8)+1;	
+	}
+	if(i == max_len && index<=in[0] ){
+		printf("Possibility that some partes of the last cell have not been correctly copied in function %s:\n", __func__);
+		print_num(in);
+		print_array8(out, max_len);
+		P(max_len);
+		assert(0);
+	}
 }
 
 void convertArray8toArray16(uint16_t *out, uint8_t *in, size_t len){
@@ -384,6 +429,18 @@ void print_array(WORD *in, uint64_t size){
     printf("\n\r");
 }
 
+/*prints an array; format: [in[0], in[1], ..., in[size-1]]*/
+void print_array8(uint8_t *in, uint64_t size){
+    printf("[");
+    for (WORD i = 0; i < size; i++) {
+    		printf("0x%02x,", in[i]);
+
+    }
+    printf("]");
+    printf("\n\r");
+}
+
+
 
 
 
@@ -450,10 +507,22 @@ INPUT: 2 WORD[] arrays of length SIZE*/
 void copyArrayWithSize(WORD copy[], WORD w[]){
     for(WORD i = 0; i<w[0]+1; i++){
         copy[i] = w[i];
-
     }
 }
 
+/* copies array w to array copy
+INPUT: 2 WORD[] arrays of length len */
+void copyArrayWithoutSize(WORD copy[], WORD w[], uint16_t len){
+    for(uint16_t i = 0; i<len; i++){
+        copy[i] = w[i];
+    }
+}
+
+void copyBytes(uint8_t copy[], uint8_t w[], uint16_t len){
+    for(uint16_t i = 0; i<len; i++){
+        copy[i] = w[i];
+    }
+}
 
 
 #if 0

@@ -17,6 +17,7 @@ int main(void)
 	State state = idle_drone;
 	Memory memory;
 	initMemory(&memory); //, "456", "456");
+    print_num(memory.drone_SK);
 
 	int exit = 0;
 
@@ -29,6 +30,9 @@ int main(void)
 		switch(state){
 			case idle_drone: 
 				state = idle_drone_fct(&memory);
+				break;
+			case key_exchange_drone: 
+				state = key_exchange_drone_fct(&memory);
 				break;
 			case STS_receive_0: 
 				state = STS_receive_0_fct(&memory);

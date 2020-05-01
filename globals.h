@@ -29,7 +29,7 @@
 
 
 //new
-#define P(print)    printf("hello %d \n", print);
+#define P(print)    printf("hello %x \n", print);
 
 #define WORD uint16_t
 
@@ -42,7 +42,12 @@
 #define BIT (BYTE*8)
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
 #define SIZE 66
-#define SIZEPOINT 33
+//#define SIZEPOINT 33
+#define POINT_LEN 32 // length of a point coordonate in bytes
+#define SIG_LEN 64 // max length of the signature text
+#define CIPHER_LEN 32 // max length of the cipher text
+#define SIZE_EC_KEY 256 // size of the EC private key (in bits!)
+#define SIZE_SESSION_KEY 256 // size of the EC private key (in bits!)
 
 //maybe in future i'll use this and remove all the array size issues
 typedef struct{

@@ -9,14 +9,16 @@
 
 
 /* hash function (256 bit)
-INPUTS: - in    : array of WORDS, length can be whatever
+INPUTS: - in    : array of WORDS, length can be whatever. 
+                Beware that the length field must be present and will be removed.
+                By removing the length field, the input array is chnged as well, which is not ideal I know
 OUTPUT: - out   : array of WORDS, length = SIZE; will contain the 256 bit hash
 */
 void hash(WORD out[],  void* in, uint16_t sizeHash){
     assert (sizeHash == 256 ||sizeHash == 384 ||sizeHash == 612);
 
     WORD numberBytes    = getNumberBytes(in);
-    WORD len            = SIZE-1;
+    WORD len            = sizeHash/BIT; // ne need to look further since only 256 bits
     WORD i              = 0;
     
     // 256 for 256 bit hash
@@ -28,7 +30,8 @@ void hash(WORD out[],  void* in, uint16_t sizeHash){
     in += BIT/8; // use pointer arithmetic to sent whole array except first element
 
     sha3_HashBuffer(sizeHash, SHA3_FLAGS_KECCAK, in, numberBytes, out, (BIT/8)*SIZE);
-    for( i = SIZE; i>0; i--){ // shift all cells to free place for size
+
+    for( i = len; i>0; i--){ // shift all cells to free place for size
         out[i] = out[i-1];
     }
     while(out[len] == 0 && len > 0){

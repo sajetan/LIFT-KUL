@@ -386,6 +386,23 @@ void pointScalarMultAffine(p256_affine *out, p256_affine *in, p256_integer k){
 	jacobianToAffine(out, &outj); /* converting result back to affine */
 }
 
+/* function that handles the required word to byte conversion.
+	This actually what Tejas did in the FSM, I put these operations in an apart function. */
+void pointScalarMultAffineWord(p256_affine *out, p256_affine *in, WORD* k){
+	p256_integer k2;
+	uint8_t small[BIT/4*SIZE];
+	initArray(k2.word, P256_MAX_SIZE);
+	uint16_t i = 0;
+	// k must be inserted bitwise in k2
+	convertArray16toArray8(small, k);
+    for(i = 0; i<=small[0];i++){
+    	k2.word[i] = small[i];
+    }
+	
+	// call normal function
+	pointScalarMultAffine(out, in, k2);
+}
+
 
 void p256TestScalarMultAffine(){
 	p256_affine in ={0}; //initializing affine

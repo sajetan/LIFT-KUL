@@ -18,7 +18,7 @@
 typedef uint16_t p256_word;
 typedef uint64_t p256_dword;
 
-#define P256_MAX_SIZE 64 //8 for elements and 1 for size
+#define P256_MAX_SIZE SIZE //8 for elements and 1 for size
 
 // All P-256 integers are non-negative and are of 32bytes long. This shall be represented as an array of 8 elements of 32bits each.
 typedef struct{
@@ -48,6 +48,7 @@ p256_word checkIfZero( p256_word* a);
 void pointAddAffine(p256_affine *out, p256_affine *in1, p256_affine *in2);
 void pointDoubleAffine(p256_affine *out, p256_affine *in);
 void pointScalarMultAffine(p256_affine *out, p256_affine *in, p256_integer k);
+void pointScalarMultAffineWord(p256_affine *out, p256_affine *in, WORD* k);
 
 //in jacobian
 p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian *in2);

@@ -26,6 +26,9 @@ int main(void)
 			case idle_CC: 
 				state = idle_CC_fct(&memory);
 				break;
+			case key_exchange_CC: 
+				state = key_exchange_CC_fct(&memory);
+				break;
 			case STS_make_0: 
 				state = STS_make_0_fct(&memory);
 				break;

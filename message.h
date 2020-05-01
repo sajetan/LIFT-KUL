@@ -42,6 +42,8 @@
 #define TAG_SAY_HELLO_TO_CC     (WORD_TAG) 6
 #define TAG_STS_OK   (WORD_TAG) 7
 #define TAG_TIMEOUT   (WORD_TAG) 8
+#define TAG_KEY_EXCHANGE_DRONE   (WORD_TAG) 9
+#define TAG_KEY_EXCHANGE_CC  (WORD_TAG) 10
 
 /*
 typedef struct Session Session;

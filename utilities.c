@@ -69,7 +69,7 @@ void convertArray16toArray8(uint8_t *out, uint16_t *in){
 		out[i*2] = in[i] >> 8;
 	}
 	WORD w = 2*in[0];
-	while (out[w] == 0  && w>0){
+	while(out[w] == 0  && w>0){
 		w--;
 	}
 	out[0] = w;
@@ -122,6 +122,7 @@ void rawbyte2word(WORD *out, uint8_t *in, size_t len){
 /* transforms an array of word of length SIZE with a length field into an array of bytes without length. Out is maximum "max_len" long.
 	The assert below treats a corner case where the byte array ends in the middle of the word array.*/
 void word2rawbyte(uint8_t *out, WORD *in, size_t max_len){
+	assert(in[0]*BYTE <= max_len); // to avoid overflow
 	uint16_t i = 0;
 	uint16_t index = 1;
 	uint8_t t = 0;
@@ -254,7 +255,7 @@ void array2text(char text[], WORD array[]){
 
 
 #if 0
-/*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
+/*s an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
 void print_num_size(WORD *in, size_t s){
     printf("[");
     for (WORD i = 0; i < s; i++) {
@@ -331,7 +332,7 @@ void print_num(WORD *in){
 }
 void print_hex(WORD *in)
 {
-    WORD i;
+    WORD i=0;
 
     printf("0x");
     for (i = in[0]; i >= 1; i--) {
@@ -356,8 +357,10 @@ void print_hex(WORD *in)
 
 void print_hex_type(WORD *in, size_t type)
 {
-    WORD i;
-
+    WORD i = 0;
+	if(type == 8){
+		printf("info message: this is a uint8, not a word array=> zeros won't always be printed out properly");
+	}
     printf("0x");
     for (i = in[0]; i >= 1; i--) {
     	switch(type){
@@ -379,9 +382,19 @@ void print_hex_type(WORD *in, size_t type)
     printf("\n\r");
 }
 
+void print_hex_8(uint8_t *in)
+{
+    uint16_t i = 0;
+    printf("0x");
+    for (i = in[0]; i >= 1; i--) {
+    	printf("%02x", in[i]);
+    }
+    printf("\n\r");
+}
+
 void print_hex_size_type(WORD *in,size_t size, size_t type)
 {
-    WORD i;
+    WORD i = 0;
 
     printf("0x");
     for (i = size; i >= 1; i--) {

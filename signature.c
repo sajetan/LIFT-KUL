@@ -27,7 +27,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	p256_integer k_struct = {0};
 	uint32_t bits = 256;
 
-	WORD i;
+	WORD i = 0;
 	WORD r_inter[SIZE] = {0};
 	WORD e[SIZE] = {0};
 	WORD k_inv[SIZE] = {0};
@@ -38,7 +38,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	WORD s[SIZE] = {0};
 	WORD k[SIZE]={0}; // if test: {0x0010,0x1231,0x5487,0xab25,0xfe80,0xabfd,0x58ae,0x2589,0x0001,0xfa8d,0x1010,0xaaaa,0x9870,0xafd8,0x0a0a,0x2587,0xa25f};
 	WORD result[SIZE] = {0};
-	uint8_t k_8[SIZE] = {0};
+	uint8_t k_8[SIZE] = {0}; // size should be changed
 
 	copyWord(G.x, G_x);
 	copyWord(G.y, G_y);
@@ -49,11 +49,18 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	while(r_inter[0] == 0){
 
 		// 1) k = random number in [1, n-1]
-	    random(k, 256, &pool);
+	    //random(k, 256, &pool);
+		//////////// please comment it, but don't erase it since this number is used for debugging
+		convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
+		////////////////
 		convertArray16toArray8(k_8, k);
 		for(i = 0; i<=k_8[0];i++){
 			k_struct.word[i] = k_8[i];
 		}
+		printf("k	:");	print_array(k, SIZE);
+		printf("k8 	:");	print_array8(k_8, SIZE);
+		printf("k	:");	print_hex_type(k, 16);
+		printf("k8	:");	print_hex_8(k_8);
 
 		// 2) point1 = (x1, y1) = kG
 
@@ -72,8 +79,12 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 //	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
 	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
 
-	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
 
+	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
+	printf("\n\n\n debug inverse:\n");
+	print_hex_type(n, BIT);
+	print_hex_type(k, BIT);
+	print_hex_type(k_inv, BIT);
 
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
@@ -269,9 +280,95 @@ void signatureTest(){
     		"4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5",		//G_y
     		"d2e01411817b5512b79bbbe14d606040a4c90deb09e827d25b9f2fc068997872",		//Q_x
     		"503f138f8bab1df2c4507ff663a1fdf7f710e7adb8e7841eaa902703e314e793",1);		//Q_y
+
+    //FSM: these test vectors, in combination with the random number above, yield an incorrect signature
+    signatureTestHelp("3eebdd513aef03da69e9767303af168bfd41c64f3259d1375cd7a8eb117ac3d5ebc4f4ae8aaf7933bc26d11282163554919d79f32ee0250a50a50cdaa2cd09feaec54b70f74b82efdf765dfd99b1680c826832d83706812610cd35c68ede86bb37d85935c9bc68e5f2b698a64baea8df950c56247b76451b41181fa3cbfa7e09",  //m
+    		"ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",   		//n
+			//ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc732581 
+    		"68ff8f04ef4c082c85dd424f1df03abcab0d87160fb4e76dd413ee7da988d568",		//d
+    		"6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296",		//G_x
+    		"4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5",		//G_y
+    		"0762e1929ae2cce21f43446e61c56ad7200b6f55d30c5e2399fdcab15dc07cc6",		//Q_x
+    		"80fb53ce62dda807350a7f8049d94f513e84917969a70072935d77aa0b6c4950",1);		//Q_y
 }
 
 
+void signatureTest2(){
+    WORD m[SIZE] = {0};
+    WORD n[SIZE] = {0};
+	WORD key[SIZE] = {0};
+    WORD output[SIZE] = {0};
+    WORD valid = 0;
+	uint32_t counter = 0;
+	WORD expected = 1;
+	p256_affine Q;
+	p256_affine G;
+	EntropyPool pool;
+
+	initPool(&pool);
+	initArray(output, SIZE);
+	initArray(m, SIZE);
+	initArray(n, SIZE);
+	initArray(key, SIZE);
+	initArray(Q.x, SIZE);
+	initArray(Q.y, SIZE);
+	initArray(G.y, SIZE);
+	initArray(G.y, SIZE);
+	initArray(output, SIZE);
+    convert(m, "3eebdd513aef03da69e9767303af168bfd41c64f3259d1375cd7a8eb117ac3d5ebc4f4ae8aaf7933bc26d11282163554919d79f32ee0250a50a50cdaa2cd09feaec54b70f74b82efdf765dfd99b1680c826832d83706812610cd35c68ede86bb37d85935c9bc68e5f2b698a64baea8df950c56247b76451b41181fa3cbfa7e09");
+	convert(n, "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
+    convert(G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
+    convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+
+	while(1){
+		if(1){
+		initArray(output, SIZE);
+		initArray(key, SIZE);
+		initArray(Q.x, SIZE);
+		initArray(Q.y, SIZE);
+		initArray(m, SIZE);
+		initArray(n, SIZE);
+		initArray(G.y, SIZE);
+		initArray(G.y, SIZE);
+		initArray(output, SIZE);
+		convert(m, "3eebdd513aef03da69e9767303af168bfd41c64f3259d1375cd7a8eb117ac3d5ebc4f4ae8aaf7933bc26d11282163554919d79f32ee0250a50a50cdaa2cd09feaec54b70f74b82efdf765dfd99b1680c826832d83706812610cd35c68ede86bb37d85935c9bc68e5f2b698a64baea8df950c56247b76451b41181fa3cbfa7e09");
+		convert(n, "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
+		convert(G.x, "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
+		convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+		}
+
+		random(key, 256, &pool); // private key
+		pointScalarMultAffineWord(&Q, &G, key);	// public key
+		printf("\n signature message: ");	print_hex_type(m, BIT);
+		printf("\n signature n		: ");	print_hex_type(n, BIT);
+		printf("\n signature Gx		: ");	print_hex_type(G.x, BIT);
+		printf("\n signature Gy		: ");	print_hex_type(G.y, BIT);
+		printf("\n signature key	: ");	print_hex_type(key, BIT);
+		printf("\n signature Qx		: ");	print_hex_type(Q.x, BIT);
+		printf("\n signature Qy		: ");	print_hex_type(Q.y, BIT);
+
+		printf("\n signature message: ");	print_array(m,   SIZE);
+		printf("\n signature n		: ");	print_array(n, 	 SIZE);
+		printf("\n signature Gx		: ");	print_array(G.x, SIZE);
+		printf("\n signature Gy		: ");	print_array(G.y, SIZE);
+		printf("\n signature key	: ");	print_array(key, SIZE);
+		printf("\n signature Qx		: ");	print_array(Q.x, SIZE);
+		printf("\n signature Qy		: ");	print_array(Q.y, SIZE);
+
+		signature_gen(output, key, m, n, G.x, G.y);
+		printf("\n signature output---- ");print_num(output);
+		printf("\n signature output---- ");print_hex_type(output, BIT);
+		valid = sig_ver(output, n, m, G.x, G.y, Q.x, Q.y);
+		printf("\n\n\n counter: %d \n\n\n", counter++);
+		if (valid == expected){
+			printf("signature test PASS \n");
+		}
+		else{
+			printf("signature test FAIL \n");
+			assert(0);
+		}
+	}
+}
 
 
 void signatureTestHelp(char mChar[], char nChar[], char keyChar[], char G_xChar[], char G_yChar[], char Q_xChar[], char Q_yChar[], WORD expected){

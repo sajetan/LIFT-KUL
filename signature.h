@@ -25,6 +25,7 @@ WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WOR
 //testfunctions
 
 void signatureTest();
+void signatureTest2();
 void signatureTestHelp(char mChar[], char nChar[], char dChar[], char G_xChar[], char G_yChar[], char Q_xChar[], char Q_yChar[], WORD expected);
 
 #endif /* SIGNATURE_H_ */

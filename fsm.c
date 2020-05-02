@@ -55,7 +55,7 @@ void initMemory(Memory* mem){
 
     // debugging
     mem->counter = 0;
-    mem->print = 0;
+    mem->print = 1;
 
 } // end initMemory
 
@@ -180,9 +180,8 @@ uint16_t receive_packet(Memory* mem, WORD_TAG expectedTag){
 /* idle state of the control center, its FSM always starts here */
 State idle_CC_fct( Memory* mem){
     S()
-    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
     mem->counter++;
-    P(mem->counter)
+    printf("\n\n\n\n\n\t\t\t test Nr %d \n\n\n\n", mem->counter);
     //return STS_make_0;
     return key_exchange_CC;
 }
@@ -325,6 +324,13 @@ State key_exchange_CC_fct(Memory* memory){
     rawbyte2word(pk_other->x , pointx, POINT_LEN);
     rawbyte2word(pk_other->y , pointy, POINT_LEN);
 
+    printf("SK control:     : ");       print_hex_type(memory->drone_SK , BIT);
+    printf("PK control:     : ");       print_hex_type(memory->control_PK.x , BIT);
+    printf("PK control:     : ");       print_hex_type(memory->control_PK.y, BIT);
+    printf("PK drone:     : ");       print_hex_type(memory->drone_PK.x , BIT);
+    printf("PK drone:     : ");       print_hex_type(memory->drone_PK.y , BIT);
+
+
     return STS_make_0;
 }
 
@@ -366,6 +372,11 @@ State key_exchange_drone_fct(Memory* memory){
         return 0;
     }
 
+    printf("SK drone:     : ");       print_hex_type(memory->drone_SK , BIT);
+    printf("PK drone:     : ");       print_hex_type(memory->drone_PK.x , BIT);
+    printf("PK drone:     : ");       print_hex_type(memory->drone_PK.y , BIT);
+    printf("PK control:     : ");       print_hex_type(memory->control_PK.x , BIT);
+    printf("PK control:     : ");       print_hex_type(memory->control_PK.y, BIT);
 
     return STS_receive_0;
 }
@@ -590,7 +601,9 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD *len){
     printf("drone PK.x      : ");           print_num(mem->drone_PK.x);
     printf("drone PK.y      : ");           print_num(mem->drone_PK.y);
     printf("\n");
-    printf("[make_STS_1] SIGNATURE :");         print_num(signature);
+    printf("[make_STS_1] toBeSigned     : ");    print_hex_type(toBeSigned, BIT);
+    printf("[make_STS_1] SECRET KEY     : ");    print_hex_type(mem->drone_SK, BIT);
+    printf("[make_STS_1] SIGNATURE      : ");    print_hex_type(signature, BIT);
     printf("[make_STS_1] SESSION KEY :");       print_num(mem->session_key);
     printf("[make_STS_1] NONCE GENERATED:  ");  print_array8(nonce,CHACHA_NONCE_LENGTH);
     printf("[make_STS_1] MAC GENERATED- ");     print_array8(mac_tag,MAC_TAG_LENGTH);
@@ -663,8 +676,10 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD *len){
 
     // 6. print
     if(mem->print){
-    printf("[make_STS_2] SESSION KEY    : ");    print_num(mem->session_key);
-    printf("[make_STS_2] SIGNATURE      : ");    print_num(signature);
+    printf("[make_STS_2] toBeSigned     : ");    print_hex_type(toBeSigned, BIT);
+    printf("[make_STS_2] SECRET KEY     : ");    print_hex_type(mem->control_SK, BIT);
+    printf("[make_STS_2] SIGNATURE      : ");    print_hex_type(signature, BIT);
+    printf("[make_STS_2] SESSION KEY    : ");    print_hex_type(mem->session_key, BIT);
     printf("[make_STS_2] NONCE GENERATED: ");    print_array8(nonce, CHACHA_NONCE_LENGTH);
     printf("[make_STS_2] CIPHER         : ");    print_array8(ciphertext, SIG_LEN);
     printf("[make_STS_2] MAC            : ");    print_array8(mac_tag, MAC_TAG_LENGTH);
@@ -778,10 +793,12 @@ uint8_t verify_STS_1(uint8_t *rcv_data, Memory* mem){
     printf("[verify_STS_1_data] computed key 8      : ");       print_array8(mem->session_key8, CHACHA_KEY_LENGTH);
     printf("[verify_STS_1_data] rcv cipher          : ");       print_array8(ciphertext, SIG_LEN);
     printf("[verify_STS_1_data] rcv mac             : ");          print_array8(mac_tag, MAC_TAG_LENGTH);
-    printf("[verify_STS_1_data] rcv sig             : ");          print_num(signature);
-    printf("[verify_STS_1_data] rcv sig8            : ");          print_array8(signature8, SIG_LEN);
-    printf("[verify_STS_1_data] valid mac           : ?\n");    
     printf("[verify_STS_1_data] decrypt cipher (=sig): "); print_array8(signature8, SIG_LEN);
+    printf("[verify_STS_1_data] rcv sig8            : ");          print_array8(signature8, SIG_LEN);
+    printf("[verify_STS_1] toBeSigned     : ");         print_hex_type(toBeSigned, BIT);
+    printf("[verify_STS_1] public KEY x     : ");       print_hex_type(mem->drone_PK.x , BIT);
+    printf("[verify_STS_1] public KEY y     : ");       print_hex_type(mem->drone_PK.y , BIT);
+    printf("[verify_STS_1] SIGNATURE      : ");         print_hex_type(signature, BIT);    
     printf("[verify_STS_1_data] signature valid? [ %d ]  \n\n ", valid);
     }
 
@@ -851,7 +868,10 @@ uint8_t verify_STS_2(uint8_t *rcv_data, Memory* mem){    //rcv_data = STS_2_data
     printf("[verify_STS_2] received sig (cipher): ");    print_array8(ciphertext, SIG_LEN);
     printf("[verify_STS_2] received mac         : ");    print_array8(mac_tag, MAC_TAG_LENGTH);
     printf("[verify_STS_2] decrypted signature  : ");  print_num(signature);
-    printf("[verify_STS_2] Validity signature   : [ %d ]", valid);
-    }
+    printf("[verify_STS_2] toBeSigned     : ");         print_hex_type(toBeSigned, BIT);
+    printf("[verify_STS_2] public KEY x     : ");       print_hex_type(mem->control_PK.x , BIT);
+    printf("[verify_STS_2] public KEY y     : ");       print_hex_type(mem->control_PK.y , BIT);
+    printf("[verify_STS_2] SIGNATURE      : ");         print_hex_type(signature, BIT);    
+    printf("[verify_STS_2_data] signature valid? [ %d ]  \n\n ", valid);}
     return valid;
 }

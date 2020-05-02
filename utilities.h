@@ -22,6 +22,7 @@ void print_num_size_type(WORD *in, size_t s, size_t type);
 void print_num_size(WORD *in, size_t s);
 void print_hex(WORD *in); //prints [0x1,0x2,0x3,0x4] as 0x4321
 void print_hex_type(WORD *in, size_t type);
+void print_hex_8(uint8_t *in);
 void print_hex_size_type(WORD *in,size_t size, size_t type);
 void print_array8(uint8_t *in, uint64_t size);
 void rawbyte2word(WORD *out, uint8_t *in, size_t len);

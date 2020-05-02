@@ -8,7 +8,7 @@ int main(void)
 
 	// Ports for direct communication
 	// Time-out is set to 5 seconds
-	init_socket(9999, 9998, 10);
+	init_socket(9993, 9992, 10);
 
 	// Ports for communication over GNU Radio
 	// init_socket(21235, 21237, 5);

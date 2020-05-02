@@ -14,12 +14,13 @@ INPUTS: - in    : array of WORDS, length can be whatever.
                 By removing the length field, the input array is chnged as well, which is not ideal I know
 OUTPUT: - out   : array of WORDS, length = SIZE; will contain the 256 bit hash
 */
-void hash(WORD out[],  void* in, uint16_t sizeHash){
+void hash(WORD out[],  WORD* in, uint16_t sizeHash){
     assert (sizeHash == 256 ||sizeHash == 384 ||sizeHash == 612);
 
     WORD numberBytes    = getNumberBytes(in);
     WORD len            = sizeHash/BIT; // ne need to look further since only 256 bits
     WORD i              = 0;
+    WORD copy[SIZE]     = {0};
     
     // 256 for 256 bit hash
     // SHA3_FLAGS_KECCAK is a constant used by sha3.c
@@ -27,9 +28,12 @@ void hash(WORD out[],  void* in, uint16_t sizeHash){
     // numberBytes is the exact number of relevant bytes (without MSB zeros, so that H("65") = H("065"))
     // BIT*SIZE is the amount of bytes of array "out"
 
-    in += BIT/8; // use pointer arithmetic to sent whole array except first element
+    for(i = 0; i<SIZE-1; i++){
+        copy[i] = in[i+1];
+    }
+    //in += BIT/8; // use pointer arithmetic to send whole array except first element
 
-    sha3_HashBuffer(sizeHash, SHA3_FLAGS_KECCAK, in, numberBytes, out, (BIT/8)*SIZE);
+    sha3_HashBuffer(sizeHash, SHA3_FLAGS_KECCAK, copy, numberBytes, out, (BIT/8)*SIZE);
 
     for( i = len; i>0; i--){ // shift all cells to free place for size
         out[i] = out[i-1];

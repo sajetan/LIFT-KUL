@@ -76,6 +76,9 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
 	// 1) e = hash(m)
 	hash(e, message, 256);
+	printf("\n\n\n debug hash:\n");
+	printf("input: "); print_hex_type(message, BIT);
+	printf("hash : "); print_hex_type(e, BIT);
 //	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
 	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
 
@@ -85,7 +88,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	print_hex_type(n, BIT);
 	print_hex_type(k, BIT);
 	print_hex_type(k_inv, BIT);
-
+	// result online: f15e655e52e90eb39de84c9a00564c80cb610bdb6dc56f6bade8aba41066df24
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
 
@@ -164,6 +167,9 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 
 	// 3) e = hash(m)
 	hash(e, m, 256);
+	printf("\n\n\n debug hash:\n");
+	printf("input: "); print_hex_type(m, BIT);
+	printf("hash : "); print_hex_type(e, BIT);
 
 	// 4) c = s^-1 mod n
 	inverse(c, s, n);
@@ -284,7 +290,6 @@ void signatureTest(){
     //FSM: these test vectors, in combination with the random number above, yield an incorrect signature
     signatureTestHelp("3eebdd513aef03da69e9767303af168bfd41c64f3259d1375cd7a8eb117ac3d5ebc4f4ae8aaf7933bc26d11282163554919d79f32ee0250a50a50cdaa2cd09feaec54b70f74b82efdf765dfd99b1680c826832d83706812610cd35c68ede86bb37d85935c9bc68e5f2b698a64baea8df950c56247b76451b41181fa3cbfa7e09",  //m
     		"ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",   		//n
-			//ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc732581 
     		"68ff8f04ef4c082c85dd424f1df03abcab0d87160fb4e76dd413ee7da988d568",		//d
     		"6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296",		//G_x
     		"4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5",		//G_y

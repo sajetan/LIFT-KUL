@@ -17,7 +17,7 @@ int main(){
 
       //padding_test();
       //test_poly_key();
-
+/*
 	aead_test();
 
 
@@ -41,8 +41,10 @@ int main(){
    /////// Lien ///////
  	modTest(0);
  	multTest(0);
- 	divisionTest(0);
+ 	divisionTest(0);*/
  	signatureTest(0);
 
     //signatureTest2();
+    //	hash256Test(1);			// hash
+
 }

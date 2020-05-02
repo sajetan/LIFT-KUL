@@ -73,8 +73,8 @@ void hash256Test(WORD print){
     
     BEGINTEST(print)
     
-    hash256TestHelp("abc", "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e",  &pass,  print);
-    //hash256TestHelp("636261636261", p1,  &pass,  print);
+    //hash256TestHelp("abc", "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e",  &pass,  print);
+    hash256TestHelp("636261", "456c2da18ff544ec36a0643ae3e6d1c067d6c826a87bd4c74fa945ea7a65034e",  &pass,  print);
     //hash256TestHelp("636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261636261", p2,  &pass,  print);
 
     TEST(pass)
@@ -85,11 +85,14 @@ void hash256TestHelp(char inchar[], char expchar[], WORD* pass, WORD print){
     WORD in[SIZE]   = {0};
     WORD exp[SIZE]  = {0};
 
-    text2array(in, inchar);
+    //text2array(in, inchar);
+    convert(in, inchar);
     convert(exp, expchar);
     //print_num(in);
     hash( myHash, in, SIZEHASH);
     if(print){
+        printf("input: ");
+        print_num(in);
         printf("result: ");
         print_num(myHash);
         printf("expected: ");

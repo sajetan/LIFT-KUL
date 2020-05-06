@@ -22,6 +22,9 @@
 #include "chacha20_poly1305_interface.h"
 
 #define S()     printf("\n\n[ Current state:  %s ]\n", __func__);
+#define DEBUG_FSM(s)    if(1)\
+                        printf(" %s ; %s \n",s, __func__);
+#define DEBUG_SIGNATURE 0
 
 typedef enum
 {
@@ -39,6 +42,9 @@ typedef enum
     STS_receive_0,
     STS_receive_1,
     STS_receive_2,
+    STS_receive_ack_0,
+    STS_receive_ack_1,
+    STS_receive_ack_2,
     STS_send_OK,
     STS_receive_OK,
     STS_drone_completed,
@@ -87,9 +93,9 @@ void initMemory(Memory* mem);
 
 
 // make, send and receive functions
-void make_packet(Memory* mem, State state);
+void make_packet(Memory* mem, WORD_TAG tag);
 void send_packet(Memory* mem);
-uint16_t receive_packet(Memory* mem, WORD_TAG expectedTag);
+uint16_t receive_packet(WORD_TAG* tag, WORD_LEN* len, uint8_t* data, WORD_ID id);
 
 // next state logic functions
 State idle_CC_fct(Memory* mem);
@@ -106,21 +112,25 @@ State STS_send_0_fct(Memory* mem);
 State STS_send_1_fct(Memory* mem);
 State STS_send_2_fct(Memory* memory);
 
+State STS_receive_ack_0_fct(Memory* mem);
+State STS_receive_ack_1_fct(Memory* mem);
+State STS_receive_ack_2_fct(Memory* mem);
 
 State STS_receive_0_fct(Memory* mem);
 State STS_receive_1_fct(Memory* mem);
 State STS_receive_2_fct(Memory* mem);
+
 
 State STS_send_OK_fct(uint8_t* buf, Memory* mem);
 State STS_receive_OK_fct(uint8_t* buf,  Memory* mem);
 State STS_CC_completed_fct();
 State STS_drone_completed_fct();
 
-void make_STS_0_data(uint8_t *data, Memory* mem, WORD *len);
-void make_STS_1_data(uint8_t *data, Memory* mem, WORD *len);
-void make_STS_2_data(uint8_t *data, Memory* mem, WORD *len);
-uint8_t verify_STS_0(uint8_t *rcv_data, Memory* mem);
-uint8_t verify_STS_1(uint8_t *rcv_data, Memory* mem);
-uint8_t verify_STS_2(uint8_t *rcv_data, Memory* mem);
+void make_STS_0_data(uint8_t *data, Memory* mem, WORD_LEN *len);
+void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len);
+void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len);
+uint16_t verify_STS_0(uint8_t *rcv_data, Memory* mem);
+uint16_t verify_STS_1(uint8_t *rcv_data, Memory* mem);
+uint16_t verify_STS_2(uint8_t *rcv_data, Memory* mem);
 
 #endif

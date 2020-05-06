@@ -57,10 +57,6 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 		for(i = 0; i<=k_8[0];i++){
 			k_struct.word[i] = k_8[i];
 		}
-		printf("k	:");	print_array(k, SIZE);
-		printf("k8 	:");	print_array8(k_8, SIZE);
-		printf("k	:");	print_hex_type(k, 16);
-		printf("k8	:");	print_hex_8(k_8);
 
 		// 2) point1 = (x1, y1) = kG
 
@@ -76,19 +72,13 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
 	// 1) e = hash(m)
 	hash(e, message, 256);
-	printf("\n\n\n debug hash:\n");
-	printf("input: "); print_hex_type(message, BIT);
-	printf("hash : "); print_hex_type(e, BIT);
+
 //	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
 	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
 
 
 	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
-	printf("\n\n\n debug inverse:\n");
-	print_hex_type(n, BIT);
-	print_hex_type(k, BIT);
-	print_hex_type(k_inv, BIT);
-	// result online: f15e655e52e90eb39de84c9a00564c80cb610bdb6dc56f6bade8aba41066df24
+
 	mult(dr,key,r_inter);
 	mod(dr, dr, n);		//dr = d*r
 
@@ -167,9 +157,6 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 
 	// 3) e = hash(m)
 	hash(e, m, 256);
-	printf("\n\n\n debug hash:\n");
-	printf("input: "); print_hex_type(m, BIT);
-	printf("hash : "); print_hex_type(e, BIT);
 
 	// 4) c = s^-1 mod n
 	inverse(c, s, n);

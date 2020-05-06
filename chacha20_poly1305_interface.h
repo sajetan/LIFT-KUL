@@ -41,7 +41,7 @@ void print_num_type(uint8_t *in,size_t type);
 void poly1305_key_gen(u8 *poly_key, u8 *key,u8 *nonce);
 
 void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad);
-void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad);
+uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad);
 void paddingCheck(poly1305_msg_struct  *in, uint8_t padding_length);
 
 //test functions

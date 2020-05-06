@@ -43,6 +43,9 @@ int main(void)
 			case STS_send_1: 
 				state = STS_send_1_fct(&memory);
 				break;
+			case STS_receive_ack_1: 
+				state = STS_receive_ack_1_fct(&memory);
+				break;
 			case STS_receive_2: 
 				state = STS_receive_2_fct(&memory);
 				break;	

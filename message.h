@@ -22,9 +22,9 @@
 */
 
 
-#define WORD_TAG    uint8_t
-#define WORD_LEN    uint8_t
-#define WORD_ID     uint8_t
+#define WORD_TAG    uint16_t
+#define WORD_LEN    uint16_t
+#define WORD_ID     uint16_t
 
 #define BYTE_TAG    sizeof(WORD_TAG)
 #define BYTE_LEN    sizeof(WORD_LEN)
@@ -36,6 +36,9 @@
 #define TAG_STS_0   (WORD_TAG) 0
 #define TAG_STS_1   (WORD_TAG) 1
 #define TAG_STS_2   (WORD_TAG) 2
+#define TAG_STS_0_ack   (WORD_TAG) 12
+#define TAG_STS_1_ack    (WORD_TAG) 13
+#define TAG_STS_2_ack    (WORD_TAG) 14
 #define TAG_VIDEO   (WORD_TAG) 3
 #define TAG_CONTROL (WORD_TAG) 4
 #define TAG_SAY_HELLO_TO_DRONE  (WORD_TAG) 5
@@ -44,6 +47,7 @@
 #define TAG_TIMEOUT   (WORD_TAG) 8
 #define TAG_KEY_EXCHANGE_DRONE   (WORD_TAG) 9
 #define TAG_KEY_EXCHANGE_CC  (WORD_TAG) 10
+#define TAG_UNDEFINED  (WORD_TAG) 11
 
 /*
 typedef struct Session Session;

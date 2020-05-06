@@ -619,7 +619,15 @@ WORD greaterThan(WORD a[], WORD b[]){
 		return (WORD) 0;
 	}
 }
-
+/*
+void updateLen(WORD a[]){
+	uint16_t i = 0;
+	assert(a[0]<=SIZE);
+	for(i = a[0]; a[i]==0 && i>0; i--){
+		a[0]--;
+	}
+}
+*/
 
 
 

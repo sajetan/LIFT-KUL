@@ -203,12 +203,14 @@ void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key
 
 
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
-void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
+// Ferdinand: I changed this function such that it returns whether the mac is correct or not
+uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
 	poly1305_msg_struct poly_struct={0};
 	uint64_t counter=0;
 	uint8_t poly_msg[MAX_MSG_SIZE]={0};
 	uint8_t mac_tag[MAC_TAG_LENGTH]={0};
 	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
+	uint16_t valid = 0;
 
 	poly1305_key_gen(poly_key, key,nonce); //generate one time key for poly1305
 
@@ -232,8 +234,8 @@ void verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint3
 	poly1305_auth(mac_tag, poly_msg, poly_struct.total_len, poly_key); //calculating mac tag
 //	printf("@@@@@@ mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
 //	printf("@@@@@ rcvmac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
-	WORD val = poly1305_verify(mac_tag, rcv_mac_tag);
-	printf(" ---------------------------  MAC VERIFICATION [ %d ] -------------------------------------\n", val);
+	valid = poly1305_verify(mac_tag, rcv_mac_tag);
+	printf(" ---------------------------  MAC VERIFICATION [ %d ] -------------------------------------\n", valid);
 
 }
 

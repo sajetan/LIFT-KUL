@@ -515,6 +515,13 @@ void copyWord(WORD copy[], WORD w[]){
     }
 }
 
+void copyArray8(uint8_t copy[], uint8_t a[], uint16_t len){
+    uint16_t i = 0;
+	for( i = 0; i<len; i++){
+        copy[i] = a[i];
+    }
+}
+
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyArrayWithSize(WORD copy[], WORD w[]){
@@ -585,7 +592,15 @@ WORD equalWord(WORD a[], WORD b[]){
         }
         return 1;
     }
+}
 
+uint8_t equalArray8(uint8_t a[], uint8_t b[], uint16_t len){
+    uint16_t i = 0;
+	uint16_t same = 1;
+	for(i = 0; i<len && same; i++){
+		same = (a[i] == b[i]);
+	}
+	return same;
 }
 
 /* prints a word[] in the following format:
@@ -629,7 +644,16 @@ void updateLen(WORD a[]){
 }
 */
 
+void startTimer(Timer* timer){
+    gettimeofday(&timer->tv, NULL);
+	timer->time_in_mill_1 = ((timer->tv).tv_sec) * 1000 + ((timer->tv).tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+}
 
+uint32_t valueTimer(Timer* timer){
+    gettimeofday(&timer->tv2, NULL);
+    timer->time_in_mill_2 = ((timer->tv2).tv_sec) * 1000 + ((timer->tv2).tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+	return timer->time_in_mill_2 - timer->time_in_mill_1;
+}
 
 void convertTest(){
 	WORD w[SIZE] = {0};

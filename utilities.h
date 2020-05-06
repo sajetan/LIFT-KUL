@@ -14,7 +14,14 @@
 #define UINT32_SIZE sizeof(uint32_t)
 #define UINT64_SIZE sizeof(uint64_t)
 
-
+typedef struct Timer Timer;
+struct Timer
+{
+    struct timeval  tv;
+    struct timeval  tv2;
+    uint32_t time_in_mill_1;
+    uint32_t time_in_mill_2;
+};
 
 void convert(WORD *out, const char *in);
 void print_num(WORD *in);
@@ -28,7 +35,9 @@ void print_array8(uint8_t *in, uint64_t size);
 void rawbyte2word(WORD *out, uint8_t *in, size_t len);
 void word2rawbyte(uint8_t *out, WORD *in, size_t len);
 WORD equalWord(WORD a[], WORD b[]);
+uint8_t equalArray8(uint8_t a[], uint8_t b[], uint16_t len);
 void copyWord(WORD copy[], WORD w[]);
+void copyArray8(uint8_t copy[], uint8_t a[], uint16_t len);
 void copyArrayWithSize(WORD copy[], WORD w[]);
 void copyArrayWithoutLength(WORD copy[], WORD w[]);
 void copyArrayWithoutSize(WORD copy[], WORD w[], uint16_t len);
@@ -62,5 +71,7 @@ void char2byte(uint8_t *out, const char *in);
 //void hex_decoder(const char *in, size_t len,uint32_t *out);
 //void test_convert_hex_array();
 
+void startTimer(Timer *timer);
+uint32_t valueTimer(Timer *timer);
 
 #endif /* SUB_H_ */

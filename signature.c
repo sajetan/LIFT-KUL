@@ -49,9 +49,9 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	while(r_inter[0] == 0){
 
 		// 1) k = random number in [1, n-1]
-	    //random(k, 256, &pool);
+	    random(k, 256, &pool);
 		//////////// please comment it, but don't erase it since this number is used for debugging
-		convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
+		//convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
 		////////////////
 		convertArray16toArray8(k_8, k);
 		for(i = 0; i<=k_8[0];i++){
@@ -100,7 +100,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
     result[0]=s[0]+r_inter[0];
     copyArrayWithSize(output, result);
-     printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
+    //printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
 
 }
 

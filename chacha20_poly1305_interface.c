@@ -90,7 +90,7 @@ void poly1305_key_gen(uint8_t *poly_key, uint8_t *key,uint8_t *nonce ){
 	memset(poly_key, 0x00,32);
 	memcpy(poly_key, out, 32);
 
-	printf("[POLY KEY] - len %d - ",strlen(poly_key));print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
+	//printf("[POLY KEY] - len %d - ",strlen(poly_key));print_num_type_length(poly_key,CHACHA_KEY_LENGTH,8);
 }
 
 
@@ -235,7 +235,7 @@ uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, u
 //	printf("@@@@@@ mac- ");print_num_type_length(mac_tag,MAC_TAG_LENGTH,8);
 //	printf("@@@@@ rcvmac- ");print_num_type_length(rcv_mac_tag,MAC_TAG_LENGTH,8);
 	valid = poly1305_verify(mac_tag, rcv_mac_tag);
-	printf(" ---------------------------  MAC VERIFICATION [ %d ] -------------------------------------\n", valid);
+	//printf(" ---------------------------  MAC VERIFICATION [ %d ] -------------------------------------\n", valid);
 
 }
 

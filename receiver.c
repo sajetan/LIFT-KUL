@@ -16,9 +16,7 @@ int main(void)
 	// FSM part
 	State state = idle_drone;
 	Memory memory;
-	initMemory(&memory); //, "456", "456");
-    print_num(memory.drone_SK);
-
+	initMemory(&memory);
 	int exit = 0;
 
 	// udp part
@@ -43,19 +41,17 @@ int main(void)
 			case STS_send_1: 
 				state = STS_send_1_fct(&memory);
 				break;
-			case STS_receive_ack_1: 
-				state = STS_receive_ack_1_fct(&memory);
-				break;
 			case STS_receive_2: 
 				state = STS_receive_2_fct(&memory);
 				break;	
-			case STS_drone_completed: 
-				state = STS_drone_completed_fct();
- 				break;
 			case STS_send_OK: 
-				state = STS_send_OK_fct(buf, &memory);
+				state = STS_send_OK_fct(&memory);
 				break;	
 			case State_Exit: 
+				exit = 1;
+				break;
+			default:
+				printf("undefined state\n");
 				exit = 1;
 				break;
 		}

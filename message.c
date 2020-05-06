@@ -14,6 +14,8 @@ void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength,
     uint16_t start = 0;
     WORD_LEN dataLengthCopy = dataLength;
 
+    initArray8(buf, MAX_TRANSFER_LENGTH);
+
     // insert tag
     start = 0;
     for(i = 0; i<BYTE_TAG; i++){
@@ -47,6 +49,8 @@ void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength,
 
     // return length
     *buf_len = start;
+    assert(MAX_TRANSFER_LENGTH >= *buf_len);
+
 }
 
 void decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, WORD_ID* id, uint8_t* data, uint8_t* buf, uint16_t buf_len){
@@ -59,6 +63,8 @@ void decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, WORD_ID* id, uint8_t* d
     *tag = 0;
     *dataLength = 0;
     *id = 0;
+    initArray8(data, MAX_DATA_LENGTH);
+
 
     // copy tag
     start = 0;

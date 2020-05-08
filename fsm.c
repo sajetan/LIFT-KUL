@@ -51,11 +51,10 @@ void initMemory(Memory* mem){
     mem->send_buf_len = 0;
     initArray8(mem->rcv_STS_0,MAX_DATA_LENGTH);
     mem->rcv_STS_0_len = 0;
-    mem->retransmissionCounter = 0;
 
     // debugging
     mem->counter = 0;
-    mem->print = 1;
+    mem->mean = 0;
 
 } // end initMemory
 
@@ -83,7 +82,7 @@ void make_packet(Memory* mem, WORD_TAG tag){
             make_STS_2_data(data, mem, &len);    //STS_2_data = Encryption[signature(pointc.x||pointd.x)]
             tag = TAG_STS_2;
             break;
-        case TAG_STS_OK:
+        case TAG_STS_OK:    // OK message, this massage does not contain any data
             len = 0;
             tag = TAG_STS_OK;
             break;
@@ -176,78 +175,43 @@ uint16_t receive_packet(WORD_TAG *tag, WORD_LEN *len, uint8_t* data, WORD_ID id,
 }
 
 
-/* idle state of the control center, its FSM always starts here */
+/* idle state of the drone, its FSM always starts here */
 State idle_CC_fct( Memory* mem){
     PRINT_STATE()
     return STS_make_0;
-    //return key_exchange_CC;
-}
-
-/* idle state of the drone, its FSM always starts here */
-State idle_drone_fct( Memory* mem){
-    PRINT_STATE()
-    return STS_receive_0;
-    //return key_exchange_drone;
 }
 
 State STS_make_0_fct( Memory* mem){
     PRINT_STATE()
-    mem->retransmissionCounter = 0;
-    mem->counter++;
-    printf("\n\n test Nr %d \n\n\n", mem->counter);
+    startTimer(&mem->myTimer);    
     make_packet(mem, TAG_STS_0);
     return STS_send_0;
 }
 
 State STS_make_1_fct( Memory* mem){
     PRINT_STATE()
-    mem->counter++;
-    printf("\n\n test Nr %d \n\n\n", mem->counter);
     make_packet(mem, TAG_STS_1);
     return STS_send_1;
 }
 
 State STS_make_2_fct(Memory* mem){
     PRINT_STATE()
-    mem->retransmissionCounter = 0;
     make_packet(mem, TAG_STS_2);
     return STS_send_2;
 }
 
 
-State STS_send_0_fct(Memory* mem){
-    PRINT_STATE()
-    send_packet(mem->send_buf, mem->send_buf_len);
-    return STS_receive_1;
-}
-
-State STS_send_1_fct(Memory* mem){
-    PRINT_STATE()
-    send_packet(mem->send_buf, mem->send_buf_len);
-    return STS_receive_2;
-}
-
-State STS_send_2_fct(Memory* mem){
-    PRINT_STATE()
-    send_packet(mem->send_buf, mem->send_buf_len);
-    return STS_receive_OK;
-}
-
 /*  Here we wait for STS0 to arrive.
     Based on the validity of the message, the next state is defined */
-State STS_receive_0_fct(Memory* mem){
+State idle_drone_fct(Memory* mem){
     PRINT_STATE()
     uint8_t data[MAX_DATA_LENGTH] = {0};
     uint16_t timeoutSocket = 0;
-    uint16_t restart = 0;
     uint16_t valid = 0;
     
     WORD_LEN len = 0;
     WORD_TAG tag = TAG_UNDEFINED;
-    Timer myTimer;
     
-    startTimer(&myTimer);
-
     while(1){
         initArray8(data, MAX_DATA_LENGTH);
         valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
@@ -258,23 +222,12 @@ State STS_receive_0_fct(Memory* mem){
         } else{
             DEBUG_FSM("valid id and correct integrity check")
             if(tag == TAG_STS_0){
-                restart = 1;
-                if(len == mem->rcv_STS_0_len){  // compare STS_0 message with the one in memory
-                    if(equalArray8(data, mem->rcv_STS_0, len)){
-                        restart = 0;
-                    } 
-                } 
-                if(restart){
-                    DEBUG_FSM("STS_0 received again, but different: restart protocol")
-                    printf("------- STS 0 OK ----------\n");
-                    initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
-                    copyArray8(mem->rcv_STS_0, data, len );
-                    mem->rcv_STS_0_len = len;
-                    valid = verify_STS_0(data, mem); // valid is always 1
-                    return STS_make_1;
-                } else{
-                    DEBUG_FSM("STS_0 received again and ignored")
-                }
+                DEBUG_FSM("STS_0 received: start protocol")
+                initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
+                copyArray8(mem->rcv_STS_0, data, len );
+                mem->rcv_STS_0_len = len;
+                verify_STS_0(data, mem); // valid is always 1
+                return STS_make_1;
             }
             else{
                 DEBUG_FSM("unexpected tag, message ignored")
@@ -286,7 +239,7 @@ State STS_receive_0_fct(Memory* mem){
 
 /*  Here we wait for STS1 to arrive.
     Based on the validity of the message, the next state is defined */
-State STS_receive_1_fct(Memory* mem){
+State STS_send_0_fct(Memory* mem){
 
     PRINT_STATE()
     uint16_t valid = 0;
@@ -294,165 +247,14 @@ State STS_receive_1_fct(Memory* mem){
     WORD_LEN len = 0;
     uint8_t data[MAX_DATA_LENGTH] = {0};
     uint16_t timeoutSocket = 0;
+    uint16_t counter = 0;
     Timer myTimer;
     startTimer(&myTimer);
-
-    while(valueTimer(&myTimer)<TIMEOUT){
-        initArray8(data, MAX_DATA_LENGTH);
-        valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
-
-        if(timeoutSocket){
-            // timeout of UDP socket
-        } else if(!valid){
-            DEBUG_FSM("invalid id or incorrect integrity check")
-        } else{
-            DEBUG_FSM("valid id and correct integrity check")
-            if(tag == TAG_STS_1){
-                DEBUG_FSM("correct tag")
-                valid = verify_STS_1(data, mem);
-                if(valid){
-                    DEBUG_FSM("valid signature, send next message")
-                    printf("------- STS 1 OK ----------\n");
-                    return STS_make_2;
-                } else{
-                    DEBUG_FSM("invalid signature, continue listening")
-                }
-            } else{
-                DEBUG_FSM("unexpected tag, message ignored")
-            }
-        }
-    }
-    mem->retransmissionCounter++;
-    if(mem->retransmissionCounter < MAX_TRIALS){
-        DEBUG_FSM("timeout, send previous message again")
-        return STS_send_0;
-    } else{
-        DEBUG_FSM("timeout and retransmission counter exceeded, restart protocol")
-        return STS_make_0;
-    }
-}
-
-/*  Here we wait for STS2 to arrive.
-    Based on the validity of the message, the next state is defined */
-State STS_receive_2_fct(Memory* mem){
-    PRINT_STATE()
-    uint16_t valid = 0;
-    WORD_TAG tag = TAG_UNDEFINED;
-    WORD_LEN len = 0;
-    uint8_t data[MAX_DATA_LENGTH] = {0};
-    uint16_t timeoutSocket = 0;
-    uint16_t restart = 0;
-    Timer myTimer;
-    startTimer(&myTimer);
-
-    while(valueTimer(&myTimer)<TIMEOUT){
-        initArray8(data, MAX_DATA_LENGTH);
-        valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
-
-        if(timeoutSocket){
-            // timeout of UDP socket
-        } else if(!valid){
-            DEBUG_FSM("invalid id or incorrect integrity check")
-        } else{
-            DEBUG_FSM("valid id and correct integrity check")
-            if(tag == TAG_STS_2){
-                DEBUG_FSM("correct tag")
-                valid = verify_STS_2(data, mem);
-                if(valid){
-                    DEBUG_FSM("correct signature")
-                    printf("------- STS 2 OK ----------\n");
-                    if(INFINITE_LOOP_STS){
-                        return STS_send_OK;
-                    } else{
-                        return State_Exit;
-                    }
-                } else{
-                    DEBUG_FSM("invalid signature, continue listening")
-                }
-            } else if(tag == TAG_STS_0){
-                restart = 1;
-                if(len == mem->rcv_STS_0_len){  // compare STS_0 message with the one in memory
-                    if(equalArray8(data, mem->rcv_STS_0, len)){
-                        restart = 0;
-                    } 
-                } 
-                if(restart){
-                    DEBUG_FSM("STS_0 received again, but different: restart protocol")
-                    initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
-                    copyArray8(mem->rcv_STS_0, data, len );
-                    mem->rcv_STS_0_len = len;
-                    valid = verify_STS_0(data, mem); // valid is always 1
-                    return STS_make_1;
-                } else{
-                    DEBUG_FSM("STS_0 received again and ignored")
-                }
-            } else{
-                DEBUG_FSM("unexpected tag, message ignored")
-            }
-        }
-    }
-    DEBUG_FSM("timeout, send previous message again")
-    return STS_send_1;
-}
-
-State STS_receive_OK_fct(Memory* mem){
-    PRINT_STATE()
-    uint16_t valid = 0;
-    WORD_TAG tag = TAG_UNDEFINED;
-    WORD_LEN len = 0;
-    uint8_t data[MAX_DATA_LENGTH] = {0};
-    uint16_t timeoutSocket = 0;
-    Timer myTimer;
-    startTimer(&myTimer);
-
-    while(valueTimer(&myTimer)<TIMEOUT){
-        initArray8(data, MAX_DATA_LENGTH);
-        valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
-
-        if(timeoutSocket){
-            // timeout of UDP socket
-        } else if(!valid){
-            DEBUG_FSM("invalid id or incorrect integrity check")
-        } else{
-            DEBUG_FSM("valid id and correct integrity check")
-            if(tag == TAG_STS_OK){
-                DEBUG_FSM("correct tag")
-                if(INFINITE_LOOP_STS){
-                    return STS_make_0;
-                } else{
-                    return State_Exit;
-                }
-            } else{
-                DEBUG_FSM("unexpected tag, message ignored")
-            }
-        }
-    }
-    mem->retransmissionCounter++;
-    if(mem->retransmissionCounter < MAX_TRIALS){
-        DEBUG_FSM("timeout, send previous message again")
-        return STS_send_2;
-    } else{
-        DEBUG_FSM("timout and retransmission counter exceeded, restart protocol")
-        return STS_make_0;
-    }
-}
-
-State STS_send_OK_fct(Memory* mem){
-    PRINT_STATE()
-    uint8_t rcv_buffer[MAX_TRANSFER_LENGTH] = {0};
-    uint16_t rcv_buf_len = 0;
-    WORD_TAG tag = TAG_UNDEFINED;
-    WORD_LEN len = 0;
-    uint8_t data[MAX_DATA_LENGTH] = {0};
-    uint16_t timeoutSocket = 0;
-    uint16_t valid = 0;
-    Timer myTimer;
     
-    while(1){
-        // send OK packet
-        make_packet(mem, TAG_STS_OK);
-        send_packet(mem->send_buf, mem->send_buf_len);
-        startTimer(&myTimer);
+    for(counter = 0; counter < MAX_TRIALS; counter ++){
+        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
+        DEBUG_FSM("packet STS 0 sent")
+        startTimer(&myTimer);                           // start timer 
 
         while(valueTimer(&myTimer)<TIMEOUT){
             initArray8(data, MAX_DATA_LENGTH);
@@ -464,22 +266,214 @@ State STS_send_OK_fct(Memory* mem){
                 DEBUG_FSM("invalid id or incorrect integrity check")
             } else{
                 DEBUG_FSM("valid id and correct integrity check")
-                if(tag == TAG_STS_0){
-                    printf("------- STS 0 OK ----------\n");
-                    DEBUG_FSM("start protocol again")
-                    valid = verify_STS_0(data, mem); // valid is always 1
-                    initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
-                    copyArray8(mem->rcv_STS_0, data, len); // copy STS_0 in memory for later comparison
-                    mem->rcv_STS_0_len = len;
-                    return STS_make_1;
+                if(tag == TAG_STS_1){
+                    DEBUG_FSM("STS 1 received")
+                    valid = verify_STS_1(data, mem);
+                    if(valid){
+                        DEBUG_FSM("valid signature, send next message")
+                        return STS_make_2;
+                    } else{
+                        DEBUG_FSM("invalid signature, continue listening")
+                    }
                 } else{
                     DEBUG_FSM("unexpected tag, message ignored")
                 }
             }
         }
-        DEBUG_FSM("timeout, send previous OK message again")
+        DEBUG_FSM("timeout, send previous message again")
+    }
+    DEBUG_FSM("timeout and retransmission counter exceeded, restart protocol")
+    return STS_make_0;
+}
+
+/*  Here we wait for STS2 to arrive.
+    Based on the validity of the message, the next state is defined */
+State STS_send_1_fct(Memory* mem){
+    PRINT_STATE()
+    uint16_t valid = 0;
+    WORD_TAG tag = TAG_UNDEFINED;
+    WORD_LEN len = 0;
+    uint8_t data[MAX_DATA_LENGTH] = {0};
+    uint16_t timeoutSocket = 0;
+    uint16_t restart = 0;
+    uint16_t counter = 0;
+    Timer myTimer;
+
+    
+    while(1){
+        send_packet(mem->send_buf, mem->send_buf_len); // send message stored in memory
+        DEBUG_FSM("packet STS 1 sent")
+        startTimer(&myTimer);       // start timer
+
+        while(valueTimer(&myTimer)<TIMEOUT){
+            initArray8(data, MAX_DATA_LENGTH);
+            valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
+
+            if(timeoutSocket){
+                // timeout of UDP socket
+            } else if(!valid){
+                DEBUG_FSM("invalid id or incorrect integrity check")
+            } else{
+                DEBUG_FSM("valid id and correct integrity check")
+                if(tag == TAG_STS_2){
+                    DEBUG_FSM("STS 2 received")
+                    valid = verify_STS_2(data, mem);
+                    if(valid){
+                        DEBUG_FSM("correct signature")
+                        make_packet(mem, TAG_STS_OK); // ! be careful if you remove this from here! this is not a separate state since then it would have to be sent in the STS_completed state once in the beginning, and we don't want that since eauch tme the drone enters this state after communication it would send this ok message
+                        send_packet(mem->send_buf, mem->send_buf_len);
+                        if(INFINITE_LOOP_STS){
+                            return STS_completed_drone;
+                        } else{
+                            return State_Exit;
+                        }
+                    } else{
+                        DEBUG_FSM("invalid signature, continue listening")
+                    }
+                } else if(tag == TAG_STS_0){
+                    restart = 1;
+                    if(len == mem->rcv_STS_0_len){  // compare STS_0 message with the one in memory
+                        if(equalArray8(data, mem->rcv_STS_0, len)){
+                            restart = 0;
+                        } 
+                    } 
+                    if(restart){
+                        DEBUG_FSM("STS_0 received again, but different: restart protocol")
+                        initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
+                        copyArray8(mem->rcv_STS_0, data, len );
+                        mem->rcv_STS_0_len = len;
+                        verify_STS_0(data, mem); 
+                        return STS_make_1;
+                    } else{
+                        DEBUG_FSM("STS_0 received again and ignored")
+                    }
+                } else{
+                    DEBUG_FSM("unexpected tag, message ignored")
+                }
+            }
+        }
+        DEBUG_FSM("timeout, send previous message again")
     }
 }
+
+State STS_send_2_fct(Memory* mem){
+    PRINT_STATE()
+    uint16_t valid = 0;
+    WORD_TAG tag = TAG_UNDEFINED;
+    WORD_LEN len = 0;
+    uint8_t data[MAX_DATA_LENGTH] = {0};
+    uint16_t timeoutSocket = 0;
+    uint16_t counter = 0;
+    uint32_t time = 0;
+    Timer myTimer;
+    
+    for(counter = 0; counter < MAX_TRIALS; counter ++){
+        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
+        DEBUG_FSM("packet STS 2 sent")
+        startTimer(&myTimer);                           // start timer 
+
+        while(valueTimer(&myTimer)<TIMEOUT){
+            initArray8(data, MAX_DATA_LENGTH);
+            valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
+
+            if(timeoutSocket){
+                // timeout of UDP socket
+            } else if(!valid){
+                DEBUG_FSM("invalid id or incorrect integrity check")
+            } else{
+                DEBUG_FSM("valid id and correct integrity check")
+                if(tag == TAG_STS_OK){
+                    DEBUG_FSM("STS OK  received")
+                    if(INFINITE_LOOP_STS){
+                        mem->counter++;
+                        time = valueTimer(&mem->myTimer);
+                        if(mem->mean == 0){
+                            mem->mean = time;
+                        } else{
+                            mem->mean = (mem->mean*mem->counter + time)/(mem->counter + 1);
+                        }
+                        printf("\ntotal time taken: %ld [ms]\nmean            : %ld [ms]\n\nstart test Nr %d \n\n\n", time,mem->mean, mem->counter);
+                        return idle_CC;
+                    } else{
+                        return State_Exit;
+                    }
+                } else{
+                    DEBUG_FSM("unexpected tag, message ignored")
+                }
+            }
+        }
+        DEBUG_FSM("timeout, send previous message again")
+    }
+    DEBUG_FSM("timout and retransmission counter exceeded, restart protocol")
+    return STS_make_0;
+}
+
+State STS_completed_drone_fct(Memory* mem){
+    PRINT_STATE()
+    WORD_TAG tag = TAG_UNDEFINED;
+    WORD_LEN len = 0;
+    uint8_t data[MAX_DATA_LENGTH] = {0};
+    uint16_t timeoutSocket = 0;
+    uint16_t valid = 0;
+    uint16_t restart = 0;
+    Timer myTimer;
+
+    // now the drone enters a loop that it can only exit if it receives STS 0 (restart protocol) or a communication message
+    // if it receives a correct STS_2 message, it answers with an ok message
+    while(1){
+        initArray8(data, MAX_DATA_LENGTH);
+        valid = receive_packet( &tag, &len, data, mem->receiverID, &timeoutSocket);
+
+        if(timeoutSocket){
+            // do nothing
+        } else if(!valid){
+            DEBUG_FSM("invalid id or incorrect integrity check")
+        } else{
+            DEBUG_FSM("valid id and correct integrity check")
+            switch (tag)
+            {
+            case TAG_STS_0:
+                restart = 1;
+                if(len == mem->rcv_STS_0_len){  // compare STS_0 message with the one in memory
+                    if(equalArray8(data, mem->rcv_STS_0, len)){
+                        restart = 0;
+                    } 
+                } 
+                if(restart){
+                    DEBUG_FSM("STS_0 received again, but different: restart protocol")
+                    initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
+                    copyArray8(mem->rcv_STS_0, data, len );// copy new STS 0 data in memory
+                    mem->rcv_STS_0_len = len;
+                    verify_STS_0(data, mem); // process
+                    return STS_make_1;
+                } else{
+                    DEBUG_FSM("STS_0 received again and ignored")
+                }
+            case TAG_STS_2:
+                DEBUG_FSM("STS 2 received")
+                valid = verify_STS_2(data, mem);
+                if(valid){
+                    DEBUG_FSM("correct signature, OK message sent")
+                    make_packet(mem, TAG_STS_OK);
+                    send_packet(mem->send_buf, mem->send_buf_len);
+                } else{
+                    DEBUG_FSM("incorrect signature, ignored")
+                }
+                break;
+            // case status update
+                //blabla
+            // case command
+                // blabla
+            // case video
+                // blabla
+            default:
+                DEBUG_FSM("unexpected tag, message ignored")
+                break;
+            }
+        }
+    }
+}
+
 State key_exchange_CC_fct(Memory* memory){
 
     uint8_t buffer[MAX_TRANSFER_LENGTH] = {0};
@@ -580,15 +574,8 @@ State key_exchange_drone_fct(Memory* memory){
         printf("PK control:     : ");       print_hex_type(memory->control_PK.y, BIT);
     }
 
-    return STS_receive_0;
+    return STS_make_0;
 }
-
-
-
-
-
-
-
 
 
 
@@ -660,7 +647,8 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
    	p256_affine*    control_public_key  = &mem->pointc; // public session key of drone
     p256_affine     session_key_affine  = {0};
 
-    initArray8(data, MAX_DATA_LENGTH); // to make sure everything is at zero
+    // to make all arrays that will we written at are set to zero
+    initArray8(data, MAX_DATA_LENGTH); 
     initArray(drone_public_key->x, SIZE); 
     initArray(drone_public_key->y, SIZE); 
     initArray(drone_private_key, SIZE); 
@@ -677,10 +665,16 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
     word2rawbyte(pointy8, drone_public_key->y, POINT_LEN);
 
     // 3. create the signature (mind de fact that i begins at 1 to exclude the length field!)
-    for(i=1;i<=POINT_LEN/BYTE;i++){
-        toBeSigned[i]                   = drone_public_key->x[i];
-        toBeSigned[i+POINT_LEN/BYTE]    = drone_public_key->y[i];
+    for(i=1;i<=drone_public_key->x[0];i++){
+        toBeSigned[i+0*POINT_LEN/BYTE]  = drone_public_key->x[i];
+    }
+    for(i=1;i<=drone_public_key->y[0];i++){
+        toBeSigned[i+1*POINT_LEN/BYTE]  = drone_public_key->y[i];
+    }
+    for(i=1;i<=control_public_key->x[0];i++){
         toBeSigned[i+2*POINT_LEN/BYTE]  = control_public_key->x[i];
+    }
+    for(i=1;i<=control_public_key->y[0];i++){
         toBeSigned[i+3*POINT_LEN/BYTE]  = control_public_key->y[i];
     }
     toBeSigned[0] = 4*POINT_LEN/BYTE;
@@ -766,10 +760,16 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 
     // 1. compute the signature
     // POINT_LEN is the number of bytes of a point coordinate. Since these are stored in the traditional format with a length field, we chose i+1 to leave it out
-    for(i=1;i<=POINT_LEN/BYTE;i++){
-        toBeSigned[i]                   = mem->pointc.x[i];
-        toBeSigned[i+POINT_LEN/BYTE]    = mem->pointc.y[i];
+    for(i=1;i<=mem->pointc.x[0];i++){
+        toBeSigned[i+0*POINT_LEN/BYTE]  = mem->pointc.x[i];
+    }
+    for(i=1;i<=mem->pointc.y[0];i++){
+        toBeSigned[i+1*POINT_LEN/BYTE]  = mem->pointc.y[i];
+    }
+    for(i=1;i<=mem->pointd.x[0];i++){
         toBeSigned[i+2*POINT_LEN/BYTE]  = mem->pointd.x[i];
+    }
+    for(i=1;i<=mem->pointd.y[0];i++){
         toBeSigned[i+3*POINT_LEN/BYTE]  = mem->pointd.y[i];
     }
     toBeSigned[0] = 4*POINT_LEN/BYTE;
@@ -819,7 +819,7 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){
     }
 }
 /* rcv_data = STS_0_data = pointc.x||pointc.y */
-uint16_t verify_STS_0(uint8_t *rcv_data, Memory* mem){  
+void verify_STS_0(uint8_t *rcv_data, Memory* mem){  
 
     WORD i = 0;
     uint8_t pointx8[POINT_LEN] = {0};
@@ -841,8 +841,6 @@ uint16_t verify_STS_0(uint8_t *rcv_data, Memory* mem){
         printf("received cc's point x : ");    print_num(mem->pointc.x);
         printf("received cc's point y : ");    print_num(mem->pointc.y);
     }
-
-    return 1;
 }
 
 /* rcv_data = STS_1_data = pointd.x||pointd.y||nonce||Encryption[signature(pointd.x||pointd.y||pointc.x||pointc.y)]||MAC */

@@ -118,7 +118,3 @@ void testcrc(){
 	printf("crc = %08x \n", crc);
 }
 
-int main(){
-	testcrctable();
-	testcrc();
-}

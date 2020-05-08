@@ -28,7 +28,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	uint32_t bits = 256;
 
 	WORD i = 0;
-	WORD r_inter[SIZE] = {0};
+	WORD r[SIZE] = {0};
 	WORD e[SIZE] = {0};
 	WORD k_inv[SIZE] = {0};
 	WORD dr[SIZE] = {0};
@@ -45,60 +45,60 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 
     EntropyPool pool; //change this wrt the memory function
 	initPool(&pool);
+	while(s[0] == 0){
+		while(r[0] == 0){
 
-	while(r_inter[0] == 0){
+			// 1) k = random number in [1, n-1]
+			random(k, 256, &pool);
+			//////////// please comment it, but don't erase it since this number is used for debugging
+			//convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
+			////////////////
+			convertArray16toArray8(k_8, k);
+			for(i = 0; i<=k_8[0];i++){
+				k_struct.word[i] = k_8[i];
+			}
 
-		// 1) k = random number in [1, n-1]
-	    random(k, 256, &pool);
-		//////////// please comment it, but don't erase it since this number is used for debugging
-		//convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
-		////////////////
-		convertArray16toArray8(k_8, k);
-		for(i = 0; i<=k_8[0];i++){
-			k_struct.word[i] = k_8[i];
+			// 2) point1 = (x1, y1) = kG
+
+			pointScalarMultAffine(&point1, &G, k_struct);
+
+			// 3) r = x1 mod n
+			mod(r, point1.x, n);
+
 		}
 
-		// 2) point1 = (x1, y1) = kG
 
-		pointScalarMultAffine(&point1, &G, k_struct);
 
-		// 3) r_inter = x1 mod n
-		mod(r_inter, point1.x, n);
 
+		// 1) e = hash(m)
+		hash(e, message, 256);
+
+	//	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
+		// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
+
+
+		inverse(k_inv, k, n);      // k_inv = k^-1 mod n
+
+		mult(dr,key,r);
+		mod(dr, dr, n);		//dr = d*r
+
+		add(a, e, dr);	// a = e + dr
+		mod(b, a, n);	//b = a mod n
+
+
+		//sb = k_inv * b
+		mult(sb, k_inv, b);
+		mod(s, sb, n);
 	}
-
-
-
-
-	// 1) e = hash(m)
-	hash(e, message, 256);
-
-//	printf("\n--In signature STEP1-- e--- ");print_hex_type(e,16);
-	// 2) s = [k^-1 * (e + dr)] mod n = [(k^-1 mod n) * [(e + dr) mod n] ] mod n
-
-
-	inverse(k_inv, k, n);      // k_inv = k^-1 mod n
-
-	mult(dr,key,r_inter);
-	mod(dr, dr, n);		//dr = d*r
-
-	add(a, e, dr);	// a = e + dr
-	mod(b, a, n);	//b = a mod n
-
-
-	//sb = k_inv * b
-	mult(sb, k_inv, b);
-	mod(s, sb, n);
-
 
 	//r || s, this r and s will be extracted and during verification
 
     for(i=1;i<=16;i++){
-        result[i] = r_inter[i];
+        result[i] = r[i];
         result[i+16] = s[i];
     }
 
-    result[0]=s[0]+r_inter[0];
+    result[0]=s[0]+r[0];
     copyArrayWithSize(output, result);
     //printf("\n--In [signature r+s output = ]----- ");print_hex_type(output,16);
 

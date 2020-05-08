@@ -32,20 +32,14 @@ int main(void)
 			case key_exchange_drone: 
 				state = key_exchange_drone_fct(&memory);
 				break;
-			case STS_receive_0: 
-				state = STS_receive_0_fct(&memory);
-				break;
 			case STS_make_1: 
 				state = STS_make_1_fct(&memory);
 				break;
 			case STS_send_1: 
 				state = STS_send_1_fct(&memory);
 				break;
-			case STS_receive_2: 
-				state = STS_receive_2_fct(&memory);
-				break;	
-			case STS_send_OK: 
-				state = STS_send_OK_fct(&memory);
+			case STS_completed_drone: 
+				state = STS_completed_drone_fct(&memory);
 				break;	
 			case State_Exit: 
 				exit = 1;

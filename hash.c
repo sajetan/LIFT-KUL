@@ -44,6 +44,12 @@ void hash(WORD out[],  WORD* in, uint16_t sizeHash){
     out[0] = len;
 
 }
+
+void hash8(uint8_t out[],  uint8_t in[], uint16_t numberBytesIn, uint16_t numberBytesOut, uint16_t sizeHash){
+    assert (sizeHash == 256 ||sizeHash == 384 ||sizeHash == 612);
+    sha3_HashBuffer(sizeHash, SHA3_FLAGS_KECCAK, in, numberBytesIn, out, numberBytesOut);
+}
+
 /*  Returns the number of bytes of a number.
     All MSB zeros, i.e. all digits after the largest non-zero bit, are excluded.
     This function is important for the hash function, since the exact amount of bytes must be known.

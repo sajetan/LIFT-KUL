@@ -28,11 +28,11 @@
                         printf("\t%s \n",s);
 #define DEBUG_SIGNATURE 0
 #define PRINT_CONTENT_UDP_PACKET 0
-#define MAX_TRIALS 3
+#define MAX_TRIALS 10
 
 // parameters of the fsm
 #define INFINITE_LOOP_STS 1     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
-#define TIMEOUT 200            // in ms, timeout value. /!\ not the same as the socket timeout, which has been set to a very small number
+#define TIMEOUT 400            // in ms, timeout value. /!\ not the same as the socket timeout, which has been set to a very small number
 #define SIMULATE_PACKET_DROP 50 // percentage chance of a packet drop, vary this between 0 and 100
 
 typedef enum
@@ -47,11 +47,7 @@ typedef enum
     STS_make_0,
     STS_make_1,
     STS_make_2,
-    STS_receive_0,
-    STS_receive_1,
-    STS_receive_2,
-    STS_send_OK,
-    STS_receive_OK,
+    STS_completed_drone,
     State_Exit
 } State;
 
@@ -70,7 +66,6 @@ struct Memory
     uint16_t send_buf_len;
     uint8_t rcv_STS_0[MAX_DATA_LENGTH];
     uint16_t rcv_STS_0_len;
-    uint16_t retransmissionCounter;
     
     // permanent public and private key pairs
     p256_affine drone_PK;
@@ -88,7 +83,8 @@ struct Memory
     
     // debugging
     uint32_t  counter;  // counter for counter the number of iterations
-    uint16_t print;
+    uint32_t  mean;  // counter for counter the number of iterations
+    Timer myTimer;
 
 };
 
@@ -114,12 +110,7 @@ State STS_send_0_fct(Memory* mem);
 State STS_send_1_fct(Memory* mem);
 State STS_send_2_fct(Memory* mem);
 
-State STS_receive_0_fct(Memory* mem);
-State STS_receive_1_fct(Memory* mem);
-State STS_receive_2_fct(Memory* mem);
-
-State STS_send_OK_fct(Memory* mem);
-State STS_receive_OK_fct(Memory* mem);
+State STS_completed_drone_fct(Memory* mem);
 
 
 
@@ -128,7 +119,7 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD_LEN *len);
 void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len);
 void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len);
 
-uint16_t verify_STS_0(uint8_t *rcv_data, Memory* mem);
+void     verify_STS_0(uint8_t *rcv_data, Memory* mem);
 uint16_t verify_STS_1(uint8_t *rcv_data, Memory* mem);
 uint16_t verify_STS_2(uint8_t *rcv_data, Memory* mem);
 

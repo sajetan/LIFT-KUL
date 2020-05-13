@@ -1,5 +1,5 @@
 /*
- * random.h
+ * random_gen.h
  *
  *  Created on: Mar 17, 2020
  *      Author: Ferdinand Hannequart
@@ -7,20 +7,20 @@
 
 
 
-#include"random.h"
+#include "random_gen.h"
 
 /* 
-    Returns a random number of specified length.
+    Returns a random_gen number of specified length.
     INPUTS:     -pool   :   structure entropy pool
-                -bit    :   32 bit number specifying the desired number of random bits.
+                -bit    :   32 bit number specifying the desired number of random_gen bits.
                             obviously, it mut be smaller than the maximum allowed number of bits given the type and length of the output rray
-    OUTPUTS:    -rand   :   array of WORD of size SIZE, contains a number that is "bit" bits long (or less since the MSB's are also random and thus can be zero)
+    OUTPUTS:    -rand   :   array of WORD of size SIZE, contains a number that is "bit" bits long (or less since the MSB's are also random_gen and thus can be zero)
 */
-void random(WORD *rand, uint32_t bit, EntropyPool* pool){
+void random_gen(WORD *rand, uint32_t bit, EntropyPool* pool){
     assert(bit<=NUMBEROFBITS);
 
-    WORD intermediate[SIZE] = {0};  // will contain the 128 bit random output
-    uint32_t i = 0;                 // will iterate over the 128 bit random output
+    WORD intermediate[SIZE] = {0};  // will contain the 128 bit random_gen output
+    uint32_t i = 0;                 // will iterate over the 128 bit random_gen output
     uint32_t start = 0;             // will iterate over the number of 128 bit numbers needed
     uint32_t max = (SIZEHASH/BIT/2);
     uint8_t shift = 0;
@@ -56,7 +56,7 @@ void random(WORD *rand, uint32_t bit, EntropyPool* pool){
 
 /*  returns the current time in microsecond. If word = uint8_t, 
     there is overflow since the returned value an be up to 999 999,
-    but we don't care since only the lower lsb have sufficient randomness*/
+    but we don't care since only the lower lsb have sufficient random_genness*/
 WORD getTime(){
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -383,7 +383,7 @@ void demoEntropyPool(){
 }
 
 
-void randomTest(){
+void random_genTest(){
     EntropyPool pool;
     WORD a[SIZE] = {0};
     uint32_t n = 10;
@@ -394,47 +394,47 @@ void randomTest(){
 
     for(int i = 0; i<10; i++){
             n = i;
-            random(a, n, &pool);
+            random_gen(a, n, &pool);
             //printPool(&pool);
-            printf("random number of n = %d bits:", n); print_num(a);
+            printf("random_gen number of n = %d bits:", n); print_num(a);
     }
 	
 
     n = 1;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 1 bits:"); print_num(a);
+    printf("random_gen number of n = 1 bits:"); print_num(a);
 
     n = 10;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 10 bits:"); print_num(a);
+    printf("random_gen number of n = 10 bits:"); print_num(a);
        
     n = 128;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 128 bits:"); print_num(a);
+    printf("random_gen number of n = 128 bits:"); print_num(a);
 
     n = 129;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 129 bits:"); print_num(a);
+    printf("random_gen number of n = 129 bits:"); print_num(a);
     
 
     n = 256;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 256 bits:"); print_num(a);
+    printf("random_gen number of n = 256 bits:"); print_num(a);
 
     n = 256;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 257 bits:"); print_num(a);
+    printf("random_gen number of n = 257 bits:"); print_num(a);
 
     n = 256;
-    random(a, n, &pool);
+    random_gen(a, n, &pool);
     //printPool(&pool);
-    printf("random number of n = 258 bits:"); print_num(a);
+    printf("random_gen number of n = 258 bits:"); print_num(a);
     
     
     ENDTEST(1)

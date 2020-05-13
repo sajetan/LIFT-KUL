@@ -31,7 +31,7 @@
 #define BYTE_ID     sizeof(WORD_ID)
 
 #define MAX_DATA_LENGTH   (MAX_TRANSFER_LENGTH -  BYTE_TAG - BYTE_LEN - BYTE_ID)            // maximum number of bytes of data
-
+#define MIN_PACKET_LENGTH   (128)            // min number of bytes of data payload length
 
 #define TAG_STS_0   (WORD_TAG) 0
 #define TAG_STS_1   (WORD_TAG) 1
@@ -46,6 +46,7 @@
 #define TAG_KEY_EXCHANGE_CC  (WORD_TAG) 10
 #define TAG_UNDEFINED  (WORD_TAG) 11
 #define TAG_STS_OK (WORD_TAG) 12
+#define TAG_COMMAND 13
 
 /*
 typedef struct Session Session;
@@ -69,8 +70,25 @@ struct User
 };
 
 */
+
+typedef struct lift_pkt_hdr{
+	uint16_t tag;
+	uint16_t len;
+	uint16_t id;
+} lift_pkt_hdr;
+
+typedef struct lift_cmd_pkt{
+	uint32_t seq_num;
+	uint16_t cmd_type;
+	uint16_t cmd;
+} lift_cmd_pkt;
+
+
+
+
+
 void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data);
-void decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, WORD_ID* id, uint8_t* data, uint8_t* buf, uint16_t buf_len);
+LIFT_RESULT decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength,  uint32_t *crc,WORD_ID* id, uint8_t* data, uint8_t* buf, uint16_t buf_len);
 void getTLVTest();
 
 #endif

@@ -22,7 +22,7 @@ main.h
 #include"shift.h"
 #include "../hash/sha3.h"
 #include "../hash/hash.h"
-#include "../random/random.h"
+#include "../random/random_gen.h"
 #include "communication.h"
 #include "message.h"
 
@@ -33,7 +33,7 @@ main.h
 //#include"chacha20_poly1305_interface.h"
 
 //FSM and comm
-#include "fsm.h"
+#include"fsm.h"
 
 
 

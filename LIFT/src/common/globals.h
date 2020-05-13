@@ -43,7 +43,8 @@
 //#define SIZE ((NUMBEROFBITS- (NUMBEROFBITS % BIT))/BIT +1 + ((NUMBEROFBITS % BIT) != 0))
 #define SIZE 66
 //#define SIZEPOINT 33
-#define POINT_LEN 32 // length of a point coordonate in bytes
+
+//#define POINT_LEN 32 // length of a point coordonate in bytes
 #define SIG_LEN 64 // max length of the signature text
 #define CIPHER_LEN 32 // max length of the cipher text
 #define SIZE_EC_KEY 256 // size of the EC private key (in bits!)
@@ -69,6 +70,13 @@ typedef struct{
 	uint64_t len;
 	uint64_t word[SIZE];
 } bigint64;
+
+
+typedef enum{
+	RETURN_INVALID = 0,
+	RETURN_SUCCESS
+} LIFT_RESULT;
+
 
 
 #define TEST(pass)          if(pass)\

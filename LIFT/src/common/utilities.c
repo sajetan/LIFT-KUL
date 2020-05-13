@@ -50,13 +50,13 @@ void convert(WORD *out, const char *in){
 	out[0] = index;
 }
 
-void initArray(WORD *in, size_t size){
+void initArray(WORD *in, WORD size){
 	for(WORD i = 0; i<size; i++){ // set array to zero
 		in[i] = 0;
 	}
 }
 
-void initArray8(uint8_t *in, size_t size){
+void initArray8(uint8_t *in, WORD size){
 	for(WORD i = 0; i<size; i++){ // set array to zero
 		in[i] = 0;
 	}
@@ -91,7 +91,7 @@ void convertArray16toArray8withoutLen(uint8_t *out, uint16_t *in){
 }
 
 
-void convertArray8toArray16withoutLen(uint16_t *out, uint8_t *in, size_t len){
+void convertArray8toArray16withoutLen(uint16_t *out, uint8_t *in, WORD len){
 	WORD i;
 	for(i=0; i<len; i++){
 		out[i/2]=(((uint16_t)((in)[i])) | ((uint16_t)((in)[i+1]) << 8));
@@ -102,7 +102,7 @@ void convertArray8toArray16withoutLen(uint16_t *out, uint8_t *in, size_t len){
 }
 
 /* transforms uint8_t array without length into an array of word (length = SIZE) with length field*/
-void rawbyte2word(WORD *out, uint8_t *in, size_t len){
+void rawbyte2word(WORD *out, uint8_t *in, WORD len){
 	assert((SIZE-1)*BYTE>= len); // to avoid that inside the uint8_t array there is too much to store in out
 	uint16_t i = 0;
 	uint16_t index = 0;
@@ -121,7 +121,7 @@ void rawbyte2word(WORD *out, uint8_t *in, size_t len){
 
 /* transforms an array of word of length SIZE with a length field into an array of bytes without length. Out is maximum "max_len" long.
 	The assert below treats a corner case where the byte array ends in the middle of the word array.*/
-void word2rawbyte(uint8_t *out, WORD *in, size_t max_len){
+void word2rawbyte(uint8_t *out, WORD *in, WORD max_len){
 	assert(in[0]*BYTE <= max_len); // to avoid overflow
 	uint16_t i = 0;
 	uint16_t index = 1;
@@ -134,7 +134,7 @@ void word2rawbyte(uint8_t *out, WORD *in, size_t max_len){
 		index = i/(BIT/8)+1;	
 	}
 	if(i == max_len && index<=in[0] ){
-		printf("Possibility that some partes of the last cell have not been correctly copied in function %s:\n", __func__);
+		printf("Possibility that some pares of the last cell have not been correctly copied in function %s:\n", __func__);
 		print_num(in);
 		print_array8(out, max_len);
 		P(max_len);
@@ -142,7 +142,7 @@ void word2rawbyte(uint8_t *out, WORD *in, size_t max_len){
 	}
 }
 
-void convertArray8toArray16(uint16_t *out, uint8_t *in, size_t len){
+void convertArray8toArray16(uint16_t *out, uint8_t *in, WORD len){
 	WORD i;
 	for(i=0; i<in[0]; i++){
 		out[i/2]=(((uint16_t)((in)[i])) | ((uint16_t)((in)[i+1]) << 8));
@@ -154,7 +154,7 @@ void convertArray8toArray16(uint16_t *out, uint8_t *in, size_t len){
 
 
 
-void convertWithSize(WORD *out, const char *in, size_t size){
+void convertWithSize(WORD *out, const char *in, WORD size){
 	WORD len = strlen(in);
 
 	for(WORD i = 0; i<SIZE; i++){ // set array to zero
@@ -253,12 +253,11 @@ void array2text(char text[], WORD array[]){
 
 
 
-
-#if 0
-/*s an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
-void print_num_size(WORD *in, size_t s){
+#if 1
+/*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
+void print_num_size(WORD *in, WORD size){
     printf("[");
-    for (WORD i = 0; i < s; i++) {
+    for (WORD i = 0; i < size; i++) {
 		switch(BIT){
 			break;
 			case 32:
@@ -281,9 +280,9 @@ void print_num_size(WORD *in, size_t s){
 
 
 /*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
-void print_num_size_type(WORD *in, size_t s, size_t type){
+void print_num_WORDype(WORD *in, WORD size, WORD type){
     printf("[");
-    for (WORD i = 0; i < s; i++) {
+    for (WORD i = 0; i < size; i++) {
 		switch(type){
 			break;
 			case 32:
@@ -355,12 +354,10 @@ void print_hex(WORD *in)
     printf("\n\r");
 }
 
-void print_hex_type(WORD *in, size_t type)
+void print_hex_type(WORD *in, WORD type)
 {
-    WORD i = 0;
-	if(type == 8){
-		printf("info message: this is a uint8, not a word array=> zeros won't always be printed out properly");
-	}
+    WORD i;
+
     printf("0x");
     for (i = in[0]; i >= 1; i--) {
     	switch(type){
@@ -392,7 +389,7 @@ void print_hex_8(uint8_t *in)
     printf("\n\r");
 }
 
-void print_hex_size_type(WORD *in,size_t size, size_t type)
+void print_hex_WORDype(WORD *in,WORD size, WORD type)
 {
     WORD i = 0;
 
@@ -461,9 +458,9 @@ void print_array8(uint8_t *in, uint64_t size){
 /*
  * convert byte hex array to char array of type of 8/16/32bits
  * */
-void byte2char(char *out, WORD *in, size_t type)
+void byte2char(char *out, WORD *in, WORD type)
 {
-	size_t len=in[0];
+	WORD len=in[0];
 	uint32_t i =0;
 	if (type==8){
 		while(i<len){sprintf(out+strlen(out),"%02x",in[len-i]);i++;}
@@ -479,7 +476,7 @@ void byte2char(char *out, WORD *in, size_t type)
 /*
  * convert byte hex array to char array of type of 8/16/32bits
  * */
-void byte2charWithSize(char *out, uint8_t *in, size_t len,size_t type)
+void byte2charWithSize(char *out, uint8_t *in, WORD len,WORD type)
 {
 	uint32_t i =0;
 	len=len-1;
@@ -545,7 +542,7 @@ void copyBytes(uint8_t copy[], uint8_t w[], uint16_t len){
 }
 
 
-#if 0
+#if 1
 //just added these functions will remove later while cleaning up code :sajetan
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE
@@ -557,7 +554,7 @@ void copyArrayWithoutLength(WORD copy[], WORD w[]){
     }
 }
 
-void copyArray(WORD copy[], WORD w[],size_t len){
+void copyArray(WORD copy[], WORD w[],WORD len){
     for(WORD i = 0; i<len; i++){
         copy[i] = w[i];
         printf("%02x ",copy[i]);

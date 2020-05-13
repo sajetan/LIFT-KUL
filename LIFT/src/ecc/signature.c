@@ -48,8 +48,8 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 	while(s[0] == 0){
 		while(r[0] == 0){
 
-			// 1) k = random number in [1, n-1]
-			random(k, 256, &pool);
+			// 1) k = random_gen number in [1, n-1]
+			random_gen(k, 256, &pool);
 			//////////// please comment it, but don't erase it since this number is used for debugging
 			//convert(k, "4896233cb2c5cbd83202c6b8110fc7c53c50657f5e64e8d461189430f45389ba");
 			////////////////
@@ -109,7 +109,7 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 //INPUT: input = r|s 
 //OUTPUT: valid == 0 if signature is not valid, valid == 1 if signature is valid
 //WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
-WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
+LIFT_RESULT sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
 	p256_affine Q = {0};
 	p256_affine G = {0};
 	p256_affine point1 = {0};
@@ -145,14 +145,14 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 
 	if ( greaterThan(r, n) || equalWord(r, n) ){     // if (r > n or r = n): signature invalid
 		printf("\n--signatrue invalied \n");
-		return 0;
+		return RETURN_INVALID;
 	}
 
 	// 2)if s not in [0,n-1]: signature is invalid, else: go to step 3)
 
 	if (greaterThan(s, n) || equalWord(s, n)){		// if (s > n or s = n): signature invalid
 		printf("\n--signatrue invalied \n");
-		return 0;
+		return RETURN_INVALID;
 	}
 
 	// 3) e = hash(m)
@@ -196,7 +196,7 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 
 	// 7) if point_res is the infinity point: signature invalid, else: step 8)
 	if (pointValidOnCurve(&point_res) == 0){
-		return 0;
+		return RETURN_INVALID;
 	}
 
 	// 8) v = x mod n
@@ -205,10 +205,10 @@ WORD sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD
 
 	//9) if (v==r): valid = 1, else: valid = 0;
 	if (equalWord(v, r)){
-		return 1;
+		return RETURN_SUCCESS;
 	}
 	else{
-		return 0;
+		return RETURN_INVALID;
 	}
 
 
@@ -274,7 +274,7 @@ void signatureTest(){
     		"d2e01411817b5512b79bbbe14d606040a4c90deb09e827d25b9f2fc068997872",		//Q_x
     		"503f138f8bab1df2c4507ff663a1fdf7f710e7adb8e7841eaa902703e314e793",1);		//Q_y
 
-    //FSM: these test vectors, in combination with the random number above, yield an incorrect signature
+    //FSM: these test vectors, in combination with the random_gen number above, yield an incorrect signature
     signatureTestHelp("3eebdd513aef03da69e9767303af168bfd41c64f3259d1375cd7a8eb117ac3d5ebc4f4ae8aaf7933bc26d11282163554919d79f32ee0250a50a50cdaa2cd09feaec54b70f74b82efdf765dfd99b1680c826832d83706812610cd35c68ede86bb37d85935c9bc68e5f2b698a64baea8df950c56247b76451b41181fa3cbfa7e09",  //m
     		"ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",   		//n
     		"68ff8f04ef4c082c85dd424f1df03abcab0d87160fb4e76dd413ee7da988d568",		//d
@@ -329,7 +329,7 @@ void signatureTest2(){
 		convert(G.y, "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
 		}
 
-		random(key, 256, &pool); // private key
+		random_gen(key, 256, &pool); // private key
 		pointScalarMultAffineWord(&Q, &G, key);	// public key
 		printf("\n signature message: ");	print_hex_type(m, BIT);
 		printf("\n signature n		: ");	print_hex_type(n, BIT);

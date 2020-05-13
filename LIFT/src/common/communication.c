@@ -8,7 +8,7 @@ int fd_tx;
 int fd_rx;
 
 int init_socket(int tx_port, int rx_port, int timeout_sec) {
-    
+
     char *dst_ip = "127.0.0.1";
 
 	// create tx and rx sockets
@@ -21,6 +21,12 @@ int init_socket(int tx_port, int rx_port, int timeout_sec) {
     if ((fd_rx=socket(AF_INET, SOCK_DGRAM, 0))==-1) {
 		printf("Cannot create RX socket\n");
         return 0;
+    }
+
+    //safety check
+    if (fd_rx==0||fd_rx==1||fd_rx==2||fd_tx==0||fd_tx==1||fd_tx==2){
+    	close_sockets();
+    	init_socket(tx_port,rx_port, timeout_sec);
     }
 
     // bind tx socket to all valid addresses, and any port

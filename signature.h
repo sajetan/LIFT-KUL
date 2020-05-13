@@ -16,11 +16,11 @@
 #include"mult.h"
 #include"inverse.h"
 #include"division.h"
-#include"random.h"
 #include"hash.h"
+#include "random_gen.h"
 
 void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y);
-WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y);
+LIFT_RESULT sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y);
 
 //testfunctions
 

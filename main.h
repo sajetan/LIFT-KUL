@@ -22,7 +22,6 @@ main.h
 #include"shift.h"
 #include"sha3.h"
 #include"hash.h"
-#include"random.h"
 #include"communication.h"
 #include"message.h"
 
@@ -34,6 +33,7 @@ main.h
 
 //FSM and comm
 #include"fsm.h"
+#include "random_gen.h"
 
 
 

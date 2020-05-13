@@ -6,8 +6,8 @@
  * 
  */
 
-#ifndef RANDOM_H_
-#define RANDOM_H_
+#ifndef RANDOM_GEN_H_
+#define RANDOM_GEN_H_
 
 #include"globals.h"
 #include"utilities.h"
@@ -71,8 +71,8 @@ void demoEntropyPool();
 //void killPool(EntropyPool* pool, pthread_t* thread_id);
 
 // other
-void random(WORD rand[], uint32_t bit, EntropyPool* pool);
+void random_gen(WORD rand[], uint32_t bit, EntropyPool* pool);
 void randomTest();
 
 
-#endif /* RANDOM_H_ */
+#endif /* RANDOM_GEN_H_ */

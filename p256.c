@@ -6,7 +6,6 @@
  */
 
 #include "p256.h"
-#include "p256_parameters.h"
 #include "test.h"
 #include <stdint.h>      // for uint32_t
 

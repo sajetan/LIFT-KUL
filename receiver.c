@@ -14,10 +14,10 @@ int main(void)
 	// init_socket(21235, 21237, 5);
     
 	// FSM part
-	State state = idle_drone;
 	Memory memory;
 	initMemory(&memory);
 	int exit = 0;
+	memory.current_state= idle_drone;
 
 	// udp part
 	uint8_t buf[MAX_TRANSFER_LENGTH] = {0};	// message buffer
@@ -25,23 +25,25 @@ int main(void)
 	
 
 	while(!exit){
-		switch(state){
+		switch(memory.current_state){
 			case idle_drone: 
-				state = idle_drone_fct(&memory);
+				memory.current_state = idle_drone_fct(&memory);
 				break;
 			case key_exchange_drone: 
-				state = key_exchange_drone_fct(&memory);
+				memory.current_state = key_exchange_drone_fct(&memory);
 				break;
 			case STS_make_1: 
-				state = STS_make_1_fct(&memory);
+				memory.current_state = STS_make_1_fct(&memory);
 				break;
 			case STS_send_1: 
-				state = STS_send_1_fct(&memory);
+				memory.current_state = STS_send_1_fct(&memory);
 				break;
 			case STS_completed_drone: 
-				state = STS_completed_drone_fct(&memory);
+//				print_num(memory.session_key);
+				memory.current_state = STS_completed_drone_fct(&memory);
 				break;	
 			case State_Exit: 
+//				print_num(memory.session_key);
 				exit = 1;
 				break;
 			default:

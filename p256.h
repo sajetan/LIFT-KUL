@@ -13,12 +13,27 @@
 #include "mult.h"
 #include "mod.h"
 #include "inverse.h"
+//#include "p256_parameters.h"
 
 /*  */
 typedef uint16_t p256_word;
 typedef uint64_t p256_dword;
 
-#define P256_MAX_SIZE SIZE //8 for elements and 1 for size
+#define P256_MAX_SIZE SIZE //8 for elements and 1 for size //think about this
+#define P256_POINT_LEN 32 //8 for elements and 1 for size //think about this
+
+
+/* CURVE PARAMETERS*/
+extern char p256_curve_parameter_p_arr[];
+extern p256_word p256_curve_parameter_p[];
+extern char p256_curve_parameter_n_arr[];
+extern char p256_curve_parameter_a_arr[];
+extern char p256_curve_parameter_b_arr[];
+extern p256_word p256_curve_parameter_b[];
+extern char p256_curve_parameter_gx_arr[];
+extern char p256_curve_parameter_gy_arr[];
+extern char p256_curve_parameter_q_arr[];
+
 
 // All P-256 integers are non-negative and are of 32bytes long. This shall be represented as an array of 8 elements of 32bits each.
 typedef struct{

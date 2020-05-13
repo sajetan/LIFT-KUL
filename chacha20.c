@@ -25,7 +25,7 @@ This implementation is intended to be simple, many optimizations can be performe
 
 void chacha_init_ctx(chacha20_ctx *ctx)
 {
-  uint8_t i;
+  uint16_t i;
 
   for (i = 0 ; i < 16 ; i++) {
     ctx->schedule[i] = 0;

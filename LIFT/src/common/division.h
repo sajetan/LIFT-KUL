@@ -14,6 +14,7 @@
 #include "mult.h"
 #include "add.h"
 #include "sub.h"
+#include "inverse.h" // to have access to subunsigned
 
 void division(WORD *q, WORD *r, WORD *x, WORD *y);
 void shiftBase(WORD *res, WORD a, WORD *y);

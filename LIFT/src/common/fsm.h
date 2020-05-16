@@ -37,7 +37,7 @@
 #define MAX_TRIALS 10
 #define MAX_COMMUNICATION_RETRANSMISSION 20
 #define SESSION_TIMEOUT 600000 //ten minutes in milliseconds
-#define COMMUNICATION_TIMEOUT 600
+#define COMMUNICATION_TIMEOUT 100
 
 // parameters of the fsm
 #define INFINITE_LOOP_STS 0     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)

@@ -526,7 +526,6 @@ void send_packet(uint8_t* buf, uint16_t buf_len){
 		printf("Send failed in %s\n", __func__);
 		return 0;
 	}
-
     if(PRINT_CONTENT_UDP_PACKET){
         printf("Sent message    \n");
         for(int i = 0; i<buf_len; i++){
@@ -553,17 +552,15 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
     rcv_buf_len = receive_message(rcv_buf);
 
     
-//    if(rcv_buf_len != (uint16_t)~0){
-//        // simulate packet loss
-//        dropPacket = (rand()%99) < SIMULATE_PACKET_DROP;      // Returns a pseudo-random_gen integer between 0 and RAND_MAX.
-//        if(dropPacket){
-//            rcv_buf_len = (uint16_t)~0;
-//            DEBUG_FSM("* packet received, but dropped *")
-//        }
-//        else{
-//            DEBUG_FSM("packet received, passed")
-//        }
-//    }
+    if(rcv_buf_len != (uint16_t)~0){
+        // simulate packet loss
+        dropPacket = (rand()%99) < SIMULATE_PACKET_DROP;      // Returns a pseudo-random_gen integer between 0 and RAND_MAX.
+        if(dropPacket){
+            rcv_buf_len = (uint16_t)~0;
+            DEBUG_FSM("* [simulation] received packet is dropped *")
+        }
+
+    }
 
     // process received message
     if(rcv_buf_len == (uint16_t)~0){
@@ -609,7 +606,6 @@ State STS_make_0_fct( Memory* mem){
 State STS_make_1_fct( Memory* mem){
     PRINT_STATE()
     make_packet(mem, TAG_STS_1);
-    printf("Sending STS 1 \n");
     return STS_send_1;
 }
 
@@ -651,7 +647,7 @@ State idle_drone_fct(Memory* mem){
                     //}
                 }
                 if(restart){
-                    printf("STS_0 received crc=[%08x]\n",crc);
+                    printf("\treceive STS_0, start protocol; crc=[%08x]\n",crc);
                     //initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
                     //copyArray8(mem->rcv_STS_0, data, len );
                     //mem->rcv_STS_0_len = len;
@@ -659,11 +655,11 @@ State idle_drone_fct(Memory* mem){
                     verify_STS_0(data, mem);
                     return STS_make_1;
                 } else{
-                    printf("STS_0 received again and ignored crc=[%08x]\n",crc);
+                    printf("\treceive same STS_0, ignore; crc=[%08x]\n",crc);
                 }
             }
             else{
-                DEBUG_FSM("unexpected tag, message ignored")
+                DEBUG_FSM("received unexpected tag, message ignored")
             }
         }
     }   
@@ -683,10 +679,12 @@ State STS_send_0_fct(Memory* mem){
     uint16_t counter = 0;
     Timer myTimer;
     startTimer(&myTimer);
-    
+
+    send_packet(mem->send_buf, mem->send_buf_len);  // send packet
+    DEBUG_FSM("send STS 0") 
+
     for(counter = 0; counter < MAX_TRIALS; counter ++){
-        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
-        DEBUG_FSM("packet STS 0 sent\n")
+
         startTimer(&myTimer);                           // start timer 
         uint32_t crc = 0;
         while(valueTimer(&myTimer)<TIMEOUT){
@@ -700,7 +698,7 @@ State STS_send_0_fct(Memory* mem){
             } else{
                 //DEBUG_FSM("valid id and correct integrity check")
                 if(tag == TAG_STS_1){
-                	printf("STS 1 received crc=[%08x]\n",crc);
+                	printf("\tSTS 1 received crc=[%08x]\n",crc);
                     valid = verify_STS_1(data, mem);
                     if(valid){
                         //DEBUG_FSM("valid signature, send next message")
@@ -709,11 +707,12 @@ State STS_send_0_fct(Memory* mem){
                         DEBUG_FSM("invalid signature, continue listening")
                     }
                 } else{
-                    DEBUG_FSM("unexpected tag, message ignored")
+                    DEBUG_FSM("received unexpected tag, message ignored")
                 }
             }
         }
-        DEBUG_FSM("timeout,no response, send previous message again")
+        DEBUG_FSM("resend STS 0 (timeout)")
+        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
     }
     DEBUG_FSM("timeout and retransmission counter exceeded, restart protocol")
     return STS_make_0;
@@ -731,12 +730,15 @@ State STS_send_1_fct(Memory* mem){
     uint16_t restart = 0;
     uint16_t counter = 0;
     Timer myTimer;
-
+    
+    send_packet(mem->send_buf, mem->send_buf_len); // send message stored in memory initially send sts1, then replace it by sts_ok after receiving sts2
+    DEBUG_FSM("send STS 1")
+    
     while(1){
-        send_packet(mem->send_buf, mem->send_buf_len); // send message stored in memory initially send sts1, then replace it by sts_ok after receiving sts2
+
         startTimer(&myTimer);       // start timer
         uint32_t crc = 0;
-        while(valueTimer(&myTimer)<5000){
+        while(valueTimer(&myTimer)<TIMEOUT){// why 5000?< here
             initArray8(data, MAX_DATA_LENGTH);
             valid = receive_packet( &tag, &len, &crc, data, mem->receiverID, &timeoutSocket);
 
@@ -747,13 +749,16 @@ State STS_send_1_fct(Memory* mem){
             } else{
                 //DEBUG_FSM("valid id and correct integrity check")
                 if(tag == TAG_STS_2){
-                    printf("STS 2 received crc=[%08x]\n",crc);
+                    printf("\tSTS 2 received crc=[%08x]\n",crc);
                     valid = verify_STS_2(data, mem);
                     if(valid){
                         //DEBUG_FSM("correct signature")
-                    	printf("Sending STS OK \n");
-                        make_packet(mem, TAG_STS_OK); // ! be careful if you remove this from here! this is not a separate state since then it would have to be sent in the STS_completed state once in the beginning, and we don't want that since eauch tme the drone enters this state after communication it would send this ok message
-                        send_packet(mem->send_buf, mem->send_buf_len);
+                        make_packet(mem, TAG_STS_OK);
+                        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
+                    	printf("\tSending STS OK \n");
+                        printf("Key Establishment Phase Successful\n");
+            	        printf("-----------------------------------------------------------------\n");
+                        return STS_completed_drone;
 //                        if(INFINITE_LOOP_DSTS){
 //                            return STS_completed_drone;
 //                        } else{
@@ -763,24 +768,15 @@ State STS_send_1_fct(Memory* mem){
                         DEBUG_FSM("invalid signature, continue listening")
                     }
                 } else if(tag == TAG_STS_0){
-                    restart = 1;
                     if(crc == mem->STS0_CRC){  // compare STS_0 message with the one in memory
-                        //if(equalArray8(data, mem->rcv_STS_0, len)){
-                            restart = 0;
-                        //}
-                            printf("STS_0 received retransmitted and ignored crc=[%08x]\n",crc);
-                    } 
-                    if(restart){
-                        printf("STS_0 received crc=[%08x]\n",crc);
-                        //initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
-                        //copyArray8(mem->rcv_STS_0, data, len );
-                        //mem->rcv_STS_0_len = len;
+                        printf("\treceive same STS_0, ignore; crc=[%08x]\n",crc);
+                    } else{
+                        printf("\treceive new STS_0, restart protocol; crc=[%08x]\n",crc);
                         mem->STS0_CRC=crc;
                         verify_STS_0(data, mem); 
-
                         return STS_make_1;
                     }
-                }
+                }/*
                 else if (tag == TAG_COMMAND){
                 	printf("-----------------------------------------------------------------\n");
                 	printf("COMMAND_PACKET received crc=[%08x]\n",crc);
@@ -791,10 +787,11 @@ State STS_send_1_fct(Memory* mem){
 
                 else{
                     DEBUG_FSM("unexpected tag, message ignored")
-                }
+                } */
             }
         }
-        DEBUG_FSM("timeout, send previous message again") //it sends sts_1 if it didnt receive sts_2 ; it will send sts_ok if it didnt receive new command
+        DEBUG_FSM("resend STS 1 (timeout)")
+        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
     }
 }
 
@@ -808,10 +805,12 @@ State STS_send_2_fct(Memory* mem){
     uint16_t counter = 0;
     uint32_t time = 0;
     Timer myTimer;
+
+    send_packet(mem->send_buf, mem->send_buf_len);  // send packet
+    DEBUG_FSM("send STS 2")    
     
     for(counter = 0; counter < MAX_TRIALS; counter ++){
-        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
-        DEBUG_FSM("packet STS 2 sent")
+
         startTimer(&myTimer);                           // start timer 
         uint32_t crc = 0;
         while(valueTimer(&myTimer)<TIMEOUT){
@@ -825,7 +824,7 @@ State STS_send_2_fct(Memory* mem){
             } else{
                 //DEBUG_FSM("valid id and correct integrity check")
                 if(tag == TAG_STS_OK){
-                    printf("STS OK received crc=[%08x]",crc);
+                    printf("\tSTS OK received crc=[%08x]\n",crc);
                     if(INFINITE_LOOP_STS){
                         mem->counter++;
                         time = valueTimer(&mem->myTimer);
@@ -834,19 +833,21 @@ State STS_send_2_fct(Memory* mem){
                         } else{
                             mem->mean = (mem->mean*mem->counter + time)/(mem->counter + 1);
                         }
-			printf("\n==========================================================================================================\n");
-                        printf("\ntotal time taken: %ld [ms]\nmean            : %ld [ms]\n\nstart test Nr %d \n\n\n", time,mem->mean, mem->counter);
+			            printf("\n==========================================================================================================\n");
+                        printTimer(&mem->myTimer);
+                        printf("\n\nstart test Nr %d \n\n\n", time,mem->mean, mem->counter);
                         return idle_CC;
                     }
                     else{
                         return State_Exit;
                     }
                 } else{
-                    DEBUG_FSM("unexpected tag, message ignored")
+                    DEBUG_FSM("received unexpected tag, message ignored")
                 }
             }
         }
-        DEBUG_FSM("timeout, send previous message again")
+        DEBUG_FSM("resend STS 2 (timeout)")
+        send_packet(mem->send_buf, mem->send_buf_len);  // send packet
     }
     DEBUG_FSM("timout and retransmission counter exceeded, restart protocol")
     return STS_make_0;
@@ -855,7 +856,7 @@ State STS_send_2_fct(Memory* mem){
 
 
 State STS_completed_drone_fct(Memory* mem){
-    PRINT_STATE()
+    //PRINT_STATE()
     WORD_TAG tag = TAG_UNDEFINED;
     WORD_LEN len = 0;
     uint8_t data[MAX_DATA_LENGTH] = {0};
@@ -868,7 +869,6 @@ State STS_completed_drone_fct(Memory* mem){
 
     // now the drone enters a loop that it can only exit if it receives STS 0 (restart protocol) or a communication message
     // if it receives a correct STS_2 message, it answers with an ok message
-    send_packet(mem->send_buf, mem->send_buf_len);
     while(1){
         initArray8(data, MAX_DATA_LENGTH);
         valid = receive_packet( &tag, &len, &crc,data,  mem->receiverID, &timeoutSocket);
@@ -887,13 +887,24 @@ State STS_completed_drone_fct(Memory* mem){
                         restart = 0;
                 } 
                 if(restart){
-                    printf("STS_0 new packet: restart protocol, crc=[%08x]\n",crc);
+                    printf("\treceive new STS_0, restart protocol, crc=[%08x]\n",crc);
                     mem->STS0_CRC = crc;
                     verify_STS_0(data, mem); // process
 
                     return STS_make_1;
                 } else{
-                    printf("STS_0 received again and ignored crc=[%08x]\n",crc);
+                    printf("receive STS_0 again, ignore crc=[%08x]\n",crc);
+                }
+                break;
+            case TAG_STS_2:
+                printf("\tSTS 2 received again crc=[%08x]\n",crc);
+                valid = verify_STS_2(data, mem);
+                if(valid){
+                    printf("\tSending STS OK \n");
+                    make_packet(mem, TAG_STS_OK); 
+                    send_packet(mem->send_buf, mem->send_buf_len);
+                } else{
+                    DEBUG_FSM("invalid signature for STS 2, don't send OK")
                 }
                 break;
             case TAG_COMMAND:
@@ -909,10 +920,13 @@ State STS_completed_drone_fct(Memory* mem){
             	send_packet(mem->send_buf, mem->send_buf_len); //send the response (new or retransmit) and wait for new packet to arrive
             	break;
             default:
-                DEBUG_FSM("unexpected tag, message ignored")
+                DEBUG_FSM("received unexpected tag, message ignored")
                 break;
             }
         }
+
+
+
     }
 }
 
@@ -926,7 +940,7 @@ State key_exchange_CC_fct(Memory* memory){
     uint8_t pointy[P256_POINT_LEN] = {0};
     p256_affine* pk = &memory->control_PK;
     p256_affine* pk_other = &memory->drone_PK;
-    WORD* sk = &memory->control_SK;
+    WORD* sk = memory->control_SK;
 
     random_gen(sk, SIZE_EC_KEY, &memory->pool);
     pointScalarMultAffineWord(pk, &memory->G, sk);
@@ -976,7 +990,7 @@ State key_exchange_drone_fct(Memory* memory){
     uint8_t pointy[P256_POINT_LEN] = {0};
     p256_affine* pk = &memory->drone_PK;
     p256_affine* pk_other = &memory->control_PK;
-    WORD* sk = &memory->drone_SK;
+    WORD* sk = memory->drone_SK;
 
     do{
         buf_len = receive_message(buffer);
@@ -1084,7 +1098,7 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	WORD signature[SIZE]                = {0};
 	WORD rand[SIZE]                     = {0};
 	WORD toBeSigned[P256_POINT_LEN/BYTE*4+1] = {0};
-    WORD*           drone_private_key   = &mem->session_drone_secret; // private session key of drone
+    WORD*           drone_private_key   = mem->session_drone_secret; // private session key of drone
    	p256_affine*    drone_public_key    = &mem->session_drone_public; // public session key of drone
    	p256_affine*    control_public_key  = &mem->session_control_public; // public session key of drone
     p256_affine     session_key_affine  = {0};

@@ -652,6 +652,9 @@ uint32_t valueTimer(Timer* timer){
 	return timer->time_in_mill_2 - timer->time_in_mill_1;
 }
 
+void printTimer(Timer* timer){
+    printf("elapsed time: %d.%03d ms\n", valueTimer(timer)/1000, valueTimer(timer)%1000);
+}
 void convertTest(){
 	WORD w[SIZE] = {0};
 	printf("\n---- %s -----\n", __func__);

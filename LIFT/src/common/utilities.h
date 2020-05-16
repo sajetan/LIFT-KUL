@@ -73,5 +73,6 @@ void char2byte(uint8_t *out, const char *in);
 
 void startTimer(Timer *timer);
 uint32_t valueTimer(Timer *timer);
+void printTimer(Timer* timer);
 
 #endif /* SUB_H_ */

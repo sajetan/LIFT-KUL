@@ -544,6 +544,11 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
     uint8_t rcv_buf[MAX_TRANSFER_LENGTH] = {0};
     uint16_t valid = 0;
     uint16_t dropPacket = 0;
+    uint8_t mask = 0;
+    uint8_t temp = 0;
+    uint32_t r = 0;
+    uint16_t i = 0;
+    uint16_t bit_flip = 0;
 
 
     initArray8(data, MAX_DATA_LENGTH);
@@ -551,16 +556,37 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
     //receive message
     rcv_buf_len = receive_message(rcv_buf);
 
-    
+    // simulation part begin
     if(rcv_buf_len != (uint16_t)~0){
         // simulate packet loss
-        dropPacket = (rand()%99) < SIMULATE_PACKET_DROP;      // Returns a pseudo-random_gen integer between 0 and RAND_MAX.
+        dropPacket = (rand()%99) < SIMULATE_PACKET_DROP;
         if(dropPacket){
             rcv_buf_len = (uint16_t)~0;
-            DEBUG_FSM("* [simulation] received packet is dropped *")
-        }
+        }else{
+            // simulate bit flip
+            if(BER_INVERSE != 0){
+                for(i = 0; i<rcv_buf_len; i++){
+                    r = rand() % BER_INVERSE;
+                    if(r<8){
+                        bit_flip = 1;
+                        mask = 1<<r;
+                    } else{
+                        mask = 0;
+                    }
+                    temp = rcv_buf[i] & ~mask;
 
+                    if(temp == rcv_buf[i] ){
+                        temp = rcv_buf[i] | mask;
+                    }
+                    rcv_buf[i] = temp;
+
+                }
+            }
+        }
     }
+    if(dropPacket)  DEBUG_FSM("* [simulation] received packet is dropped *")
+    if(bit_flip)    DEBUG_FSM("* [simulation] received packet contains bit flips *")
+    // simulation part end
 
     // process received message
     if(rcv_buf_len == (uint16_t)~0){
@@ -887,17 +913,17 @@ State STS_completed_drone_fct(Memory* mem){
                         restart = 0;
                 } 
                 if(restart){
-                    printf("\treceive new STS_0, restart protocol, crc=[%08x]\n",crc);
+                    printf("\treceive new STS_0, restart protocol; crc=[%08x]\n",crc);
                     mem->STS0_CRC = crc;
                     verify_STS_0(data, mem); // process
 
                     return STS_make_1;
                 } else{
-                    printf("receive STS_0 again, ignore crc=[%08x]\n",crc);
+                    printf("receive STS_0 again, ignore; crc=[%08x]\n",crc);
                 }
                 break;
             case TAG_STS_2:
-                printf("\tSTS 2 received again crc=[%08x]\n",crc);
+                printf("\tSTS 2 received again; crc=[%08x]\n",crc);
                 valid = verify_STS_2(data, mem);
                 if(valid){
                     printf("\tSending STS OK \n");
@@ -910,13 +936,13 @@ State STS_completed_drone_fct(Memory* mem){
             case TAG_COMMAND:
             	if (crc!=mem->cmd_crc){
             		printf("-----------------------------------------------------------------\n");
-            		printf("COMMAND_PACKET received crc=[%08x]\n",crc);
+            		printf("COMMAND_PACKET received; crc=[%08x]\n",crc);
             		//not retransmitted data, so construct a new response packet
             		valid = make_command_response_packet(data, mem);
             		if (!valid)break;
             		mem->cmd_crc=crc;
             	}
-            	else printf("Received retransmitted packet, sending re-acknowledgment crc=[%08x]\n",crc);
+            	else printf("Received retransmitted packet, sending re-acknowledgment; crc=[%08x]\n",crc);
             	send_packet(mem->send_buf, mem->send_buf_len); //send the response (new or retransmit) and wait for new packet to arrive
             	break;
             default:

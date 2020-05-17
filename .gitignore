@@ -50,9 +50,27 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+#compiler
+*.deps*
+*.in
+aclocal*
+compile
+config.*
+configure
+depcomp
+install-sh
+missing
+stamp-h1
+auto*
+Makefile
+*.swp
+=======
 /Debug/
 
 #others
 *.xml
 *.project
 *.cproject
+

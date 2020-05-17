@@ -64,6 +64,7 @@ void convertArray16toArray8(uint8_t *out, uint16_t *in);
 void convertArray16toArray8withoutLen(uint8_t *out, uint16_t *in);
 void convertArray8toArray16(uint16_t *out, uint8_t *in, WORD len);
 WORD geq(WORD a[], WORD b[]);
+void updateLen(WORD a[]);
 
 void byte2charWithSize(char *out, uint8_t *in, WORD len,WORD type);
 void byte2char(char *out, WORD *in, WORD type);

@@ -87,19 +87,16 @@ void *communication_handler_thread(void *argdata){
 	make_command_request_packet(memory);
 	//print_num(memory->session_key);
 	gCommunicationThread=1;
-	//    for(counter = 0; counter < MAX_COMMUNICATION_RETRANSMISSION; counter ++){
-	for(counter = 0; counter < 30; counter ++){
-
+	for(counter = 0; counter < MAX_COMMUNICATION_RETRANSMISSION; counter ++){
 		//printf("inside forloop in communication handler \n");
 		//    	print_num(memory->send_buf);
 		if(!gCommunicationThread)return (void*)RETURN_SUCCESS;
 		send_packet(memory->send_buf, memory->send_buf_len);  // send packet
 		DEBUG_FSM("Communication packet sent\n")
 		//startTimer(&myTimer);                           // start timer
-		//        while(valueTimer(&myTimer)<COMMUNICATION_TIMEOUT && gCommunicationThread){
-		while(valueTimer(&myTimer)<800 && gCommunicationThread){
-			//usleep(TIMEOUT*1000);
-		}
+		//while(valueTimer(&myTimer)<COMMUNICATION_TIMEOUT && gCommunicationThread){
+			usleep(500000);
+		//}
 		//DEBUG_FSM("timeout,ack not received,retransmit packet\n")
 	}
 	DEBUG_FSM("timeout and retransmission counter exceeded, drone unreachable")

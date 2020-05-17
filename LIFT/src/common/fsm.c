@@ -553,7 +553,7 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 
 	//receive message
 	rcv_buf_len = receive_message(rcv_buf);
-
+	srand(time(0));
 	// simulation part begin
 	if(rcv_buf_len != (uint16_t)~0){
 		// simulate packet loss
@@ -564,7 +564,7 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 			// simulate bit flip
 			if(IF_BITERROR){
 				for(i = 0; i<rcv_buf_len; i++){
-					r = (uint8_t)(rand() % BER_INVERSE);
+					r = (rand() % BER_INVERSE);
 					if(r<8){
 						bit_flip = 1;
 						mask = 1<<r;

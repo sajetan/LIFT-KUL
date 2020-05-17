@@ -269,8 +269,7 @@ void session_handler_thread(Memory *data){
 			break;
 		case State_Exit:
 			printf("STS Complete\n");
-			print_num(memory->session_key);
-			//pthread_exit(NULL);
+			//print_num(memory->session_key);
 			exit = 1;
 			break;
 		default:
@@ -279,9 +278,6 @@ void session_handler_thread(Memory *data){
 			break;
 		}
 	}
-
-	//	close_sockets();
-	//pthread_exit(NULL);
 
 }
 

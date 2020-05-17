@@ -24,7 +24,7 @@
 #include <time.h>
 
 // all printing functions for debugging
-#define PRINT_STATE()   if(0)\
+#define PRINT_STATE()   if(1)\
 		printf("[ Current state:  %s ]\n", __func__);
 #define DEBUG_FSM(s)    if(0)\
 		printf("\t%s \n",s);

@@ -1,8 +1,9 @@
 /*
-Ferdinand Hannequart
-inverse.h
-
-purpose: contains the prototypes, defines and includes
+ * inverse.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef DEF_INVERSE

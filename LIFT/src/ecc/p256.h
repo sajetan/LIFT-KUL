@@ -1,8 +1,9 @@
 /*
  * p256.h
- *
- *  Created on: 31-Mar-2020
- *      Author: sajetan
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef P256_H_

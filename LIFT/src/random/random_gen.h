@@ -1,9 +1,9 @@
 /*
- * random.h
- *
- *  Created on: Mar 17, 2020
- *      Author: Ferdinand Hannequart
- * 
+ * random_gen.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef RANDOM_GEN_H_

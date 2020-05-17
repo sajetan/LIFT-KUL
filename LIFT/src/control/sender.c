@@ -1,3 +1,10 @@
+/*
+ * sender.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
 
 #include "../common/fsm.h"
 #include <pthread.h>
@@ -288,7 +295,9 @@ int main(void){
 	Memory memory;
 	initMemory(&memory); //, "123", "123");
 
-	init_socket(9992, 9993, 10);
+	char *drone_ip = "127.0.0.1";
+
+	init_socket(drone_ip, 9992, 9993, 10);
 	int exit = 0;
 
 	//SESSION_ACTIONS choice=0;

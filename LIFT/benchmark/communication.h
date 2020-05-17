@@ -1,3 +1,11 @@
+/*
+ * communication.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
 #ifndef COM_H_
 #define COM_H_
 

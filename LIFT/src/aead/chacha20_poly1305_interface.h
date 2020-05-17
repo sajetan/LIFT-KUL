@@ -1,6 +1,9 @@
 /*
  * chacha20_poly1305_interface.h
- * sajetan
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef CHACHA20_POLY1305_INTERFACE_H_

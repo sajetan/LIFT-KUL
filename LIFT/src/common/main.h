@@ -1,7 +1,9 @@
 /*
-main.h
-
- purpose: it contains the prototypes, defines and includes
+ * main.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef MAIN_H_

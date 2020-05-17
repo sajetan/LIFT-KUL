@@ -1,10 +1,10 @@
 /*
- * p256_parameters.h
- *
- *  Created on: 02-Apr-2020
- *  Author: sajetan
+ * p256_parameters.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
-
 
 #include "p256.h"
 

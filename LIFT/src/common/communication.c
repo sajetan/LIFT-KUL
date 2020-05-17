@@ -1,3 +1,11 @@
+/*
+ * communication.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
 #include "communication.h"
 
 struct sockaddr_in rx_addr; 
@@ -5,7 +13,7 @@ struct sockaddr_in tx_addr;
 int fd_tx;
 int fd_rx;
 
-int init_socket(int tx_port, int rx_port, int timeout_sec) {
+int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 
 	char *dst_ip = "127.0.0.1";
 
@@ -24,7 +32,7 @@ int init_socket(int tx_port, int rx_port, int timeout_sec) {
 	//safety check
 	if (fd_rx==0||fd_rx==1||fd_rx==2||fd_tx==0||fd_tx==1||fd_tx==2){
 		close_sockets();
-		init_socket(tx_port,rx_port, timeout_sec);
+		init_socket(tx_ip, tx_port,rx_port, timeout_sec);
 	}
 
 	// bind tx socket to all valid addresses, and any port
@@ -60,7 +68,7 @@ int init_socket(int tx_port, int rx_port, int timeout_sec) {
 	tx_addr.sin_family = AF_INET;
 	tx_addr.sin_port = htons(tx_port);
 
-	if (inet_aton(dst_ip, &tx_addr.sin_addr)==0) {
+	if (inet_aton(tx_ip, &tx_addr.sin_addr)==0) {
 		printf("inet_aton() failed\n");
 		return 0;
 	}

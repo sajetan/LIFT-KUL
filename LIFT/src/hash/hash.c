@@ -1,8 +1,9 @@
 /*
  * hash.c
- * 
- *  Created on: Mar 23, 2020
- *      Author: Ferdinand Hannequart
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #include"hash.h"

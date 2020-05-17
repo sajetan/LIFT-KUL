@@ -1,3 +1,10 @@
+/*
+ * receiver.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
 
 #include "../common/main.h"
 #include "../common/fsm.h"
@@ -6,9 +13,10 @@
 int main(void)
 {
 
+	char *cc_ip = "127.0.0.1";
 	// Ports for direct communication
 	// Time-out is set to 5 seconds
-	init_socket(9993, 9992, 10);
+	init_socket(cc_ip, 9993, 9992, 10);
 
 	// Ports for communication over GNU Radio
 	// init_socket(21235, 21237, 5);

@@ -1,11 +1,12 @@
 /*
-Ferdinand Hannequart
-shift.c
+ * shift.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #include"shift.h"
-
-
 
 /* Shift function: shifts a WORD[] number once to the right*/
 void shiftr1(WORD w[]){

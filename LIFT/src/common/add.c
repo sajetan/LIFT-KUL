@@ -1,10 +1,10 @@
-///*
-//
-// * add.c
-// *
-// *  Created on: Mar 17, 2020
-// *      Author: r0665956
-// */
+/*
+ * add.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
 
 #include"add.h"
 

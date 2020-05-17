@@ -1,7 +1,10 @@
 /*
  * chacha20_poly1305_interface.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  * This file is to integrate Chacha20 and Poly1305 for AEAD construction
- * sajetan
  */
 
 #include "chacha20.h"

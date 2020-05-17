@@ -315,8 +315,8 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 
 
 void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer k){
-	p256_jacobian tmp ={0};
-	p256_jacobian tmpout ={0};
+	p256_jacobian tmp ={{0}};
+	p256_jacobian tmpout ={{0}};
 	p256_word i, j;
 	p256_word x=0;
 
@@ -357,9 +357,9 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 
 
 void pointAddAffine(p256_affine *out, p256_affine *in1, p256_affine *in2){
-	p256_jacobian inj1 ={0}; /* initializing affine */
-	p256_jacobian inj2 ={0}; /* initializing affine */
-	p256_jacobian outj ={0}; /* initializing affine */
+	p256_jacobian inj1 ={{0}}; /* initializing affine */
+	p256_jacobian inj2 ={{0}}; /* initializing affine */
+	p256_jacobian outj ={{0}}; /* initializing affine */
 
 	affineToJacobian(&inj1,in1); /* converting to jacobian */
 	affineToJacobian(&inj2,in2); /* converting to jacobian */
@@ -370,16 +370,16 @@ void pointAddAffine(p256_affine *out, p256_affine *in1, p256_affine *in2){
 }
 
 void pointDoubleAffine(p256_affine *out, p256_affine *in){
-	p256_jacobian inj ={0}; /* initializing affine */
-	p256_jacobian outj ={0}; /* initializing affine */
+	p256_jacobian inj ={{0}}; /* initializing affine */
+	p256_jacobian outj ={{0}}; /* initializing affine */
 	affineToJacobian(&inj,in); /* converting to jacobian */
 	pointDoubleJacobian(&outj, &inj);
 	jacobianToAffine(out, &outj); /* converting result back to affine */
 }
 
 void pointScalarMultAffine(p256_affine *out, p256_affine *in, p256_integer k){
-	p256_jacobian inj ={0}; /* initializing affine */
-	p256_jacobian outj ={0}; /* initializing affine */
+	p256_jacobian inj ={{0}}; /* initializing affine */
+	p256_jacobian outj ={{0}}; /* initializing affine */
 	affineToJacobian(&inj,in); /* converting to jacobian */
 	pointScalarMultJacobian(&outj, &inj, k);
 	jacobianToAffine(out, &outj); /* converting result back to affine */
@@ -404,69 +404,69 @@ void pointScalarMultAffineWord(p256_affine *out, p256_affine *in, WORD* k){
 
 
 void p256TestScalarMultAffine(){
-	p256_affine in ={0}; //initializing affine
+	p256_affine in ={{0}}; //initializing affine
 
 	convert(in.x, p256_curve_parameter_gx_arr); //copying gx to array
 	convert(in.y, p256_curve_parameter_gy_arr); //copying gy to array
 
 	p256_integer k_arr; //use this to convert your k to k_arr having of 1byte array
 
-	p256_affine out0={0}; //out
+	p256_affine out0={{0}}; //out
 	convertWithSize(k_arr.word, k0, 8); //k - to always be of 1byte array
 	pointScalarMultAffine(&out0, &in, k_arr); //both input and output in affine format
 	printf("Ax=");print_hex(out0.x);
 	printf("Ay=");print_hex(out0.y);
 
 
-	p256_affine out1 ={0};
+	p256_affine out1 ={{0}};
 	convertWithSize(k_arr.word, k1, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out1, &in, k_arr);
 	printf("Ax=");print_hex(out1.x);
 	printf("Ay=");print_hex(out1.y);
 
-	p256_affine out2 ={0};
+	p256_affine out2 ={{0}};
 	convertWithSize(k_arr.word, k2, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out2, &in, k_arr);
 	printf("Ax=");print_hex(out2.x);
 	printf("Ay=");print_hex(out2.y);
 
-	p256_affine out3 ={0};
+	p256_affine out3 ={{0}};
 	convertWithSize(k_arr.word, k3, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out3, &in, k_arr);
 	printf("Ax=");print_hex(out3.x);
 	printf("Ay=");print_hex(out3.y);
 
-	p256_affine out4 ={0};
+	p256_affine out4 ={{0}};
 	convertWithSize(k_arr.word, k4, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out4, &in, k_arr);
 	printf("Ax=");print_hex(out4.x);
 	printf("Ay=");print_hex(out4.y);
 
-	p256_affine out5 ={0};
+	p256_affine out5 ={{0}};
 	convertWithSize(k_arr.word, k5, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out5, &in, k_arr);
 	printf("Ax=");print_hex(out5.x);
 	printf("Ay=");print_hex(out5.y);
 
-	p256_affine out6 ={0};
+	p256_affine out6 ={{0}};
 	convertWithSize(k_arr.word, k6, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out6, &in, k_arr);
 	printf("Ax=");print_hex(out6.x);
 	printf("Ay=");print_hex(out6.y);
 
-	p256_affine out7 ={0};
+	p256_affine out7 ={{0}};
 	convertWithSize(k_arr.word, k7, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out7, &in, k_arr);
 	printf("Ax=");print_hex(out7.x);
 	printf("Ay=");print_hex(out7.y);
 
-	p256_affine out8 ={0};
+	p256_affine out8 ={{0}};
 	convertWithSize(k_arr.word, k8, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out8, &in, k_arr);
 	printf("Ax=");print_hex(out8.x);
 	printf("Ay=");print_hex(out8.y);
 
-	p256_affine out9 ={0};
+	p256_affine out9 ={{0}};
 	convertWithSize(k_arr.word, k9, 8); //has to always be of 1byte array
 	pointScalarMultAffine(&out9, &in, k_arr);
 	printf("Ax=");print_hex(out9.x);
@@ -474,8 +474,8 @@ void p256TestScalarMultAffine(){
 }
 
 void p256TestDoubleAffine(){
-	p256_affine in ={0}; //initializing affine
-	p256_affine out={0}; //out
+	p256_affine in ={{0}}; //initializing affine
+	p256_affine out={{0}}; //out
 	convert(in.x,dx);
 	convert(in.y,dy);
 	pointDoubleAffine(&out,&in);
@@ -484,10 +484,10 @@ void p256TestDoubleAffine(){
 }
 
 void p256TestAdditionAffine(){
-	p256_affine in1 ={0}; //initializing affine
-	p256_affine in2 ={0}; //initializing affine
+	p256_affine in1 ={{0}}; //initializing affine
+	p256_affine in2 ={{0}}; //initializing affine
 
-	p256_affine out={0}; //out
+	p256_affine out={{0}}; //out
 	convert(in1.x,adx1);
 	convert(in1.y,ady1);
 
@@ -503,81 +503,81 @@ void p256TestAdditionAffine(){
 
 void p256TestScalarMultJacobian(){
 
-	p256_affine in1 ={0}; //initializing affine
+	p256_affine in1 ={{0}}; //initializing affine
 
 	p256_integer k_arr;
 
-	p256_jacobian in1_j ={0}; //initiaizing jacobian
+	p256_jacobian in1_j ={{0}}; //initiaizing jacobian
 
 	convert(in1.x, p256_curve_parameter_gx_arr); //copying gx to array
 	convert(in1.y, p256_curve_parameter_gy_arr); //copying gy to array
 
 	affineToJacobian(&in1_j,&in1); // converting to affine
 
-	p256_jacobian out ={0};
+	p256_jacobian out ={{0}};
 	convertWithSize(k_arr.word, k0, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out, &in1_j, k_arr);
 	printf("1 Ax=");print_hex(out.x);
 	printf("1 Ay=");print_hex(out.y);
 	printf("1 Az=");print_hex(out.z);
 
-	p256_jacobian out9 ={0};
+	p256_jacobian out9 ={{0}};
 	convertWithSize(k_arr.word, k1, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out9, &in1_j, k_arr);
 	printf("2 Ax=");print_hex(out9.x);
 	printf("2 Ay=");print_hex(out9.y);
 	printf("2 Az=");print_hex(out9.z);
 
-	p256_jacobian out1 ={0};
+	p256_jacobian out1 ={{0}};
 	convertWithSize(k_arr.word, k2, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out1, &in1_j, k_arr);
 	printf("3 Ax=");print_hex(out1.x);
 	printf("3 Ay=");print_hex(out1.y);
 	printf("3 Az=");print_hex(out1.z);
 
-	p256_jacobian out2 ={0};
+	p256_jacobian out2 ={{0}};
 	convertWithSize(k_arr.word, k3, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out2, &in1_j, k_arr);
 	printf("4 Ax=");print_hex(out2.x);
 	printf("4 Ay=");print_hex(out2.y);
 	printf("4 Az=");print_hex(out2.z);
 
-	p256_jacobian out3 ={0};
+	p256_jacobian out3 ={{0}};
 	convertWithSize(k_arr.word, k4, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out3, &in1_j, k_arr);
 	printf("5 Ax=");print_hex(out3.x);
 	printf("5 Ay=");print_hex(out3.y);
 	printf("5 Az=");print_hex(out3.z);
 
-	p256_jacobian out4 ={0};
+	p256_jacobian out4 ={{0}};
 	convertWithSize(k_arr.word, k5, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out4, &in1_j, k_arr);
 	printf("6 Ax=");print_hex(out4.x);
 	printf("6 Ay=");print_hex(out4.y);
 	printf("6 Az=");print_hex(out4.z);
 
-	p256_jacobian out5 ={0};
+	p256_jacobian out5 ={{0}};
 	convertWithSize(k_arr.word, k6, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out5, &in1_j, k_arr);
 	printf("7 Ax=");print_hex(out5.x);
 	printf("7 Ay=");print_hex(out5.y);
 	printf("7 Az=");print_hex(out5.z);
 
-	p256_jacobian out6 ={0};
+	p256_jacobian out6 ={{0}};
 	convertWithSize(k_arr.word, k7, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out6, &in1_j, k_arr);
 	printf("8 Ax=");print_hex(out6.x);
 	printf("8 Ay=");print_hex(out6.y);
 	printf("8 Az=");print_hex(out6.z);
 
-	p256_jacobian out7 ={0};
+	p256_jacobian out7 ={{0}};
 	convertWithSize(k_arr.word, k8, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out7, &in1_j, k_arr);
 	printf("9 Ax=");print_hex(out7.x);
 	printf("9 Ay=");print_hex(out7.y);
 	printf("9 Az=");print_hex(out7.z);
 
-	p256_jacobian out8 ={0};
+	p256_jacobian out8 ={{0}};
 	convertWithSize(k_arr.word, k9, 8); //has to always be of 1byte array
 	pointScalarMultJacobian(&out8, &in1_j, k_arr);
 	printf("10 Ax=");print_hex(out8.x);

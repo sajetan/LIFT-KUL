@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS = -g -O2 -Wno-unused-result -Wall -pedantic -ansi -std=gnu11 -funsigned-char 
+CFLAGS = -g -O2 -Wno-unused-result -Wall -pedantic -ansi -std=gnu11 -funsigned-char -Wstrict-aliasing
 LIBS = -lpthread
 
 all: clean sender receiver

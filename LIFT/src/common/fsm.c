@@ -1128,7 +1128,7 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	WORD*           drone_private_key   = mem->session_drone_secret; // private session key of drone
 	p256_affine*    drone_public_key    = &mem->session_drone_public; // public session key of drone
 	p256_affine*    control_public_key  = &mem->session_control_public; // public session key of drone
-	p256_affine     session_key_affine  = {0};
+	p256_affine     session_key_affine  = {{0}};
 
 	// to make all arrays that will we written at are set to zero
 	initArray8(data, MAX_DATA_LENGTH);
@@ -1226,7 +1226,7 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 /* STS_2_data = Encryption[signature(session_control_public.x||session_control_public.y||session_drone_public.x||session_drone_public.y)] */
 void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){   
 
-	p256_affine session_key_affine = {0};
+	p256_affine session_key_affine = {{0}};
 	WORD toBeSigned[SIZE] = {0};
 	WORD signature[SIZE] = {0};
 	WORD rand[SIZE] = {0};
@@ -1345,7 +1345,7 @@ LIFT_RESULT verify_STS_1(uint8_t *rcv_data, Memory* mem){
 	uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
 	uint8_t ciphertext[SIG_LEN]={0};
-	p256_affine     session_key_affine  = {0};
+	p256_affine     session_key_affine  = {{0}};
 
 	initArray(mem->session_drone_public.x, SIZE);
 	initArray(mem->session_drone_public.y, SIZE);

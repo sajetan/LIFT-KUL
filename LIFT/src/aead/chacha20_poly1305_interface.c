@@ -125,7 +125,7 @@ void paddingCheck(poly1305_msg_struct  *in, uint16_t padding_length){
 
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
 void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
-	poly1305_msg_struct poly_struct={0};
+	poly1305_msg_struct poly_struct={{0}};
 	uint64_t counter=0;
 	uint8_t poly_msg[MAX_MSG_SIZE]={0};
 	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
@@ -165,7 +165,7 @@ void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key
 //rfc8439 section 2.8 https://tools.ietf.org/html/rfc8439#section-2.8
 // Ferdinand: I changed this function such that it returns whether the mac is correct or not
 uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad){
-	poly1305_msg_struct poly_struct={0};
+	poly1305_msg_struct poly_struct={{0}};
 	uint8_t poly_msg[MAX_MSG_SIZE]={0};
 	uint8_t mac_tag[MAC_TAG_LENGTH]={0};
 	uint8_t poly_key[CHACHA_KEY_LENGTH]={0};
@@ -235,7 +235,7 @@ void padding_test(){
 	uint8_t input[MAX_MSG_SIZE] = {0};
 	uint8_t mac[16]={0};
 	uint8_t output[MAX_MSG_SIZE] = {0};
-	poly1305_msg_struct inp={0};
+	poly1305_msg_struct inp={{0}};
 
 	char2byte(input,aad);
 

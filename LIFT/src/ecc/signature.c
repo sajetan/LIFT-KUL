@@ -21,9 +21,9 @@
 //concatenating r+s and sending as the output.
 void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, WORD *G_y){
 
-	p256_affine point1 = {0};
-	p256_affine G = {0};
-	p256_integer k_struct = {0};
+	p256_affine point1 = {{0}};
+	p256_affine G = {{0}};
+	p256_integer k_struct = {{0}};
 	uint32_t bits = 256;
 
 	WORD i = 0;
@@ -109,13 +109,13 @@ void signature_gen(WORD *output, WORD *key, WORD *message, WORD *n, WORD *G_x, W
 //OUTPUT: valid == 0 if signature is not valid, valid == 1 if signature is valid
 //WORD sig_ver(WORD *input, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
 LIFT_RESULT sig_ver(WORD *data, WORD *n, WORD *m, WORD *G_x, WORD *G_y, WORD *Q_x, WORD *Q_y)  {
-	p256_affine Q = {0};
-	p256_affine G = {0};
-	p256_affine point1 = {0};
-	p256_affine point2 = {0};
-	p256_affine point_res = {0};
-	p256_integer u1_struct = {0};
-	p256_integer u2_struct = {0};
+	p256_affine Q = {{0}};
+	p256_affine G = {{0}};
+	p256_affine point1 = {{0}};
+	p256_affine point2 = {{0}};
+	p256_affine point_res = {{0}};
+	p256_integer u1_struct = {{0}};
+	p256_integer u2_struct = {{0}};
 
 	WORD v[SIZE] = {0};
 	WORD i;

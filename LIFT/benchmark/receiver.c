@@ -13,9 +13,6 @@
 #include "communication.h"
 
 
-// number of messages to send
-#define MSGS 50
-
 int main(void)
 {
 
@@ -31,7 +28,9 @@ int main(void)
 	uint32_t rcvseq_num=0;
 	uint16_t buf_len=0;
 
-	init_socket(9999, 9998, 5);
+	char *cc_ip = "10.87.20.93";
+	init_socket(cc_ip, 9997, 9996, 10);
+
 
 	for (seq_num=0; seq_num<MSGS; seq_num++) {
 		recvlen = receive_message(buf);

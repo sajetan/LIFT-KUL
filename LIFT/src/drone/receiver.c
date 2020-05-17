@@ -13,10 +13,10 @@
 int main(void)
 {
 
-	char *cc_ip = "127.0.0.1";
+	char *cc_ip = "10.87.20.93";
 	// Ports for direct communication
 	// Time-out is set to 5 seconds
-	init_socket(cc_ip, 9993, 9992, 10);
+	init_socket(cc_ip, 9996, 9997, 10);
 
 	// Ports for communication over GNU Radio
 	// init_socket(21235, 21237, 5);

@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS = -g 
+CFLAGS = -g -O2 -Wno-unused-result -Wall -pedantic -ansi -std=gnu11 -funsigned-char -Wstrict-aliasing
 
 all: clean sender receiver
 
@@ -12,7 +12,7 @@ sender:
 			../src/aead/chacha20.c \
 			../src/hash/hash.c \
 			../src/hash/sha3.c \
-			../src/aead/poly1305.c  -o sender $(LIBS)
+			../src/aead/poly1305.c  -o sender $(LIBS) $(CFLAGS)
 
 receiver:
 	$(CC) communication.c \
@@ -23,7 +23,7 @@ receiver:
 			../src/aead/chacha20.c \
 			../src/hash/hash.c \
 			../src/hash/sha3.c \
-			../src/aead/poly1305.c -o receiver $(LIBS)
+			../src/aead/poly1305.c -o receiver $(LIBS) $(CFLAGS)
 
 clean:
 	rm -f sender receiver *.o

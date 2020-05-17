@@ -16,14 +16,14 @@
 
 #define MAX_TRANSFER_LENGTH 1472
 
-#define IFENCRYPT 1 //to enable encryption 1, to disable 0
+#define IFENCRYPT 0 //to enable encryption 1, to disable 0
 
-#define MSGS 50 // number of messages to send
+#define MSGS 5000 // number of messages to send
 
 #define ENCRYPTED_MESSAGE_LENGTH 2 //(32 * ENCRYPTED_MESSAGE_LENGTH) bytes , 32 because 256 bits in random gen
 
 
-int init_socket(int tx_port, int rx_port, int timeout_sec);
+int init_socket(const char* tx_ip,int tx_port, int rx_port, int timeout_sec);
 int send_message(uint8_t* data, int length);
 int receive_message(uint8_t* data);
 int close_sockets();

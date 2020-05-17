@@ -45,7 +45,7 @@
 #define INFINITE_LOOP_DSTS 1     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
 #define TIMEOUT 400            // in ms, timeout value. /!\ not the same as the socket timeout, which has been set to a very small number
 #define SIMULATE_PACKET_DROP 0 // max 100, set to zero to disable
-#define BER_INVERSE  1000        // max 32000 min 1
+#define BER_INVERSE  5000        // max 32000 min 1
 
 
 #define COMMAND_LENGTH 2 //in bytes

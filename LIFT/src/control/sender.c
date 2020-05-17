@@ -292,9 +292,9 @@ int main(void){
 	Memory memory;
 	initMemory(&memory); //, "123", "123");
 
-	char *drone_ip = "127.0.0.1";
+	char *drone_ip = "10.87.20.96";
 
-	init_socket(drone_ip, 9992, 9993, 10);
+	init_socket(drone_ip, 9997, 9996, 10);
 	int exit = 0;
 
 	//SESSION_ACTIONS choice=0;

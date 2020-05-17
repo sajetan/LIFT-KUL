@@ -24,10 +24,16 @@ int main(void)
 	int  recvlen;					// # bytes received
 	uint8_t buf[MAX_TRANSFER_LENGTH];	// message buffer
 	int buf_len=0;
-	init_socket(9998, 9999, 5); 
 
+	char *drone_ip = "10.87.20.96";
+	init_socket(drone_ip, 9996, 9997, 10);
+
+	Timer t;
+//	clock_t start =clock();
+	startTimer(&t);
 	for (seq_num=0; seq_num< MSGS; seq_num++) {
-		clock_t begin = clock();
+		//startTimer(&t);
+		//clock_t begin = clock();
 		if (IFENCRYPT) buf_len=make_encryption(buf, key, seq_num, &pool);
 		else{
 			sprintf(buf, "This is the generated sequence number %d\n", seq_num);
@@ -47,13 +53,20 @@ int main(void)
 		else {
 			buf[recvlen] = 0;
 			if (IFENCRYPT)make_decryption(&rcvseq_num, key, buf);
-			clock_t end = clock();
-			double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-			printf("total time %f seconds\n", time_spent);
+			//printTimer(&t);
+			
+			
+			//clock_t end = clock();
+			//double time_spent = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+			//printf("total time %f microseconds\n", time_spent*100);
 			if (IFENCRYPT)printf("Received: This is the generated sequence number %d\n\n", rcvseq_num);
 			else printf("Received : %s\n", buf);
 		}
 	}
+	printTimer(&t);
+//	clock_t finish=clock();
+//	double total_time = (double)(finish-start ) / CLOCKS_PER_SEC;
+//        printf("total time %f seconds throughput= %f\n", total_time, MSGS/total_time);
 
 	close_sockets();
 	return 0;

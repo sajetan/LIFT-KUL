@@ -1,7 +1,8 @@
 CC=gcc
-CFLAGS = -g
+CFLAGS = -g -O2 -Wno-unused-result -Wall -pedantic -ansi -std=gnu11 -funsigned-char 
+LIBS = -lpthread
 
-all: clean sender receiver test
+all: clean sender receiver
 
 sender:
 	$(CC)   src/common/communication.c \
@@ -25,7 +26,7 @@ sender:
 		src/ecc/signature.c \
 		src/aead/chacha20_poly1305_interface.c \
 		src/aead/chacha20.c \
-		src/aead/poly1305.c  -o sender -lpthread$(LIBS)
+		src/aead/poly1305.c  -o sender  $(LIBS) $(CFLAGS)
 
 receiver:
 	$(CC)   src/common/communication.c \
@@ -49,10 +50,10 @@ receiver:
                 src/ecc/signature.c \
                 src/aead/chacha20_poly1305_interface.c \
                 src/aead/chacha20.c \
-                src/aead/poly1305.c  -o receiver  -lpthread$(LIBS)
+                src/aead/poly1305.c  -o receiver  $(LIBS) $(CFLAGS)
 
 #test:
 #	$(CC)  fsm.c communication.c message.c main.c inverse.c shift.c  sub.c mult.c mod.c utilities.c  sha3.c hash.c add.c division.c random_gen.c signature.c p256.c chacha20_poly1305_interface.c chacha20.c poly1305.c -o test $(LIBS)
 
 clean:
-	rm -f sender receiver test *.o
+	rm -f sender receiver *.o

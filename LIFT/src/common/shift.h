@@ -3,7 +3,7 @@ Ferdinand Hannequart
 WORD.h
 
 purpose: contains the prototypes, defines and includes
-*/
+ */
 
 #ifndef DEF_SHIFT
 #define DEF_SHIFT

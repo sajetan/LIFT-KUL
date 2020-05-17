@@ -25,13 +25,13 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 
 typedef struct poly1305_msg_struct {
-		unsigned char aad[MAX_MSG_SIZE];
-		unsigned char msg[MAX_MSG_SIZE];
-        unsigned char pad1[32];
-        unsigned char pad2[32];
-        uint64_t msg_len;
-        uint64_t aad_len;
-        uint64_t total_len;
+	uint8_t aad[MAX_MSG_SIZE];
+	uint8_t msg[MAX_MSG_SIZE];
+	uint8_t pad1[32];
+	uint8_t pad2[32];
+	uint64_t msg_len;
+	uint64_t aad_len;
+	uint64_t total_len;
 } poly1305_msg_struct;
 
 void poly1305_msg_construction(u8 *poly_msg,poly1305_msg_struct *in);

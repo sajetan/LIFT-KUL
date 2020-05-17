@@ -17,7 +17,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This implementation is intended to be simple, many optimizations can be performed.
-*/
+ */
 
 #include <string.h>
 #include "chacha20.h"
@@ -25,14 +25,14 @@ This implementation is intended to be simple, many optimizations can be performe
 
 void chacha_init_ctx(chacha20_ctx *ctx)
 {
-  uint16_t i;
+	uint16_t i;
 
-  for (i = 0 ; i < 16 ; i++) {
-    ctx->schedule[i] = 0;
-    ctx->keystream[i] = 0;
-  }
+	for (i = 0 ; i < 16 ; i++) {
+		ctx->schedule[i] = 0;
+		ctx->keystream[i] = 0;
+	}
 
-  ctx->available = 0;
+	ctx->available = 0;
 }
 
 void chacha20_init_setup(chacha20_ctx *ctx, const uint8_t *key, size_t length, uint8_t nonce[8])
@@ -69,30 +69,30 @@ void chacha20_counter_set(chacha20_ctx *ctx, uint64_t counter)
 	ctx->schedule[13] = counter >> 32;
 	ctx->available = 0;
 
-//enable below for debug logs
+	//enable below for debug logs
 #if 0
-		printf("setup key[4] = %08x \n",ctx->schedule[4]);
-		printf("setup key[5] = %08x \n",ctx->schedule[5]);
-		printf("setup key[6] = %08x \n",ctx->schedule[6]);
-		printf("setup key[7] = %08x \n",ctx->schedule[7]);
-		printf("setup key[8] = %08x \n",ctx->schedule[8]);
-		printf("setup key[9] = %08x \n",ctx->schedule[9]);
-		printf("setup key[10] = %08x \n",ctx->schedule[10]);
-		printf("setup key[11] = %08x \n",ctx->schedule[11]);
-		printf("setup key[10] = %08x \n",ctx->schedule[12]);
-		printf("setup key[11] = %08x \n",ctx->schedule[13]);
-		printf("setup key[14] = %08x \n",ctx->schedule[14]);
-		printf("setup key[15] = %08x \n",ctx->schedule[15]);
+	printf("setup key[4] = %08x \n",ctx->schedule[4]);
+	printf("setup key[5] = %08x \n",ctx->schedule[5]);
+	printf("setup key[6] = %08x \n",ctx->schedule[6]);
+	printf("setup key[7] = %08x \n",ctx->schedule[7]);
+	printf("setup key[8] = %08x \n",ctx->schedule[8]);
+	printf("setup key[9] = %08x \n",ctx->schedule[9]);
+	printf("setup key[10] = %08x \n",ctx->schedule[10]);
+	printf("setup key[11] = %08x \n",ctx->schedule[11]);
+	printf("setup key[10] = %08x \n",ctx->schedule[12]);
+	printf("setup key[11] = %08x \n",ctx->schedule[13]);
+	printf("setup key[14] = %08x \n",ctx->schedule[14]);
+	printf("setup key[15] = %08x \n",ctx->schedule[15]);
 #endif
 
 
 }
 
 #define QUARTERROUND(x, a, b, c, d) \
-    x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 16); \
-    x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 12); \
-    x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 8); \
-    x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 7);
+		x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 16); \
+		x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 12); \
+		x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 8); \
+		x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 7);
 
 void chacha20_block(chacha20_ctx *ctx, uint32_t output[16])
 {
@@ -123,7 +123,7 @@ void chacha20_block(chacha20_ctx *ctx, uint32_t output[16])
 	However, recommendations for CTR mode in various papers recommend including the nonce component for a 128 bit increment.
 	This implementation will remain compatible with the official up to 2^64 blocks, and past that point, the official is not intended to be used.
 	This implementation with this change also allows this algorithm to become compatible for a Fortuna-like construct.
-	*/
+	 */
 	if (!++nonce[0] && !++nonce[1] && !++nonce[2]) { ++nonce[3]; }
 }
 

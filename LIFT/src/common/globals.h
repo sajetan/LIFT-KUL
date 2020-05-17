@@ -15,10 +15,11 @@
 #include <stdint.h>      // for uintx_t
 #include <pthread.h>     // threads
 #include <unistd.h>      // for sleep()
-//#include <stdlib.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <assert.h>
+#include <fcntl.h>
 //#inclusde <stdlib.h>
 //#include <stdio.h>
 //#include <string.h>
@@ -80,13 +81,13 @@ typedef enum{
 
 
 #define TEST(pass)          if(pass)\
-                            printf("OK, all tests passed for %s\n", __func__);\
-                            else \
-                            printf("FAIL :/ - %s\n", __func__);
+		printf("OK, all tests passed for %s\n", __func__);\
+		else \
+		printf("FAIL :/ - %s\n", __func__);
 #define BEGINTEST(print)    if (print)\
-                            printf("\n------- begin %s -------\n", __func__);
+		printf("\n------- begin %s -------\n", __func__);
 #define ENDTEST(print)      if (print)\
-                            printf("------- end %s -------\n\n", __func__);
+		printf("------- end %s -------\n\n", __func__);
 
 
 #endif

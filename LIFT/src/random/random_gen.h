@@ -16,8 +16,8 @@
 
 #define SINGLEITEMS 4       // number of non-array values
 #define SIZECOUNTER 64/BIT   //this value indicates the number of cells 
-                            //that will contribute to the entropy hash. 
-                            //To this number, 1 must be added for the length field
+//that will contribute to the entropy hash.
+//To this number, 1 must be added for the length field
 #define SIZEHALFHASH (256/BIT/2)  // this array will contain the data of the entropy pool.
 #define SIZEPOOL (SINGLEITEMS + SIZEHALFHASH +  SIZECOUNTER +1)  // this array will contain the data of the entropy pool.
 
@@ -25,28 +25,28 @@
 typedef struct EntropyPool EntropyPool;
 struct EntropyPool
 {
-    /* entropy inputs */
-    WORD time;
-    WORD bladeSpeed;
-    WORD battery;
-    WORD position;
-    //WORD image[SIZER];
-    
-    /* personalization string */
-    //WORD str[SIZER];
-    
-    /* counter */
-    uint64_t counter;
-    WORD counterArray[SIZECOUNTER+1];
+	/* entropy inputs */
+	WORD time;
+	WORD bladeSpeed;
+	WORD battery;
+	WORD position;
+	//WORD image[SIZER];
 
-    /* half of previous hash */
-    WORD halfHash[SIZEHALFHASH];
+	/* personalization string */
+	//WORD str[SIZER];
 
-    /* gathers all values above in 1 array*/
-    WORD complete[SIZEPOOL];
+	/* counter */
+	uint64_t counter;
+	WORD counterArray[SIZECOUNTER+1];
 
-    /* used to stop the thread it is in */
-    WORD kill;
+	/* half of previous hash */
+	WORD halfHash[SIZEHALFHASH];
+
+	/* gathers all values above in 1 array*/
+	WORD complete[SIZEPOOL];
+
+	/* used to stop the thread it is in */
+	WORD kill;
 };
 
 

@@ -2,7 +2,7 @@
 main.h
 
  purpose: it contains the prototypes, defines and includes
-*/
+ */
 
 #ifndef MAIN_H_
 #define MAIN_H_

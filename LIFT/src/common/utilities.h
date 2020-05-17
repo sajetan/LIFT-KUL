@@ -17,10 +17,10 @@
 typedef struct Timer Timer;
 struct Timer
 {
-    struct timeval  tv;
-    struct timeval  tv2;
-    uint32_t time_in_mill_1;
-    uint32_t time_in_mill_2;
+	struct timeval  tv;
+	struct timeval  tv2;
+	uint32_t time_in_mill_1;
+	uint32_t time_in_mill_2;
 };
 
 void convert(WORD *out, const char *in);

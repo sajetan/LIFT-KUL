@@ -83,11 +83,11 @@ void convertArray16toArray8withoutLen(uint8_t *out, uint16_t *in){
 		out[i*2+1] = in[i+1] >> 8;
 	}
 
-//	WORD w = 2*in[0];
-//	while (out[w] == 0  && w>0){
-//		w--;
-//	}
-//	out[0] = w;
+	//	WORD w = 2*in[0];
+	//	while (out[w] == 0  && w>0){
+	//		w--;
+	//	}
+	//	out[0] = w;
 }
 
 
@@ -205,8 +205,8 @@ void number2array(WORD array[], uint64_t number){
 
 	// 2. assign length
 	while(array[i] == 0 && i >0){  
-        i--; 
-    }	
+		i--;
+	}
 	array[0] = i;
 }
 
@@ -216,38 +216,38 @@ void number2array(WORD array[], uint64_t number){
    	INPUT:	text	: string of any length	
 	OUTPUT:	array 	: array of words, length should be large enough to hold the string */
 void text2array(WORD array[], char text[]){
-    WORD i = 0;
+	WORD i = 0;
 	WORD index = 0;
-	
+
 	// 1. assign core value
 	while(text[i] != '\0'){
-        index = i/BYTE +1;	
-        array[index] |= text[i] << ( (8*i) % (BIT) );
-        i++;
-    }
+		index = i/BYTE +1;
+		array[index] |= text[i] << ( (8*i) % (BIT) );
+		i++;
+	}
 	index = (i-1)/BYTE +1; // decrement i once
-	
+
 	// 2. assign length
 	while(array[index] == 0 && index >0){
-        index--; 
-    }	
-    array[0] = index;
+		index--;
+	}
+	array[0] = index;
 }
 
 /*	Converts an array of words into a string.
 	INPUT:	array 	: array of words, length should be large enough to hold the string 
 	OUTPUT:	text	: string of any length	
-*/
+ */
 void array2text(char text[], WORD array[]){
-    WORD i 		= 0;
+	WORD i 		= 0;
 	WORD index 	= 0;
 	WORD len 	= getNumberBytes(array);
-	
+
 	while(i < len){
-        index = i/BYTE +1;	
+		index = i/BYTE +1;
 		text[i] = array[index] >> ( (8*i) % (BIT) );
-        i++;
-    }
+		i++;
+	}
 	text[i] = '\0';
 }
 
@@ -256,51 +256,51 @@ void array2text(char text[], WORD array[]){
 #if 1
 /*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
 void print_num_size(WORD *in, WORD size){
-    printf("[");
-    for (WORD i = 0; i < size; i++) {
+	printf("[");
+	for (WORD i = 0; i < size; i++) {
 		switch(BIT){
+		break;
+		case 32:
+			printf("0x%08x,", in[i]);
 			break;
-			case 32:
-    		printf("0x%08x,", in[i]);
+		case 16:
+			printf("0x%04x,", in[i]);
 			break;
-			case 16:
-    		printf("0x%04x,", in[i]);
+		case 8:
+			printf("0x%02x,", in[i]);
 			break;
-			case 8:
-    		printf("0x%02x,", in[i]);
-			break;
-			default:
-    		printf("0x%08x,", in[i]);
+		default:
+			printf("0x%08x,", in[i]);
 			break;
 		}
-    }
-    printf("]");
-    printf("\n\r");
+	}
+	printf("]");
+	printf("\n\r");
 }
 
 
 /*prints an array; format: [size, lsb-> msb] -- added but not used will check later if needs to be removed: sajetan*/
 void print_num_WORDype(WORD *in, WORD size, WORD type){
-    printf("[");
-    for (WORD i = 0; i < size; i++) {
+	printf("[");
+	for (WORD i = 0; i < size; i++) {
 		switch(type){
+		break;
+		case 32:
+			printf("0x%08x,", in[i]);
 			break;
-			case 32:
-    		printf("0x%08x,", in[i]);
+		case 16:
+			printf("0x%04x,", in[i]);
 			break;
-			case 16:
-    		printf("0x%04x,", in[i]);
+		case 8:
+			printf("0x%02x,", in[i]);
 			break;
-			case 8:
-    		printf("0x%02x,", in[i]);
-			break;
-			default:
-    		printf("0x%08x,", in[i]);
+		default:
+			printf("0x%08x,", in[i]);
 			break;
 		}
-    }
-    printf("]");
-    printf("\n\r");
+	}
+	printf("]");
+	printf("\n\r");
 }
 
 
@@ -308,146 +308,146 @@ void print_num_WORDype(WORD *in, WORD size, WORD type){
 
 /*prints an array; format: [size, lsb-> msb]*/
 void print_num(WORD *in){
-    printf("[");
-    for (WORD i = 0; i < in[0]+1; i++) {
+	printf("[");
+	for (WORD i = 0; i < in[0]+1; i++) {
 		switch(BIT){
+		break;
+		case 32:
+			printf("0x%08x,", in[i]);
 			break;
-			case 32:
-    		printf("0x%08x,", in[i]);
+		case 16:
+			printf("0x%04x,", in[i]);
 			break;
-			case 16:
-    		printf("0x%04x,", in[i]);
+		case 8:
+			printf("0x%02x,", in[i]);
 			break;
-			case 8:
-    		printf("0x%02x,", in[i]);
-			break;
-			default:
-    		printf("0x%08x,", in[i]);
+		default:
+			printf("0x%08x,", in[i]);
 			break;
 		}
-    }
-    printf("]");
-    printf("\n\r");
+	}
+	printf("]");
+	printf("\n\r");
 }
 void print_hex(WORD *in)
 {
-    WORD i=0;
+	WORD i=0;
 
-    printf("0x");
-    for (i = in[0]; i >= 1; i--) {
-    	switch(BIT){
+	printf("0x");
+	for (i = in[0]; i >= 1; i--) {
+		switch(BIT){
+		break;
+		case 32:
+			printf("%08x", in[i]);
 			break;
-			case 32:
-    		printf("%08x", in[i]);
+		case 16:
+			printf("%04x", in[i]);
 			break;
-			case 16:
-    		printf("%04x", in[i]);
+		case 8:
+			printf("%02x", in[i]);
 			break;
-			case 8:
-    		printf("%02x", in[i]);
+		default:
+			printf("%08x", in[i]);
 			break;
-			default:
-    		printf("%08x", in[i]);
-			break;
-    	}
-    }
-    printf("\n\r");
+		}
+	}
+	printf("\n\r");
 }
 
 void print_hex_type(WORD *in, WORD type)
 {
-    WORD i;
+	WORD i;
 
-    printf("0x");
-    for (i = in[0]; i >= 1; i--) {
-    	switch(type){
+	printf("0x");
+	for (i = in[0]; i >= 1; i--) {
+		switch(type){
+		break;
+		case 32:
+			printf("%08x", in[i]);
 			break;
-			case 32:
-    		printf("%08x", in[i]);
+		case 16:
+			printf("%04x", in[i]);
 			break;
-			case 16:
-    		printf("%04x", in[i]);
+		case 8:
+			printf("%02x", in[i]);
 			break;
-			case 8:
-    		printf("%02x", in[i]);
+		default:
+			printf("%08x", in[i]);
 			break;
-			default:
-    		printf("%08x", in[i]);
-			break;
-    	}
-    }
-    printf("\n\r");
+		}
+	}
+	printf("\n\r");
 }
 
 void print_hex_8(uint8_t *in)
 {
-    uint16_t i = 0;
-    printf("0x");
-    for (i = in[0]; i >= 1; i--) {
-    	printf("%02x", in[i]);
-    }
-    printf("\n\r");
+	uint16_t i = 0;
+	printf("0x");
+	for (i = in[0]; i >= 1; i--) {
+		printf("%02x", in[i]);
+	}
+	printf("\n\r");
 }
 
 void print_hex_WORDype(WORD *in,WORD size, WORD type)
 {
-    WORD i = 0;
+	WORD i = 0;
 
-    printf("0x");
-    for (i = size; i >= 1; i--) {
-    	switch(type){
+	printf("0x");
+	for (i = size; i >= 1; i--) {
+		switch(type){
+		break;
+		case 32:
+			printf("%08x", in[i]);
 			break;
-			case 32:
-    		printf("%08x", in[i]);
+		case 16:
+			printf("%04x", in[i]);
 			break;
-			case 16:
-    		printf("%04x", in[i]);
+		case 8:
+			printf("%02x", in[i]);
 			break;
-			case 8:
-    		printf("%02x", in[i]);
+		default:
+			printf("%08x", in[i]);
 			break;
-			default:
-    		printf("%08x", in[i]);
-			break;
-    	}
-    }
-    printf("\n\r");
+		}
+	}
+	printf("\n\r");
 }
 
 
 /*prints an array; format: [in[0], in[1], ..., in[size-1]]*/
 void print_array(WORD *in, uint64_t size){
-    printf("[");
-    for (WORD i = 0; i < size; i++) {
+	printf("[");
+	for (WORD i = 0; i < size; i++) {
 		switch(BIT){
+		break;
+		case 32:
+			printf("0x%08x,", in[i]);
 			break;
-			case 32:
-    		printf("0x%08x,", in[i]);
+		case 16:
+			printf("0x%04x,", in[i]);
 			break;
-			case 16:
-    		printf("0x%04x,", in[i]);
+		case 8:
+			printf("0x%02x,", in[i]);
 			break;
-			case 8:
-    		printf("0x%02x,", in[i]);
-			break;
-			default:
-    		printf("0x%08x,", in[i]);
+		default:
+			printf("0x%08x,", in[i]);
 			break;
 		}
-    }
-    printf("]");
-    printf("\n\r");
+	}
+	printf("]");
+	printf("\n\r");
 }
 
 /*prints an array; format: [in[0], in[1], ..., in[size-1]]*/
 void print_array8(uint8_t *in, uint64_t size){
-    printf("[");
-    for (WORD i = 0; i < size; i++) {
-    		printf("0x%02x,", in[i]);
+	printf("[");
+	for (WORD i = 0; i < size; i++) {
+		printf("0x%02x,", in[i]);
 
-    }
-    printf("]");
-    printf("\n\r");
+	}
+	printf("]");
+	printf("\n\r");
 }
 
 
@@ -499,7 +499,7 @@ void byte2charWithSize(char *out, uint8_t *in, WORD len,WORD type)
  * */
 void char2byte(uint8_t *out, const char *in)
 {
-  while (*in) { sscanf(in, "%2hhx", out++); in += 2; }
+	while (*in) { sscanf(in, "%2hhx", out++); in += 2; }
 
 }
 
@@ -507,38 +507,38 @@ void char2byte(uint8_t *out, const char *in)
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyWord(WORD copy[], WORD w[]){
-    for(WORD i = 0; i<SIZE; i++){
-        copy[i] = w[i];
-    }
+	for(WORD i = 0; i<SIZE; i++){
+		copy[i] = w[i];
+	}
 }
 
 void copyArray8(uint8_t copy[], uint8_t a[], uint16_t len){
-    uint16_t i = 0;
+	uint16_t i = 0;
 	for( i = 0; i<len; i++){
-        copy[i] = a[i];
-    }
+		copy[i] = a[i];
+	}
 }
 
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE*/
 void copyArrayWithSize(WORD copy[], WORD w[]){
-    for(WORD i = 0; i<w[0]+1; i++){
-        copy[i] = w[i];
-    }
+	for(WORD i = 0; i<w[0]+1; i++){
+		copy[i] = w[i];
+	}
 }
 
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length len */
 void copyArrayWithoutSize(WORD copy[], WORD w[], uint16_t len){
-    for(uint16_t i = 0; i<len; i++){
-        copy[i] = w[i];
-    }
+	for(uint16_t i = 0; i<len; i++){
+		copy[i] = w[i];
+	}
 }
 
 void copyBytes(uint8_t copy[], uint8_t w[], uint16_t len){
-    for(uint16_t i = 0; i<len; i++){
-        copy[i] = w[i];
-    }
+	for(uint16_t i = 0; i<len; i++){
+		copy[i] = w[i];
+	}
 }
 
 
@@ -547,18 +547,18 @@ void copyBytes(uint8_t copy[], uint8_t w[], uint16_t len){
 /* copies array w to array copy
 INPUT: 2 WORD[] arrays of length SIZE
 but doesnt include the length bit in the first array index
-*/
+ */
 void copyArrayWithoutLength(WORD copy[], WORD w[]){
-    for(WORD i = 0; i<w[0]+1; i++){
-        copy[i] = w[i+1];
-    }
+	for(WORD i = 0; i<w[0]+1; i++){
+		copy[i] = w[i+1];
+	}
 }
 
 void copyArray(WORD copy[], WORD w[],WORD len){
-    for(WORD i = 0; i<len; i++){
-        copy[i] = w[i];
-        printf("%02x ",copy[i]);
-    }
+	for(WORD i = 0; i<len; i++){
+		copy[i] = w[i];
+		printf("%02x ",copy[i]);
+	}
 }
 
 #endif
@@ -569,30 +569,30 @@ e.g. {0} and {1, 0} are different
 INPUT: 2 WORD[] numbers
 OUTPUT: 1 if equal, 0 if different*/
 WORD equalWord(WORD a[], WORD b[]){
-    WORD S1 = a[0];
-    WORD S2 = b[0];
-	
+	WORD S1 = a[0];
+	WORD S2 = b[0];
+
 	// zero case
 	if ((S1 == 1 || S1 == 0) && (S2 == 1 || S2 == 0) && (a[1] == 0) && (b[1] == 0)){
 		return 1;
 	}
-    if(S1 != S2){
-        return 0;
+	if(S1 != S2){
+		return 0;
 
-    }
-    else
-    {
-        for(WORD i = 1; i<=S1; i++){
-            if(a[i] != b[i]){
-                return 0;
-            }
-        }
-        return 1;
-    }
+	}
+	else
+	{
+		for(WORD i = 1; i<=S1; i++){
+			if(a[i] != b[i]){
+				return 0;
+			}
+		}
+		return 1;
+	}
 }
 
 uint8_t equalArray8(uint8_t a[], uint8_t b[], uint16_t len){
-    uint16_t i = 0;
+	uint16_t i = 0;
 	uint16_t same = 1;
 	for(i = 0; i<len && same; i++){
 		same = (a[i] == b[i]);
@@ -604,11 +604,11 @@ uint8_t equalArray8(uint8_t a[], uint8_t b[], uint16_t len){
 "lengreaterThanh x MSB ... LSB" 
 e.g. for 16 bit: "2 x 178B 002F"*/
 void printWord(WORD a[]){
-    printf("%d x ", a[0]);
-    for(WORD i = a[0]; i>0; i--){
-        printf("%x ", a[i]);
-    }
-    printf("\n");
+	printf("%d x ", a[0]);
+	for(WORD i = a[0]; i>0; i--){
+		printf("%x ", a[i]);
+	}
+	printf("\n");
 }
 
 WORD greaterThan(WORD a[], WORD b[]){
@@ -639,21 +639,21 @@ void updateLen(WORD a[]){
 		a[0]--;
 	}
 }
-*/
+ */
 
 void startTimer(Timer* timer){
-    gettimeofday(&timer->tv, NULL);
+	gettimeofday(&timer->tv, NULL);
 	timer->time_in_mill_1 = ((timer->tv).tv_sec) * 1000 + ((timer->tv).tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
 }
 
 uint32_t valueTimer(Timer* timer){
-    gettimeofday(&timer->tv2, NULL);
-    timer->time_in_mill_2 = ((timer->tv2).tv_sec) * 1000 + ((timer->tv2).tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+	gettimeofday(&timer->tv2, NULL);
+	timer->time_in_mill_2 = ((timer->tv2).tv_sec) * 1000 + ((timer->tv2).tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
 	return timer->time_in_mill_2 - timer->time_in_mill_1;
 }
 
 void printTimer(Timer* timer){
-    printf("elapsed time: %d.%03d ms\n", valueTimer(timer)/1000, valueTimer(timer)%1000);
+	printf("elapsed time: %d.%03d ms\n", valueTimer(timer)/1000, valueTimer(timer)%1000);
 }
 void convertTest(){
 	WORD w[SIZE] = {0};
@@ -681,7 +681,7 @@ void convertTest(){
 	printf("Original string: 00F0F000 \n");
 	printf("Resulting array: ");
 	print_num(w);
-	
+
 	// F0F0F0
 	convert(w, "00FFFF00");
 	printf("Original string: 00FFFF00 \n");
@@ -704,7 +704,7 @@ void convertTest(){
 	print_num(w);
 
 
-	
+
 
 	printf("---------end %s-------------\n\n", __func__);
 }
@@ -737,67 +737,67 @@ WORD geq(WORD a[], WORD b[]){
 
 /*  Returns the amount of zero MSB bytes in one integer*/
 WORD getNumberZeroBytes(WORD w){
-    WORD nZeros = BIT/8;
-    if(w == 0){
-        return 0;
-    }
-    while(w != 0){
-        w >>= 8;
-        nZeros--;
-    }
-    return nZeros;
+	WORD nZeros = BIT/8;
+	if(w == 0){
+		return 0;
+	}
+	while(w != 0){
+		w >>= 8;
+		nZeros--;
+	}
+	return nZeros;
 }
 
 
 void getNumberBytesTest(WORD print){
-    WORD a[SIZE] = {0};
-    WORD pass = 1;
+	WORD a[SIZE] = {0};
+	WORD pass = 1;
 
-    BEGINTEST(print)
+	BEGINTEST(print)
 
-    convert(a, "1");
-    pass &= getNumberBytesTestHelp(1, a, print);
+	convert(a, "1");
+	pass &= getNumberBytesTestHelp(1, a, print);
 
-    convert(a, "64");
-    pass &= getNumberBytesTestHelp(1, a, print);
-    
-    convert(a, "0000000000640000000000");
-    pass &= getNumberBytesTestHelp(6, a, print);
-    
-    convert(a, "0008726353700");
-    pass &= getNumberBytesTestHelp(5, a, print);
+	convert(a, "64");
+	pass &= getNumberBytesTestHelp(1, a, print);
 
-    convert(a, "000000000055000000000055000000000055");
-    pass &= getNumberBytesTestHelp(13, a, print);
-   
-    convert(a, "00087977656000");
-    pass &= getNumberBytesTestHelp(6, a, print);
+	convert(a, "0000000000640000000000");
+	pass &= getNumberBytesTestHelp(6, a, print);
 
-    convert(a, "0008797765600BFCD0");
-    pass &= getNumberBytesTestHelp(8, a, print);
+	convert(a, "0008726353700");
+	pass &= getNumberBytesTestHelp(5, a, print);
 
-    convert(a, "1000BC5D");
-    pass &= getNumberBytesTestHelp(4, a, print);
+	convert(a, "000000000055000000000055000000000055");
+	pass &= getNumberBytesTestHelp(13, a, print);
 
-    convert(a, "cdbf000c000cf");
-    pass &= getNumberBytesTestHelp(7, a, print);
-    
-    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf");
-    pass &= getNumberBytesTestHelp(26, a, print);
+	convert(a, "00087977656000");
+	pass &= getNumberBytesTestHelp(6, a, print);
 
-    convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf876543212345");
-    pass &= getNumberBytesTestHelp(32, a, print);
-    
-    TEST(pass)
-    ENDTEST(print)
+	convert(a, "0008797765600BFCD0");
+	pass &= getNumberBytesTestHelp(8, a, print);
+
+	convert(a, "1000BC5D");
+	pass &= getNumberBytesTestHelp(4, a, print);
+
+	convert(a, "cdbf000c000cf");
+	pass &= getNumberBytesTestHelp(7, a, print);
+
+	convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf");
+	pass &= getNumberBytesTestHelp(26, a, print);
+
+	convert(a, "cdbf000c000cfcdbf000c000cfcdbf000c000cfcdbf000c000cf876543212345");
+	pass &= getNumberBytesTestHelp(32, a, print);
+
+	TEST(pass)
+	ENDTEST(print)
 
 }
 
 WORD getNumberBytesTestHelp(WORD exp, WORD w[], WORD print){
-    WORD result = getNumberBytes(w);
-    if (print){
-        printf("expected %d, got %d  : ", exp, result);
-        print_num(w);
-    }
-    return exp == result;
+	WORD result = getNumberBytes(w);
+	if (print){
+		printf("expected %d, got %d  : ", exp, result);
+		print_num(w);
+	}
+	return exp == result;
 }

@@ -11,6 +11,7 @@
 
 #include "globals.h"
 #include "communication.h"
+#include "utilities.h"
 
 //#include"main.h"
 
@@ -19,7 +20,7 @@
     type    :   [   Tag         Length      ID          ||  Data    ]
     bytes   :   [   BYTE_TAG    BYTE_LEN    BYTE_ID     ||  ?       ]
     bytes   :   [   1           2           8           ||  ?       ]
-*/
+ */
 
 
 #define WORD_TAG    uint16_t
@@ -68,7 +69,7 @@ struct User
     EntropyPool     pool;                           // entropy pool used for generating pseudorandom numbers
 };
 
-*/
+ */
 
 typedef struct lift_pkt_hdr{
 	uint16_t tag;

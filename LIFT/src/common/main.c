@@ -7,17 +7,17 @@
 #include"chacha20_poly1305_interface.h"
 
 int main(){
-	
-    /////// Tejas ///////
-      //p256TestScalarMultJacobian(); //test scalar mult jacobian
-      //p256TestScalarMultAffine();  //test scalar mult affine
-      //p256TestAdditionAffine();  //test add affine
-      //p256TestDoubleAffine();  //test double affine
+
+	/////// Tejas ///////
+	//p256TestScalarMultJacobian(); //test scalar mult jacobian
+	//p256TestScalarMultAffine();  //test scalar mult affine
+	//p256TestAdditionAffine();  //test add affine
+	//p256TestDoubleAffine();  //test double affine
 
 
-      //padding_test();
-      //test_poly_key();
-/*
+	//padding_test();
+	//test_poly_key();
+	/*
 	aead_test();
 
 
@@ -42,9 +42,9 @@ int main(){
  	modTest(0);
  	multTest(0);
  	divisionTest(0);*/
- 	signatureTest(0);
+	signatureTest(0);
 
-    //signatureTest2();
-    //	hash256Test(1);			// hash
+	//signatureTest2();
+	//	hash256Test(1);			// hash
 
 }

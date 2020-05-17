@@ -20,14 +20,13 @@ p256_word checkIfZero( p256_word* in) {
 // affineToJacobian returns a Jacobian Z value for the affine point (x, y). If x and
 // y are zero, it assumes that they represent the point at infinity because (0, 0) is not on the any of the curves handled here.
 void affineToJacobian(p256_jacobian *out,p256_affine *in) {
-    if (checkIfZero(in->x) != TRUE || checkIfZero(in->y) != TRUE) {
-    	copyArrayWithSize(out->x,in->x);
-    	copyArrayWithSize(out->y,in->y);
-    	out->z[0]=0x1;out->z[1]=0x1;
-    }
-    else
-    	printf("flase \n");
-    	return;
+	if (checkIfZero(in->x) != TRUE || checkIfZero(in->y) != TRUE) {
+		copyArrayWithSize(out->x,in->x);
+		copyArrayWithSize(out->y,in->y);
+		out->z[0]=0x1;out->z[1]=0x1;
+	}
+	else printf("flase \n");
+	return;
 }
 
 
@@ -115,11 +114,11 @@ void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in){
 	initArray(tmpz.word,SIZE);
 	initArray(tmpz2.word,SIZE);
 
-//    delta = Z12
+	//    delta = Z12
 	mult(delta.word, in->z,in->z);
 	mod(delta.word, delta.word,p256_curve_parameter_p);
 
-//    gamma = Y12
+	//    gamma = Y12
 	mult(gamma.word,in->y,in->y);
 
 	mod(tmpgamma.word, gamma.word,p256_curve_parameter_p);
@@ -196,9 +195,9 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	}
 
 	initArray(z1z1.word,SIZE);
-//	initArray(z1z1z1.word,SIZE);
+	//	initArray(z1z1z1.word,SIZE);
 	initArray(z2z2.word,SIZE);
-//	initArray(z2z2z2.word,SIZE);
+	//	initArray(z2z2z2.word,SIZE);
 	initArray(s1.word,SIZE);
 	initArray(s2.word,SIZE);
 	initArray(u1.word,SIZE);
@@ -252,14 +251,14 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mod_sub(r.word, s2.word, s1.word,p256_curve_parameter_p);
 
 
-	if (checkIfZero(h.word) && checkIfZero(r.word)) {pointDoubleJacobian(out,in1);return 1;}
+	if(checkIfZero(h.word) && checkIfZero(r.word)) {pointDoubleJacobian(out,in1);return RETURN_INVALID;}
 
 	shiftl1(r.word);
 
 	mult(tmpv.word,u1.word, i.word);
 
 	copyArrayWithSize(v.word, tmpv.word);
- 
+
 	mult(r2.word,r.word,r.word);
 	copyArrayWithSize(tmpx.word, r2.word);
 	copyArrayWithSize(tmpj.word, j.word);
@@ -296,7 +295,7 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mod(s1.word,s1.word,p256_curve_parameter_p);
 	sub(out->y,tmpy.word, s1.word);
 	mod(out->y,out->y, p256_curve_parameter_p);
-////////////////////////////////////////////////////
+	////////////////////////////////////////////////////
 
 
 	add(tmp.word,in1->z, in2->z);
@@ -309,7 +308,7 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mult(tmpz.word,tmp.word, h.word);
 	mod(out->z,tmpz.word, p256_curve_parameter_p);
 
-
+	return RETURN_SUCCESS;
 }
 
 
@@ -320,7 +319,7 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 	p256_word i, j;
 	p256_word x=0;
 
-	
+
 
 	for (i=k.word[0];i>0;i--){
 		x=k.word[i];
@@ -394,10 +393,10 @@ void pointScalarMultAffineWord(p256_affine *out, p256_affine *in, WORD* k){
 	uint16_t i = 0;
 	// k must be inserted bitwise in k2
 	convertArray16toArray8(small, k);
-    for(i = 0; i<=small[0];i++){
-    	k2.word[i] = small[i];
-    }
-	
+	for(i = 0; i<=small[0];i++){
+		k2.word[i] = small[i];
+	}
+
 	// call normal function
 	pointScalarMultAffine(out, in, k2);
 }

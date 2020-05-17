@@ -631,7 +631,6 @@ WORD greaterThan(WORD a[], WORD b[]){
 		return (WORD) 0;
 	}
 }
-/*
 void updateLen(WORD a[]){
 	uint16_t i = 0;
 	assert(a[0]<=SIZE);
@@ -639,7 +638,6 @@ void updateLen(WORD a[]){
 		a[0]--;
 	}
 }
- */
 
 void startTimer(Timer* timer){
 	gettimeofday(&timer->tv, NULL);

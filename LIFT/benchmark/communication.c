@@ -132,11 +132,10 @@ uint16_t make_encryption(uint8_t* data, uint8_t* key, uint32_t seq_num, EntropyP
 	}
 	i=SEQ_LENGTH;
 	for (n=0;n<ENCRYPTED_MESSAGE_LENGTH;n++){
-
-		random_gen(rand, 256, pool);
-
-		word2rawbyte(&plaintext[i], rand, (32)); 
-
+		if (IFENCRYPT){
+			random_gen(rand, 256, pool);
+			word2rawbyte(&plaintext[i], rand, (32));
+		}
 		i+=32;
 	}
 	plaintext_len=i;

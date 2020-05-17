@@ -15,7 +15,7 @@
 #include "communication.h"
 
 
-#define IFENCRYPT 1
+
 struct sockaddr_in rx_addr; 
 struct sockaddr_in tx_addr; 
 int fd_tx;
@@ -144,7 +144,9 @@ uint16_t make_encryption(uint8_t* data, uint8_t* key, uint32_t seq_num, EntropyP
 	word2rawbyte(nonce, rand, CHACHA_NONCE_LENGTH);
 
 
-	aead_chacha20_poly1305(mac_tag,ciphertext, key, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len, "50515253c0c1c2c3c4c5c6c7"); 
+	if (IFENCRYPT){
+		aead_chacha20_poly1305(mac_tag,ciphertext, key, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len, "50515253c0c1c2c3c4c5c6c7");
+	}
 
 	//sending plaintext length in the beginning
 	data[0]=plaintext_len;
@@ -156,8 +158,15 @@ uint16_t make_encryption(uint8_t* data, uint8_t* key, uint32_t seq_num, EntropyP
 	}
 	len += CHACHA_NONCE_LENGTH;
 
-	for(i=0;i<plaintext_len;i++){
-		data[len + i] = ciphertext[i];
+	if (IFENCRYPT){
+		for(i=0;i<plaintext_len;i++){
+			data[len + i] = ciphertext[i];
+		}
+	}
+	else{
+		for(i=0;i<plaintext_len;i++){
+			data[len + i] = plaintext[i];
+		}
 	}
 	len +=plaintext_len;
 
@@ -198,13 +207,16 @@ uint16_t make_decryption(uint32_t *seq_num, uint8_t* key, uint8_t* rcv_data){
 	start += MAC_TAG_LENGTH;
 	len = start;
 
-	// mac check
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, "50515253c0c1c2c3c4c5c6c7");
-	//decrypt
-	decrypt_init(plaintext, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, 0);
-
-	*seq_num = (plaintext[3]<<24|plaintext[2]<<16|plaintext[1]<<8|plaintext[0]);
-
+	if (IFENCRYPT){
+		// mac check
+		valid = verify_mac_aead_chacha20_poly1305(mac_tag, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, "50515253c0c1c2c3c4c5c6c7");
+		//decrypt
+		decrypt_init(plaintext, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, 0);
+		*seq_num = (plaintext[3]<<24|plaintext[2]<<16|plaintext[1]<<8|plaintext[0]);
+	}
+	else{
+		*seq_num = (ciphertext[3]<<24|ciphertext[2]<<16|ciphertext[1]<<8|ciphertext[0]);
+	}
 	return RETURN_SUCCESS;
 }
 

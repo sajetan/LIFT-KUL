@@ -28,23 +28,24 @@ int main(void)
 	uint32_t rcvseq_num=0;
 	uint16_t buf_len=0;
 
-	char *cc_ip = "10.87.20.93";
+//	char *cc_ip = "10.87.20.93";
+	char *cc_ip = "127.0.0.1";
 	init_socket(cc_ip, 9997, 9996, 10);
 
 
 	for (seq_num=0; seq_num<MSGS; seq_num++) {
 		recvlen = receive_message(buf);
 		buf[recvlen] = 0;
-		if (IFENCRYPT)make_decryption(&rcvseq_num, key, buf);
+		make_decryption(&rcvseq_num, key, buf);
 
-		if (IFENCRYPT){
+	//	if (IFENCRYPT){
 			initArray8(buf,MAX_TRANSFER_LENGTH);
 			buf_len=make_encryption(buf, key, seq_num, &pool);
-		}
-		else{
-			sprintf(buf, "This is the generated sequence number %d\n", seq_num);
-			buf_len=strlen(buf);
-		}
+	//	}
+	//	else{
+	//		sprintf(buf, "This is the generated sequence number %d\n", seq_num);
+	//		buf_len=strlen(buf);
+	//	}
 		if(send_message(buf, buf_len)==0) {
 			close_sockets();
 			printf("Send failed at message %d\n", seq_num);

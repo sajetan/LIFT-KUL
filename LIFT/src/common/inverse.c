@@ -41,6 +41,9 @@ void inverse(WORD z[], WORD a[], WORD m[]){
 	copyWord(v, a);     // v = a
 	convert(B, "0");    // B = 0
 	convert(D, "1");    // D = 1
+	
+	updateLen(a);
+	updateLen(m);
 
 	do{                                         // do
 		while(~u[1] & 1){                       //while u is even, do the following

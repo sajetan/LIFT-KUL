@@ -25,7 +25,7 @@
 #define MAX_TRANSFER_LENGTH  200 //1472
 
 
-int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec);
+int init_socket(const char *tx_ip, int tx_port, int rx_port);
 int send_message(uint8_t* data, int length);
 int receive_message(uint8_t* data);
 int close_sockets();

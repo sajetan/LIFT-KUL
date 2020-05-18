@@ -453,6 +453,19 @@ void print_array8(uint8_t *in, uint64_t size){
 }
 
 
+void print_num_type(uint8_t *in,size_t type){
+	printf("[");
+	for (WORD i = 0; i < strlen((const char*)in); i++) printf("0x%02x,", in[i]);
+	printf("]");
+	printf("\n\r");
+}
+
+void print_num_type_length(uint8_t *in,size_t len,size_t type){
+	printf("[");
+	for (WORD i = 0; i < len; i++) printf("0x%02x,", in[i]);
+	printf("]");
+	printf("\n\r");
+}
 
 
 

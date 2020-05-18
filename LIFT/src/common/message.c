@@ -81,7 +81,7 @@ LIFT_RESULT decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, uint32_t *crc, W
 	//printf("this is crc = %8x \n",rcvd_crc);
 	//printf("calccrc = %8x \n",calcrc);
 
-	if (rcvd_crc!=calcrc) {printf("CRC Incorrect \n");return RETURN_INVALID;}
+	if (rcvd_crc!=calcrc) {printf("CRC Incorrect, Packet will be dropped \n");return RETURN_INVALID;}
 
 	//initialize
 	*tag = hdr->tag;

@@ -1,5 +1,5 @@
 /*
- * communication.c
+ * communication.c -- for benchmark only
  * LIFT DRONE CONTROL PROJECT
  * Copyright: ESAT, KU Leuven
  * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
@@ -15,13 +15,12 @@
 #include "communication.h"
 
 
-
 struct sockaddr_in rx_addr; 
 struct sockaddr_in tx_addr; 
 int fd_tx;
 int fd_rx;
 
-int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
+int init_socket(const char *tx_ip, int tx_port, int rx_port) {
 
 
 	// create tx and rx sockets
@@ -37,7 +36,6 @@ int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 	}
 
 	// bind tx socket to all valid addresses, and any port
-
 	memset((char *)&rx_addr, 0, sizeof(rx_addr));
 	rx_addr.sin_family = AF_INET;
 	rx_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -55,7 +53,6 @@ int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 	setsockopt(fd_rx, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
 
 	// bind rx socket to all valid addresses, and a specific port
-
 	rx_addr.sin_port = htons(rx_port);
 
 	if (bind(fd_rx, (struct sockaddr *)&rx_addr, sizeof(rx_addr)) < 0) {
@@ -144,7 +141,7 @@ uint16_t make_encryption(uint8_t* data, uint8_t* key, uint32_t seq_num, EntropyP
 
 
 	if (IFENCRYPT){
-		aead_chacha20_poly1305(mac_tag,ciphertext, key, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len, "50515253c0c1c2c3c4c5c6c7");
+		aead_chacha20_poly1305(mac_tag,ciphertext, key, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len);
 	}
 
 	//sending plaintext length in the beginning
@@ -208,7 +205,7 @@ uint16_t make_decryption(uint32_t *seq_num, uint8_t* key, uint8_t* rcv_data){
 
 	if (IFENCRYPT){
 		// mac check
-		valid = verify_mac_aead_chacha20_poly1305(mac_tag, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, "50515253c0c1c2c3c4c5c6c7");
+		valid = verify_mac_aead_chacha20_poly1305(mac_tag, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len);
 		//decrypt
 		decrypt_init(plaintext, key, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, 0);
 		*seq_num = (plaintext[3]<<24|plaintext[2]<<16|plaintext[1]<<8|plaintext[0]);

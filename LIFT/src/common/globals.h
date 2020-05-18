@@ -21,10 +21,8 @@
 #include <string.h>
 #include <assert.h>
 #include <fcntl.h>
-//#inclusde <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
 
+#define DEBUG 0 //enable to print logs
 
 #define FALSE 0
 #define TRUE 1

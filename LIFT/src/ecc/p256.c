@@ -126,7 +126,6 @@ void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in){
 	mod_sub(alpha.word, in->x,delta.word, p256_curve_parameter_p); //alpha = x-delta mod p
 	add(tmpalpha.word, in->x,delta.word); //alpha2 = (x+delta)mod p
 
-
 	mod(tmpalpha.word, tmpalpha.word,p256_curve_parameter_p);
 	mult(alpha.word, alpha.word, tmpalpha.word); // alpha = (x-delta)(x+delta)
 	smallMult(alpha.word, 3, alpha.word); //alpha = 3*(x-delta)*(x+delta)
@@ -136,39 +135,26 @@ void pointDoubleJacobian(p256_jacobian *out, p256_jacobian *in){
 
 	//	beta = X1*gamma
 	mult(beta.word,in->x,gamma.word); //beta = x*gamma
-
-
 	smallMult(tmpbeta.word,8,beta.word); //8*beta
 	mod(tmpbeta.word, tmpbeta.word, p256_curve_parameter_p); //8*beta %p
 
 	mod_sub(out->x, alpha2.word, tmpbeta.word,p256_curve_parameter_p); //x3= (alpha2 - 8*beta) %p
 
-
-
 	//computing out->z ///////////////////////////////
 	add(tmpz.word, in->y,in->z ); //tmpz=y+z
-
 	mult(tmpz2.word, tmpz.word, tmpz.word); //tmpz=(y+z)(y+z)
-
 	mod(tmpz2.word,tmpz2.word,p256_curve_parameter_p); //tmpz=(y+z)(y+z) %p
 	initArray(tmpz.word,SIZE);
 	mod_sub(tmpz.word,tmpz2.word, tmpgamma.word,p256_curve_parameter_p); //tmpz=(y+z)2 - gamma
-
 	mod_sub(out->z,tmpz.word, delta.word,p256_curve_parameter_p); //y=((y+z)2 - gamma -delta) %p
-
-
 
 	//computing out->y ///////////////////////////////
 	mult(gamma.word,gamma.word,gamma.word); mod(gamma.word,gamma.word,p256_curve_parameter_p); //gamma= gamma*gamma
 	smallMult(gamma.word, 8, gamma.word); mod(gamma.word,gamma.word,p256_curve_parameter_p);//gamma=gamma*gamma*8
-
-
 	smallMult(tmpbeta.word, 4, beta.word);
-
 	mod(tmpbeta.word,tmpbeta.word,p256_curve_parameter_p);//tmpbeta = beta*4
 	mod_sub(tmpy.word, tmpbeta.word, out->x,p256_curve_parameter_p);// tmpy= beta*4 - x
 	mult(tmpy.word, tmpy.word, alpha.word); mod(tmpy.word,tmpy.word,p256_curve_parameter_p); //tmpy= (beta*4 - x)*alpha
-
 	mod_sub(out->y, tmpy.word,gamma.word,p256_curve_parameter_p); //y=(beta*4 - x)*alpha - gamma*8
 
 }
@@ -196,9 +182,7 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	}
 
 	initArray(z1z1.word,SIZE);
-	//	initArray(z1z1z1.word,SIZE);
 	initArray(z2z2.word,SIZE);
-	//	initArray(z2z2z2.word,SIZE);
 	initArray(s1.word,SIZE);
 	initArray(s2.word,SIZE);
 	initArray(u1.word,SIZE);
@@ -213,13 +197,10 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	initArray(tmpx123.word,SIZE);
 	initArray(tmpx456.word,SIZE);
 
-
-
 	initArray(tmpv.word,SIZE);
 	initArray(tmpx.word,SIZE);
 	initArray(tmpy.word,SIZE);
 	initArray(tmpz.word,SIZE);
-
 
 	mult(z1z1.word, in1->z,in1->z);
 	mod(z1z1.word,z1z1.word,p256_curve_parameter_p);
@@ -235,7 +216,6 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 
 	mod_sub(h.word,u2.word,u1.word, p256_curve_parameter_p); //this needs to be changed to modular subtraction
 
-
 	copyArrayWithSize(i.word, h.word);
 	shiftl1(i.word);
 
@@ -248,7 +228,6 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mult(s2.word, in2->y,in1->z);
 	mult(s2.word, s2.word, z1z1.word);
 	mod(s2.word,s2.word,p256_curve_parameter_p);
-
 	mod_sub(r.word, s2.word, s1.word,p256_curve_parameter_p);
 
 
@@ -269,16 +248,12 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mod_sub(tmpx123.word,tmpx.word,j.word, p256_curve_parameter_p);
 	copyArrayWithSize(tmpx.word, tmpx123.word);
 
-
 	mod(tmpv.word, tmpv.word,p256_curve_parameter_p);
 	mod_sub(tmpx456.word,tmpx.word,tmpv.word, p256_curve_parameter_p);
 	copyArrayWithSize(tmpx.word, tmpx456.word);
 
-
 	mod(tmpx.word,tmpx.word,p256_curve_parameter_p);
-
 	mod_sub(out->x,tmpx.word,tmpv.word,p256_curve_parameter_p);
-
 
 	/////////////////////////////////////////////////
 	copyArrayWithSize(tmpy.word, r.word);
@@ -290,14 +265,12 @@ p256_word pointAddJacobian(p256_jacobian *out, p256_jacobian *in1, p256_jacobian
 	mult(tmpy.word,tmpy.word, v.word);
 
 	mult(s1.word,s1.word, tmpj.word);
-
 	shiftl1(s1.word);
 
 	mod(s1.word,s1.word,p256_curve_parameter_p);
 	sub(out->y,tmpy.word, s1.word);
 	mod(out->y,out->y, p256_curve_parameter_p);
 	////////////////////////////////////////////////////
-
 
 	add(tmp.word,in1->z, in2->z);
 	mult(tmp.word,tmp.word,tmp.word);
@@ -319,8 +292,6 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 	p256_jacobian tmpout ={{0}};
 	p256_word i, j;
 	p256_word x=0;
-
-
 
 	for (i=k.word[0];i>0;i--){
 		x=k.word[i];
@@ -348,7 +319,6 @@ void pointScalarMultJacobian(p256_jacobian *out, p256_jacobian *in, p256_integer
 			x=x<<1;
 		}
 	}
-
 	copyArrayWithSize(out->x,tmp.x);
 	copyArrayWithSize(out->y,tmp.y);
 	copyArrayWithSize(out->z,tmp.z);
@@ -397,7 +367,6 @@ void pointScalarMultAffineWord(p256_affine *out, p256_affine *in, WORD* k){
 	for(i = 0; i<=small[0];i++){
 		k2.word[i] = small[i];
 	}
-
 	// call normal function
 	pointScalarMultAffine(out, in, k2);
 }
@@ -495,7 +464,6 @@ void p256TestAdditionAffine(){
 	convert(in2.y,ady2);
 
 	pointAddAffine(&out,&in1, &in2);
-
 	printf("x=");print_hex(out.x);
 	printf("y=");print_hex(out.y);
 }

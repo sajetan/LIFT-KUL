@@ -12,10 +12,14 @@
 
 #include "communication.h"
 
+//destination IP and port numbers
+static const char CC_IP[] = "127.0.0.1";
+static int TX_PORT = 9991;
+static int RX_PORT = 9990;
+
 
 int main(void)
 {
-
 
 	uint8_t key[CHACHA_KEY_LENGTH]={0};
 	char2byte(key,"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"); //hardcoding dummy key for encrypt-decrypt
@@ -28,10 +32,7 @@ int main(void)
 	uint32_t rcvseq_num=0;
 	uint16_t buf_len=0;
 
-//	char *cc_ip = "10.87.20.93";
-	char *cc_ip = "127.0.0.1";
-	init_socket(cc_ip, 9997, 9996, 10);
-
+	init_socket(CC_IP, TX_PORT, RX_PORT);
 
 	for (seq_num=0; seq_num<MSGS; seq_num++) {
 		recvlen = receive_message(buf);

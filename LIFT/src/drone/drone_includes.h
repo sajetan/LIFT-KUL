@@ -1,17 +1,13 @@
 /*
  * drone_inlcudes.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef INCLUDE_DRONE_INCLUDES_H_
 #define INCLUDE_DRONE_INCLUDES_H_
-
-typedef enum {
-	DRONE_SESSION_INIT = 0,
-	DRONE_CALCULATE_SESSION_KEY,
-	DRONE_VALIDATE_SESSION,
-	DRONE_SESSION_COMMUNICATION,
-	DRONE_SESSION_TERMINATE
-} LIFT_DRONE_SESSION_STATES;
 
 void get_temperature(uint8_t* temperature);
 void get_battery(uint8_t* battery);

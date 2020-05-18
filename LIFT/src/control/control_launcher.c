@@ -6,71 +6,22 @@
  * Year: 2020
  */
 
-#include "../common/fsm.h"
 #include <pthread.h>
 #include <unistd.h>
+#include "../common/fsm.h"
+#include "control_includes.h"
+
+//destination IP and port numbers
+static const char DRONE_IP[] = "127.0.0.1";
+static int TX_PORT = 9990;
+static int RX_PORT = 9991;
 
 static volatile int gCommunicationThread =0;
-static volatile int gCommunicationCommandCheck =0;
-static volatile int gCommunicationStatusCheck =0;
-static volatile int gCommunicationVideoStreamcheck =0;
-
-static volatile State gFSMState = NULL_STATE; //change this maybe
-
-
-int start_menu(){
-	int choice=0;
-	printf("-----------------------------------------------------------------\n");
-	printf("Press (1) to establish Drone Connection\n");
-	printf("Press (9) to Shutdown System\n");
-	printf("Please enter your choice here: ");
-	fflush(stdin);
-	(void)scanf(" %d",&choice);
-	(void)scanf("%*[^\n]");
-	fflush(stdin);
-	return choice;
-}
-
-int control_menu(){
-	int choice=0;
-	printf("-----------------------------------------------------------------\n");
-	printf("Press (2) to Get Drone Status\n");
-	printf("Press (3) to Send Command to Drone\n");
-	printf("Press (4) to Start Stream Video from Drone\n");
-	printf("Press (5) to Terminate Stream Video from Drone\n");
-	printf("Press (6) to RESTART Session\n");
-	printf("Press (9) to Shutdown System\n");
-	printf("Please enter your choice here: ");
-	(void)scanf(" %d",&choice);
-	(void)scanf("%*[^\n]");
-	return choice;
-}
-
-void commands_menu(){
-	printf("-----------------------------------------------------------------\n");
-	printf("\nBelow are the control options:\n");
-	printf("Press (1) to turn the Drone RIGHT\n");
-	printf("Press (2) to turn the Drone LEFT\n");
-	printf("Press (3) to higher altitude of Drone by 1m\n");
-	printf("Press (4) to lower altitude of Drone by 1m\n");
-	printf("Please enter your choice here: ");
-}
-
-void status_menu(){
-	printf("-----------------------------------------------------------------\n");
-	printf("\nBelow are the status request options:\n");
-	printf("Press (1) to get GPS coordinates of Drone\n");
-	printf("Press (2) to get Battery level of Drone\n");
-	printf("Press (3) to get Temperature value\n");
-	printf("Please enter your choice here: ");
-}
-
 
 //for communication messages after STS
 void *communication_handler_thread(void *argdata){
-
-	Memory *memory = (Memory *) argdata;
 	PRINT_STATE()
+	Memory *memory = (Memory *) argdata;
 	uint16_t counter = 0;
 	Timer myTimer;
 	startTimer(&myTimer);
@@ -88,7 +39,6 @@ void *communication_handler_thread(void *argdata){
 
 
 void *communication_receive_handler_thread(void *argdata){
-	//gCommunicationVideoStreamcheck=1;
 	Memory *memory = (Memory *) argdata;
 	uint32_t crc = 0;
 	WORD_LEN response_len = {0};
@@ -110,8 +60,6 @@ void *communication_receive_handler_thread(void *argdata){
 	while(memory->current_state==CONTROL_SEND_COMMAND && valueTimer(&myTimer)<SESSION_TIMEOUT){
 		initArray8(data, MAX_DATA_LENGTH);
 
-		//printf("\tinside recv while ---------\n");
-		//usleep(1000000);
 		valid = receive_packet( &tag, &len,&crc, data, memory->receiverID, &timeoutSocket);
 		if(timeoutSocket){
 			// timeout of UDP socket
@@ -121,15 +69,15 @@ void *communication_receive_handler_thread(void *argdata){
 			DEBUG_FSM("invalid id or incorrect integrity check")
 		}
 		else{
-			//DEBUG_FSM("valid id and correct integrity check")
+			DEBUG_FSM("valid id and correct integrity check")
 			if(tag == TAG_COMMAND){
-				//printf("-----------------------------------------------------------------\n");
-				//printf("Command Response received crc=[%08x]",crc);
+
+				if(DEBUG)printf("Command Response received crc=[%08x]",crc);
 				valid = make_decrypted_message(response, &response_len, memory, data);
 				if(valid){
 					//decompose the response:
 					decompose_command_response(response_data, &seq_num,  &cmd_type, &cmd, response, response_len);
-					//printf("\nsequence number: [%d] cmd_type [%d]  cmd [%d] \n", seq_num,cmd_type,cmd);
+					if(DEBUG)printf("\nSequence number: [%d] cmd_type [%d]  cmd [%d] \n", seq_num,cmd_type,cmd);
 					switch (cmd_type){
 					case SESSION_CONTROL_REQUEST:
 						if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
@@ -164,18 +112,7 @@ void *communication_receive_handler_thread(void *argdata){
 					case SESSION_VIDEO_STREAM_REQUEST:
 						if(cmd==DRONE_VIDEO_FRAME){
 							if((response_data[3]<<24|response_data[2]<<16|response_data[1]<<8|response_data[0]) > memory->vid_seq_num)
-								memory->vid_seq_num+=1; //(uint32_t)(response_data[3]<<24|response_data[2]<<16|response_data[1]<<8|response_data[0]);
-							//uint32_t frame_len = response_len-sizeof(lift_cmd_pkt);
-							//PRINT_VIDEO_FRAME(memory->vid_seq_num,frame_len);
-							//                        		if ((65535 < memory->vid_seq_num)&& (memory->vid_seq_num < 65537)){ //printf("frame numer %lu \n",(uint32_t)memory->vid_seq_num);
-							//                        		printf("%08x %08x %08x %08x \n",(response_data[3],response_data[2],response_data[1],response_data[0]));
-							//                        		printf("video frame -\n[");
-							//                        		for(int i=0;i<(response_len);i++)
-							//                        			printf("0x%02x, ",response_data[i]);
-							//                        		printf("]\n");
-							//                        		}
-
-
+								memory->vid_seq_num+=1; //ideally this should be equal to the total frames sent from the drone but some packets can be dropped
 						}
 						else if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
@@ -185,9 +122,8 @@ void *communication_receive_handler_thread(void *argdata){
 					case SESSION_TERMINATE_VIDEO_STREAM:    // OK message, this massage does not contain any data
 						if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
-							//gCommunicationVideoStreamcheck=0;
 							memory->is_videostreaming=0;
-							printf("DRONE VIDEO STREAMING STOPPED total received frames = [%d]\n",memory->vid_seq_num);
+							printf("DRONE VIDEO STREAMING STOPPED total received frames = [%d] [total %d Mbytes]\n",memory->vid_seq_num, (memory->vid_seq_num*VIDEOFRAMES*32/1000000));
 						}
 						break;
 					default:
@@ -200,7 +136,7 @@ void *communication_receive_handler_thread(void *argdata){
 			}
 		}
 	}
-	memory->current_state=RESTART_SESSION;
+	memory->current_state=SESSION_TIMEOUT_STATE;
 	printf("Closing session \n");
 	pthread_exit(NULL);
 
@@ -218,28 +154,28 @@ void session_handler(Memory *data){
 			usleep(100000);
 			//printf("did nothing");
 			break;
-		case idle_CC:
-			memory->current_state = idle_CC_fct(memory);
+		case IDLE_CC:
+			memory->current_state = idle_cc_handler(memory);
 			break;
-		case STS_make_0:
-			memory->current_state = STS_make_0_fct(memory);
+		case STS_MAKE_0:
+			memory->current_state = sts_make_0_handler(memory);
 			break;
-		case STS_send_0:
-			memory->current_state = STS_send_0_fct(memory);
+		case STS_SEND_0:
+			memory->current_state = sts_send_0_handler(memory);
 			break;
-		case STS_make_2:
-			memory->current_state = STS_make_2_fct(memory);
+		case STS_MAKE_2:
+			memory->current_state = sts_make_2_handler(memory);
 			break;
-		case STS_send_2:
-			memory->current_state = STS_send_2_fct(memory);
+		case STS_SEND_2:
+			memory->current_state = sts_send_2_handler(memory);
 			break;
-		case State_Exit:
+		case STATE_EXIT:
 			printf("STS Complete\n");
-			//print_num(memory->session_key);
+			if(DEBUG)print_num(memory->session_key);
 			exit = 1;
 			break;
 		default:
-			printf("undefined state\n");
+			printf("undefined STATE\n");
 			exit = 1;
 			break;
 		}
@@ -251,13 +187,11 @@ int main(void){
 	pthread_t communication_handler;
 	pthread_t communication_receive_handler;
 	Memory memory;
-	initMemory(&memory); //, "123", "123");
+	initMemory(&memory, FALSE);
 
-	char *drone_ip = "10.87.20.96";
+	init_socket(DRONE_IP, TX_PORT, RX_PORT);
 
-	init_socket(drone_ip, 9997, 9996, 10);
 	int exit = 0;
-
 	int choice=0; //session actions
 	int sub_choice=0; //Sub Actions
 	printf("=================================================================\n");
@@ -265,30 +199,30 @@ int main(void){
 	printf("=================================================================\n");
 	// start_menu();
 	while(!exit){
-		if(memory.current_state==NULL_STATE) {choice=start_menu();}
+		if(memory.current_state==NULL_STATE){choice=start_menu();}
 		else if(memory.current_state==CONTROL_SEND_COMMAND){choice=control_menu();}
-		else if(memory.current_state==RESTART_SESSION){
-			initMemory(&memory);
+		else if(memory.current_state==SESSION_TIMEOUT_STATE){
+			printf("SESSION TIMEOUT\n");
+			initMemory(&memory, FALSE);
+			choice=start_menu();
 			memory.current_state=RESTART_SESSION;
-			choice=INIT_ESTABLISH_CONNECTION;
 		}
 		usleep(1000);
 		switch(choice){
 		case INIT_ESTABLISH_CONNECTION:
 			if ( memory.current_state==NULL_STATE ||memory.current_state==RESTART_SESSION){
-				memory.current_state=idle_CC;
+				memory.current_state=IDLE_CC;
 				session_handler(&memory);
 				memory.current_state=CONTROL_SEND_COMMAND;
 				printf("Key Establishment Phase Successful \n");
 
-				if ((State)memory.current_state==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");gFSMState=NULL_STATE;break;}
+				if ((STATE)memory.current_state==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
 				pthread_create(&communication_receive_handler, NULL, communication_receive_handler_thread, (void*)&memory);
 				pthread_detach(communication_receive_handler);
 				break;
 			}
 			printf("!!!Invalid input, please try again!!!\n");
 			break;
-#if 1
 		case START_COMMUNICATION_STATUS:
 			if(memory.current_state!=CONTROL_SEND_COMMAND){printf("!!!Invalid input, please try again!!!\n");break;}
 			status_menu();
@@ -300,7 +234,7 @@ int main(void){
 				void *status = 0;
 				pthread_create(&communication_handler, NULL, communication_handler_thread, (void*)&memory);
 				pthread_join(communication_handler, &status);
-				if ((State)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
+				if ((STATE)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
 				break;
 			}
 			printf("!!!Invalid input, please try again!!!\n");
@@ -316,7 +250,7 @@ int main(void){
 				void *status = 0;
 				pthread_create(&communication_handler, NULL, communication_handler_thread, (void*)&memory);
 				pthread_join(communication_handler, &status);
-				if ((State)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
+				if ((STATE)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
 
 				break;
 			}
@@ -344,14 +278,14 @@ int main(void){
 				void *status = 0;
 				pthread_create(&communication_handler, NULL, communication_handler_thread, (void*)&memory);
 				pthread_join(communication_handler, &status);
-				if ((State)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
+				if ((STATE)status==DRONE_UNREACHABLE){printf("\n!!!Drone unreachable! Try connecting again\n");memory.current_state=NULL_STATE;break;}
 				break;
 			}
 			printf("Currently No Video Streaming \n");
 			break;
 		case REINIT_ESTABLISH_CONNECTION:
 			if(memory.current_state!=CONTROL_SEND_COMMAND){printf("!!!Invalid input, please try again!!!\n");break;}
-			initMemory(&memory);
+			initMemory(&memory, FALSE);
 			memory.current_state=RESTART_SESSION;
 			choice=INIT_ESTABLISH_CONNECTION;
 			break;
@@ -364,7 +298,6 @@ int main(void){
 		default:
 			printf("!!!Invalid input, please try again!!!\n");
 			break;
-#endif
 		}
 	}
 

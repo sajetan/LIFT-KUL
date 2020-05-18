@@ -12,6 +12,12 @@
 #include <time.h>
 #include "communication.h"
 
+//destination IP and port numbers
+static const char DRONE_IP[] = "127.0.0.1";
+static int TX_PORT = 9990;
+static int RX_PORT = 9991;
+
+
 int main(void)
 {
 	uint8_t key[CHACHA_KEY_LENGTH]={0};
@@ -25,9 +31,7 @@ int main(void)
 	uint8_t buf[MAX_TRANSFER_LENGTH];	// message buffer
 	int buf_len=0;
 
-//	char *drone_ip = "10.87.20.96";
-	char *drone_ip = "127.0.0.1";
-	init_socket(drone_ip, 9996, 9997, 10);
+	init_socket(DRONE_IP, TX_PORT, RX_PORT);
 
 	Timer t;
 //	clock_t start =clock();

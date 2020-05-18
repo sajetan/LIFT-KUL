@@ -12,9 +12,6 @@
 
 
 pthread_t gvideostream_handler;
-clock_t begin;
-clock_t end;
-
 
 void *video_streaming_thread(void *argdata){
 	Memory *memory = (Memory *) argdata;
@@ -31,7 +28,7 @@ void *video_streaming_thread(void *argdata){
 
 	printf("Starting Video Streaming thread\n");
 
-	while(memory->current_state==STS_completed_drone && memory->is_videostreaming==1){
+	while(memory->current_state==STS_COMPLETED_DRONE && memory->is_videostreaming==1){
 		memory->vid_seq_num+=1;
 		seq_num = memory->vid_seq_num;
 		for(i = 0; i<SEQ_LENGTH; i++){
@@ -54,21 +51,21 @@ void *video_streaming_thread(void *argdata){
 		send_packet(memory->send_vidbuf, memory->send_vidbuf_len);
 		//usleep(10); //streaming about 1072 bytes of data every 10microsecond
 	}
-	printf("Stopping video stream  total frames sent [%d]\n", memory->vid_seq_num);
+	printf("Stopping video stream  total frames sent [%d] [total %d Mbytes] \n", memory->vid_seq_num, (memory->vid_seq_num*VIDEOFRAMES*32/1000000));
 	pthread_exit(NULL);
 
 }
 
 
-/*  Depending on which is the current state, the according packet will be constructed here.
-    For the STS-related states, STS message 0, 1 and 2 are constructed here.
+/*  Depending on which is the current STATE, the according packet will be constructed here.
+    For the STS-related STATEs, STS message 0, 1 and 2 are constructed here.
     The resulting packet will be stored in the memory, as well as its length. */
 void make_packet(Memory* mem, WORD_TAG tag){
 
 	uint8_t data[MAX_DATA_LENGTH] = {0};
 	WORD_LEN len = 0;
 
-	// depending on which is the current state, the according packet is constructed
+	// depending on which is the current STATE, the according packet is constructed
 	switch (tag){
 	case TAG_STS_0:
 		make_STS_0_data(data, mem, &len);    //STS_0_data = session_control_public.x||session_control_public.y
@@ -87,7 +84,7 @@ void make_packet(Memory* mem, WORD_TAG tag){
 		tag = TAG_STS_OK;
 		break;
 	default:
-		printf("problem here: a make function is not defined for this state (%s)\n", __func__);
+		printf("problem here: a make function is not defined for this STATE (%s)\n", __func__);
 		printf("tag: %d\n", tag);
 		assert(0);
 		break;
@@ -124,7 +121,7 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 	cmd = pkt->cmd;
 	printf("Received: sequence number: [%d] cmd_type [%d]  cmd [%d] \n", seq_num,cmd_type,cmd);
 
-	// depending on which is the current state, the according packet is constructed
+	// depending on which is the current STATE, the according packet is constructed
 	switch (cmd_type){
 	case SESSION_CONTROL_REQUEST:
 		if(cmd==DRONE_TURN_RIGHT)printf("DRONE TURNING RIGHT 1m... \n");
@@ -160,7 +157,7 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 		response[0]=SESSION_ACK;
 		response[1]=SESSION_ACK >> 8;  //start video threads
 		mem->is_videostreaming=1;
-		mem->current_state=STS_completed_drone;
+		mem->current_state=STS_COMPLETED_DRONE;
 		pthread_create(&gvideostream_handler, NULL, video_streaming_thread, (void*)mem);
 		pthread_detach(gvideostream_handler);
 
@@ -175,7 +172,7 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 
 		break;
 	default:
-		printf("problem here: a make function is not defined for this state (%s)\n", __func__);
+		printf("problem here: a make function is not defined for this STATE (%s)\n", __func__);
 		printf("tag: %d\n", cmd_type);
 		assert(0);
 		return RETURN_INVALID;
@@ -190,39 +187,37 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 
 
 
-/* idle state of the drone, its FSM always starts here */
-State idle_CC_fct( Memory* mem){
-	begin = clock();
+/* idle STATE of the drone, its FSM always starts here */
+STATE idle_cc_handler( Memory* mem){
 	PRINT_STATE()
-
-	return STS_make_0;
+	return STS_MAKE_0;
 }
 
-State STS_make_0_fct( Memory* mem){
+STATE sts_make_0_handler( Memory* mem){
 	PRINT_STATE()
-    		startTimer(&mem->myTimer);
+    startTimer(&mem->myTimer);
 	make_packet(mem, TAG_STS_0);
-	return STS_send_0;
+	return STS_SEND_0;
 }
 
-State STS_make_1_fct( Memory* mem){
+STATE sts_make_1_handler( Memory* mem){
 	PRINT_STATE()
-    		make_packet(mem, TAG_STS_1);
-	return STS_send_1;
+    make_packet(mem, TAG_STS_1);
+	return STS_SEND_1;
 }
 
-State STS_make_2_fct(Memory* mem){
+STATE sts_make_2_handler(Memory* mem){
 	PRINT_STATE()
-    		make_packet(mem, TAG_STS_2);
-	return STS_send_2;
+    make_packet(mem, TAG_STS_2);
+	return STS_SEND_2;
 }
 
 
 /*  Here we wait for STS0 to arrive.
-    Based on the validity of the message, the next state is defined */
-State idle_drone_fct(Memory* mem){
+    Based on the validity of the message, the next STATE is defined */
+STATE idle_drone_handler(Memory* mem){
 	PRINT_STATE()
-    		uint8_t data[MAX_DATA_LENGTH] = {0};
+	uint8_t data[MAX_DATA_LENGTH] = {0};
 	uint16_t timeoutSocket = 0;
 	uint16_t valid = 0;
 
@@ -230,7 +225,6 @@ State idle_drone_fct(Memory* mem){
 	uint32_t crc = 0;
 	WORD_TAG tag = TAG_UNDEFINED;
 	uint8_t restart=0;
-	//initMemory(&mem);
 	while(1){
 		initArray8(data, MAX_DATA_LENGTH);
 		valid = receive_packet( &tag, &len, &crc, data, mem->receiverID, &timeoutSocket);
@@ -244,18 +238,13 @@ State idle_drone_fct(Memory* mem){
 
 				restart = 1;
 				if(crc == mem->STS0_CRC){  // compare STS_0 message with the one in memory
-					//if(equalArray8(data, mem->rcv_STS_0, len)){
 					restart = 0;
-					//}
 				}
 				if(restart){
 					if(DEBUG)printf("\treceive STS_0, start protocol; crc=[%08x]\n",crc);
-					//initArray8(mem->rcv_STS_0, MAX_DATA_LENGTH);
-					//copyArray8(mem->rcv_STS_0, data, len );
-					//mem->rcv_STS_0_len = len;
 					mem->STS0_CRC=crc;
 					verify_STS_0(data, mem);
-					return STS_make_1;
+					return STS_MAKE_1;
 				} else{
 					if(DEBUG)printf("\treceive same STS_0, ignore; crc=[%08x]\n",crc);
 				}
@@ -269,11 +258,11 @@ State idle_drone_fct(Memory* mem){
 
 
 /*  Here we wait for STS1 to arrive.
-    Based on the validity of the message, the next state is defined */
-State STS_send_0_fct(Memory* mem){
+    Based on the validity of the message, the next STATE is defined */
+STATE sts_send_0_handler(Memory* mem){
 
 	PRINT_STATE()
-    		uint16_t valid = 0;
+	uint16_t valid = 0;
 	WORD_TAG tag = TAG_UNDEFINED;
 	WORD_LEN len = 0;
 	uint8_t data[MAX_DATA_LENGTH] = {0};
@@ -298,13 +287,13 @@ State STS_send_0_fct(Memory* mem){
 			} else if(!valid){
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
-				//DEBUG_FSM("valid id and correct integrity check")
+
 				if(tag == TAG_STS_1){
 					if(DEBUG)printf("\tSTS 1 received crc=[%08x]\n",crc);
 					valid = verify_STS_1(data, mem);
 					if(valid){
-						//DEBUG_FSM("valid signature, send next message")
-						return STS_make_2;
+						DEBUG_FSM("valid signature, send next message")
+						return STS_MAKE_2;
 					} else{
 						DEBUG_FSM("invalid signature, continue listening")
 					}
@@ -317,20 +306,18 @@ State STS_send_0_fct(Memory* mem){
 		send_packet(mem->send_buf, mem->send_buf_len);  // send packet
 	}
 	DEBUG_FSM("timeout and retransmission counter exceeded, restart protocol")
-	return STS_make_0;
+	return STS_MAKE_0;
 }
 
 /*  Here we wait for STS2 to arrive.
-    Based on the validity of the message, the next state is defined */
-State STS_send_1_fct(Memory* mem){
+    Based on the validity of the message, the next STATE is defined */
+STATE sts_send_1_handler(Memory* mem){
 	PRINT_STATE()
-    		uint16_t valid = 0;
+	uint16_t valid = 0;
 	WORD_TAG tag = TAG_UNDEFINED;
 	WORD_LEN len = 0;
 	uint8_t data[MAX_DATA_LENGTH] = {0};
 	uint16_t timeoutSocket = 0;
-	//uint16_t restart = 0;
-	//uint16_t counter = 0;
 	Timer myTimer;
 
 	send_packet(mem->send_buf, mem->send_buf_len); // send message stored in memory initially send sts1, then replace it by sts_ok after receiving sts2
@@ -349,23 +336,23 @@ State STS_send_1_fct(Memory* mem){
 			} else if(!valid){
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
-				//DEBUG_FSM("valid id and correct integrity check")
 				if(tag == TAG_STS_2){
 					if(DEBUG)printf("\tSTS 2 received crc=[%08x]\n",crc);
 					valid = verify_STS_2(data, mem);
 					if(valid){
-						//DEBUG_FSM("correct signature")
+						DEBUG_FSM("signature valid")
 						make_packet(mem, TAG_STS_OK);
 						send_packet(mem->send_buf, mem->send_buf_len);  // send packet
 						if(DEBUG)printf("\tSending STS OK \n");
 						if(DEBUG)printf("Key Establishment Phase Successful\n");
 						printf("-----------------------------------------------------------------\n");
-						return STS_completed_drone;
-						//                        if(INFINITE_LOOP_DSTS){
-						//                            return STS_completed_drone;
-						//                        } else{
-						//                            return State_Exit;
-						//                        }
+						return STS_COMPLETED_DRONE;
+						//below is only for testing
+						//if(INFINITE_LOOP_DSTS){
+						//	return STS_COMPLETED_DRONE;
+						//} else{
+						//	return STATE_EXIT;
+						// }
 					} else{
 						DEBUG_FSM("invalid signature, continue listening")
 					}
@@ -376,30 +363,19 @@ State STS_send_1_fct(Memory* mem){
 						if(DEBUG)printf("\treceive new STS_0, restart protocol; crc=[%08x]\n",crc);
 						mem->STS0_CRC=crc;
 						verify_STS_0(data, mem);
-						return STS_make_1;
+						return STS_MAKE_1;
 					}
-				}/*
-                else if (tag == TAG_COMMAND){
-                	printf("-----------------------------------------------------------------\n");
-                	printf("COMMAND_PACKET received crc=[%08x]\n",crc);
-                	valid = make_command_response_packet(data, mem);
-                	if (valid) return STS_completed_drone;
-                	DEBUG_FSM("Invalid packet, continue listening")
-                }
-
-                else{
-                    DEBUG_FSM("unexpected tag, message ignored")
-                } */
+				}
 			}
 		}
-		DEBUG_FSM("resend STS 1 (timeout)")
+		DEBUG_FSM("Resend STS 1 (timeout)")
 		send_packet(mem->send_buf, mem->send_buf_len);  // send packet
 	}
 }
 
-State STS_send_2_fct(Memory* mem){
+STATE sts_send_2_handler(Memory* mem){
 	PRINT_STATE()
-    		uint16_t valid = 0;
+	uint16_t valid = 0;
 	WORD_TAG tag = TAG_UNDEFINED;
 	WORD_LEN len = 0;
 	uint8_t data[MAX_DATA_LENGTH] = {0};
@@ -424,10 +400,9 @@ State STS_send_2_fct(Memory* mem){
 			} else if(!valid){
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
-				//DEBUG_FSM("valid id and correct integrity check")
 				if(tag == TAG_STS_OK){
 					if(DEBUG)printf("\tSTS OK received crc=[%08x]\n",crc);
-					if(INFINITE_LOOP_STS){
+					if(INFINITE_LOOP_STS){ //only for simulation
 						mem->counter++;
 						time = valueTimer(&mem->myTimer);
 						if(mem->mean == 0){
@@ -438,12 +413,10 @@ State STS_send_2_fct(Memory* mem){
 						printf("\n==========================================================================================================\n");
 						printTimer(&mem->myTimer);
 						printf("\n\nstart test Nr %d %d %d\n\n\n", time,mem->mean, mem->counter);
-						return idle_CC;
+						return IDLE_CC;
 					}
 					else{
-						end=clock();
-						printf("===total time = %f \n", (double)(end - begin) / CLOCKS_PER_SEC);
-						return State_Exit;
+						return STATE_EXIT;
 					}
 				} else{
 					DEBUG_FSM("received unexpected tag, message ignored")
@@ -454,20 +427,19 @@ State STS_send_2_fct(Memory* mem){
 		send_packet(mem->send_buf, mem->send_buf_len);  // send packet
 	}
 	DEBUG_FSM("timout and retransmission counter exceeded, restart protocol")
-	return STS_make_0;
+	return STS_MAKE_0;
 }
 
 
 
-State STS_completed_drone_fct(Memory* mem){
-	//PRINT_STATE()
+STATE sts_completed_drone_handler(Memory* mem){
+	PRINT_STATE()
 	WORD_TAG tag = TAG_UNDEFINED;
 	WORD_LEN len = 0;
 	uint8_t data[MAX_DATA_LENGTH] = {0};
 	uint16_t timeoutSocket = 0;
 	uint16_t valid = 0;
 	uint16_t restart = 0;
-	//  Timer myTimer;
 	uint32_t crc = 0;
 
 
@@ -482,7 +454,6 @@ State STS_completed_drone_fct(Memory* mem){
 		} else if(!valid){
 			DEBUG_FSM("invalid id or incorrect integrity check")
 		} else{
-			//DEBUG_FSM("valid id and correct integrity check")
 			switch (tag)
 			{
 			case TAG_STS_0:
@@ -491,11 +462,11 @@ State STS_completed_drone_fct(Memory* mem){
 					restart = 0;
 				}
 				if(restart){
-					if(DEBUG)printf("\treceive new STS_0, restart protocol; crc=[%08x]\n",crc);
+					if(DEBUG)printf("\tReceive new STS_0, restart protocol; crc=[%08x]\n",crc);
 					mem->STS0_CRC = crc;
 					verify_STS_0(data, mem); // process
 
-					return STS_make_1;
+					return STS_MAKE_1;
 				} else{
 					if(DEBUG)printf("receive STS_0 again, ignore; crc=[%08x]\n",crc);
 				}
@@ -528,9 +499,6 @@ State STS_completed_drone_fct(Memory* mem){
 				break;
 			}
 		}
-
-
-
 	}
 }
 
@@ -554,7 +522,6 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 
 	// 1. compute private key
 	random_gen(privateKey, SIZE_EC_KEY, &mem->pool);
-	//convert(privateKey, "f257a192dde44227b3568008ff73bcf599a5c45b32ab523b5b21ca582fef5a0a");
 
 	// 2. compute public key: session_control_public = c*G
 	pointScalarMultAffineWord(publicKey, &mem->G, privateKey);
@@ -566,7 +533,6 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 		data[i]             = pointx8[i];
 		data[i+P256_POINT_LEN]   = pointy8[i];
 	}
-
 
 	// 4. set data payload length
 	*len=2*P256_POINT_LEN;
@@ -584,6 +550,7 @@ void make_STS_0_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	}
 
 }
+
 /* STS_1_data = session_drone_public.x||session_control_public.x||Encryption[signature(session_drone_public.x||session_drone_public.x||session_control_public.x||session_control_public.x)] */
 void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){  
 
@@ -649,7 +616,7 @@ void make_STS_1_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	// 6. encrypt the sigature + compute the mac. Everything must be translated in uint8_t
 	word2rawbyte(signature8, signature, SIG_LEN);// keep an 8-bit version for the encryption
 	word2rawbyte(mem->session_key8, mem->session_key, CHACHA_KEY_LENGTH);                   // keep an 8-bit version for the encryption
-	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, 32, nonce, signature8, SIG_LEN, "50515253c0c1c2c3c4c5c6c7"); //encrypt the signature with the session key k
+	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, 32, nonce, signature8, SIG_LEN); //encrypt the signature with the session key k
 
 	// 7. merge everything together
 	start = 0;
@@ -707,13 +674,11 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	uint8_t signature8[SIG_LEN] = {0};
 	uint8_t nonce[CHACHA_NONCE_LENGTH] = {0};
 	uint16_t i = 0;
-
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
 	uint8_t ciphertext[MAX_MSG_SIZE]={0};
 	uint16_t start = 0;
 
 	initArray8(data, MAX_DATA_LENGTH); // to be sure
-
 
 	// 1. compute the signature
 	// POINT_LEN is the number of bytes of a point coordinate. Since these are stored in the traditional format with a length field, we chose i+1 to leave it out
@@ -744,7 +709,7 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 	// 4. encrypt the signature + sign it. Everything has to be set to uint8_t
 	word2rawbyte(signature8, signature,SIG_LEN);
 	word2rawbyte(mem->session_key8, mem->session_key, CHACHA_KEY_LENGTH); // convert to uint8
-	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, CHACHA_KEY_LENGTH, nonce, signature8, SIG_LEN, "50515253c0c1c2c3c4c5c6c7"); //encrypt the signature with the session key k
+	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, CHACHA_KEY_LENGTH, nonce, signature8, SIG_LEN); //encrypt the signature with the session key k
 
 	// 5. merge and adjust length
 	start = 0;
@@ -775,7 +740,6 @@ void make_STS_2_data(uint8_t *data, Memory* mem, WORD_LEN *len){
 		printf("[make_STS_2] MAC            : ");    print_array8(mac_tag, MAC_TAG_LENGTH);
 	}
 }
-
 
 
 
@@ -856,7 +820,7 @@ LIFT_RESULT verify_STS_1(uint8_t *rcv_data, Memory* mem){
 
 	// 3. verify mac
 	word2rawbyte(mem->session_key8, mem->session_key, CHACHA_KEY_LENGTH);
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN, "50515253c0c1c2c3c4c5c6c7"); //this is not working
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
 
 	if(DEBUG_SIGNATURE){
 		printf("[verify_STS_1_data] session_key x affine----- ");print_hex_type(session_key_affine.x,16);
@@ -936,7 +900,7 @@ LIFT_RESULT verify_STS_2(uint8_t *rcv_data, Memory* mem){    //rcv_data = STS_2_
 
 
 	// 2. verify mac
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN, "50515253c0c1c2c3c4c5c6c7"); //this is not working
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
 	if(DEBUG_SIGNATURE){
 		printf("drone's point x : ");    print_num(mem->session_drone_public.x);
 		printf("drone's point y : ");    print_num(mem->session_drone_public.y);

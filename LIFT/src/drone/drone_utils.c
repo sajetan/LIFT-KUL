@@ -1,3 +1,11 @@
+/*
+ * drone_utils.c contains basic drone utilities functions
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
 #include "../common/globals.h"
 #include "drone_includes.h"
 

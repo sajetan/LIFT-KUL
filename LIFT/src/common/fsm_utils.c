@@ -1,5 +1,5 @@
 /*
- * fsm_utils.c
+ * fsm_utils.c - contains basic FSM  utilities functions
  * LIFT DRONE CONTROL PROJECT
  * Copyright: ESAT, KU Leuven
  * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
@@ -8,8 +8,10 @@
 
 #include "fsm.h"
 
-void initMemory(Memory* mem){
+//initilize memory, structure is common for both drone and CC
+void initMemory(Memory* mem, uint8_t isDrone){
 	printf("Initializing memories\n");
+
 	// entropy pool
 	initPool(&mem->pool);
 	accumulate(&mem->pool, 100);
@@ -21,7 +23,8 @@ void initMemory(Memory* mem){
 	initArray(mem->G.y,SIZE);
 	convert(mem->G.x, p256_curve_parameter_gx_arr);
 	convert(mem->G.y, p256_curve_parameter_gy_arr);
-	mem->receiverID = 117;
+
+	mem->receiverID = 117; //just giving a dummy ID for receiver
 
 	//permanent keys
 	initArray(mem->drone_SK,SIZE);
@@ -30,14 +33,19 @@ void initMemory(Memory* mem){
 	initArray(mem->control_SK,SIZE);
 	initArray(mem->control_PK.x,SIZE);
 	initArray(mem->control_PK.y,SIZE);
-	convert(mem->control_SK, "f257a192dde44227b3568008ff73bcf599a5c45b32ab523b5b21ca582fef5a0a");
-	convert(mem->drone_SK, "bf92c9eb8ff61db0cd3e378b22b3887613afcd1861b11dfbf211d19489f6a08b");
-	//random_gen(mem->drone_SK, SIZE_EC_KEY, &mem->pool);
-	//random_gen(mem->control_SK, SIZE_EC_KEY, &mem->pool);
-	pointScalarMultAffineWord(&mem->drone_PK, &mem->G, mem->drone_SK);
-	pointScalarMultAffineWord(&mem->control_PK, &mem->G, mem->control_SK);
 
-	// session specific
+	if(isDrone)initDroneMemory(mem);
+	else initCCMemory(mem);
+
+	//public keys of control center
+	convert(mem->control_PK.x ,"d2e01411817b5512b79bbbe14d606040a4c90deb09e827d25b9f2fc068997872");
+	convert(mem->control_PK.y ,"503f138f8bab1df2c4507ff663a1fdf7f710e7adb8e7841eaa902703e314e793");
+
+	//public keys of drone
+	convert(mem->drone_PK.x ,"758437396589b4274c0dc7c734d04b9462be88461f174de5640c44488794f26c");
+	convert(mem->drone_PK.y ,"80149fd980f670ef7f8cec0f09bbc985044b208347fff7bdbb8a307d457d82b");
+
+	// session specific keys
 	initArray(mem->session_drone_secret,SIZE);
 	initArray(mem->session_drone_public.x,SIZE);
 	initArray(mem->session_drone_public.y,SIZE);
@@ -50,16 +58,8 @@ void initMemory(Memory* mem){
 	// communication specific
 	initArray8(mem->send_buf,MAX_TRANSFER_LENGTH);
 	mem->send_buf_len = 0;
-	initArray8(mem->rcv_STS_0,MAX_DATA_LENGTH);
-	mem->rcv_STS_0_len = 0;
 	initArray8(mem->send_vidbuf,MAX_TRANSFER_LENGTH);
 	mem->send_vidbuf_len = 0;
-
-	// debugging
-	mem->counter = 0;
-	mem->mean = 0;
-
-	//new items
 	mem->current_state=0;
 	mem->cmd=0;
 	mem->cmd_type=0;
@@ -67,11 +67,25 @@ void initMemory(Memory* mem){
 	mem->is_videostreaming=0;
 	mem->vid_seq_num=0;
 
+	// debugging
+	mem->counter = 0;
+	mem->mean = 0;
+
 } // end initMemory
 
 
+//compute drone specific data
+void initDroneMemory(Memory* mem){
+	convert(mem->drone_SK, "bf92c9eb8ff61db0cd3e378b22b3887613afcd1861b11dfbf211d19489f6a08b");
+}
+
+//compute control center specific data
+void initCCMemory(Memory* mem){
+	convert(mem->control_SK, "f257a192dde44227b3568008ff73bcf599a5c45b32ab523b5b21ca582fef5a0a");
+}
 
 
+//serialize command response
 void compose_command_response(uint8_t* response_payload, uint32_t seq_num,  WORD_TAG cmd_type,  WORD_LEN cmd, uint8_t* response, WORD_LEN response_length){
 	uint16_t i = 0;
 	uint16_t start = 0;
@@ -100,17 +114,10 @@ void compose_command_response(uint8_t* response_payload, uint32_t seq_num,  WORD
 	for(i = 0; i<response_length; i++){
 		response_payload[start + i] = response[i];
 	}
-	start += response_length;
-
-
-	//    printf("data compose: \n");
-	//    for(i = 0; i<MIN_PACKET_LENGTH; i++){
-	//        printf("%02x ",response_payload[i]);
-	//    }
 
 }
 
-
+//deserialize command response
 void decompose_command_response(uint8_t *data, uint32_t *seq_num,  WORD_TAG *cmd_type,  WORD_LEN *cmd, uint8_t* response, WORD_LEN response_len){
 	uint16_t i = 0;
 	initArray8(data, MAX_DATA_LENGTH);
@@ -125,12 +132,6 @@ void decompose_command_response(uint8_t *data, uint32_t *seq_num,  WORD_TAG *cmd
 	for(i = 0; i<data_len; i++){
 		data[i] = response[sizeof(lift_cmd_pkt)+i];
 	}
-
-	//    printf("data decompose : \n");
-	//    for(i = 0; i<MIN_PACKET_LENGTH; i++){
-	//        printf("%02x ",data[i]);
-	//    }
-
 }
 
 
@@ -146,8 +147,7 @@ uint16_t make_encrypted_message(uint8_t* data, Memory* mem, uint8_t* plaintext, 
 	random_gen(rand, CHACHA_NONCE_LENGTH*8, &mem->pool);
 	word2rawbyte(nonce, rand, CHACHA_NONCE_LENGTH);
 
-
-	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len, "50515253c0c1c2c3c4c5c6c7"); //encrypt the signature with the session key k
+	aead_chacha20_poly1305(mac_tag,ciphertext, mem->session_key8, CHACHA_KEY_LENGTH, nonce, plaintext, plaintext_len); //encrypt the signature with the session key k
 
 	//sending plaintext length in the beginning
 	data[0]=plaintext_len;
@@ -174,16 +174,15 @@ uint16_t make_encrypted_message(uint8_t* data, Memory* mem, uint8_t* plaintext, 
 	return len;
 }
 
+//decrypting command message
 LIFT_RESULT make_decrypted_message(uint8_t* plaintext, WORD_LEN* plaintext_len, Memory* mem, uint8_t* rcv_data){
 	uint16_t ciphertext_len=0;
 	uint8_t ciphertext[MAX_DATA_LENGTH]={0};
 	uint8_t mac_tag[MAC_TAG_LENGTH] = {0};
 	uint8_t nonce[CHACHA_NONCE_LENGTH]={0};
-
 	WORD i = 0;
 	uint8_t valid = 0;
 	uint16_t start = 0;
-
 
 	// 1. retrieve encrypted message
 	ciphertext_len = (rcv_data[1]<<8|rcv_data[0]);
@@ -205,7 +204,7 @@ LIFT_RESULT make_decrypted_message(uint8_t* plaintext, WORD_LEN* plaintext_len, 
 	start += MAC_TAG_LENGTH;
 
 	// 1. verify mac
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len, "50515253c0c1c2c3c4c5c6c7");
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, ciphertext_len);
 	if(!valid){
 		return RETURN_INVALID;
 	}
@@ -218,17 +217,17 @@ LIFT_RESULT make_decrypted_message(uint8_t* plaintext, WORD_LEN* plaintext_len, 
 }
 
 
+//making command request packet
 LIFT_RESULT make_command_request_packet(Memory* mem){
 	uint8_t request_packet[MAX_DATA_LENGTH] = {0};
 	uint8_t request_payload[MIN_PACKET_LENGTH]={0};
 	WORD_LEN request_packet_len = 0;
 	WORD_LEN len=0;
-	//WORD i=0;
 
 	if (mem->cmd_type==0)return RETURN_INVALID;
 	mem->seq_num+=1; //increment sequence number
 
-	printf("Send: sequence number: [%08x] cmd_type [%04x]  cmd [%04x] \n", mem->seq_num,mem->cmd_type,mem->cmd);
+	printf("Send: sequence number: [%d] cmd_type [%0d]  cmd [%0d] \n", mem->seq_num,mem->cmd_type,mem->cmd);
 
 	// constructing packet
 	request_payload[len] = mem->seq_num;
@@ -245,11 +244,12 @@ LIFT_RESULT make_command_request_packet(Memory* mem){
 	request_payload[len+1]=mem->cmd >>8;
 	len+=COMMAND_LENGTH;
 
-	//	printf("plaintext data: \n");
-	//	for (int p=0;p<MIN_PACKET_LENGTH;p++){
-	//		printf("%02x ",request_payload[p]);
-	//	}
-
+	if(PRINT_CONTENT_UDP_PACKET){
+		printf("command data: \n");
+		for (int p=0;p<MIN_PACKET_LENGTH;p++){
+			printf("%02x ",request_payload[p]);
+		}
+	}
 	request_packet_len=make_encrypted_message(request_packet,mem, request_payload,MIN_PACKET_LENGTH);
 	getTLV(mem->send_buf, &mem->send_buf_len, TAG_COMMAND, request_packet_len, mem->receiverID, request_packet);
 	return RETURN_SUCCESS;
@@ -258,8 +258,6 @@ LIFT_RESULT make_command_request_packet(Memory* mem){
 /*  This function sends the packet over the udp socket */
 void send_packet(uint8_t* buf, uint16_t buf_len){
 	assert((buf_len<=MAX_TRANSFER_LENGTH));
-	//printf("inside sendloop len=%d \n", buf_len);
-	//print_array8(buf, MAX_TRANSFER_LENGTH);
 	if(SEND_CONSTANT_DATA)buf_len=MAX_TRANSFER_LENGTH;
 
 	if(send_message(buf, buf_len)==0) {
@@ -290,7 +288,6 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 	uint32_t r = 0;
 	uint16_t i = 0;
 	uint16_t bit_flip = 0;
-
 
 	initArray8(data, MAX_DATA_LENGTH);
 
@@ -325,33 +322,30 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 			}
 		}
 	}
-	if(dropPacket)  DEBUG_FSM("* [simulation] received packet is dropped *")
-    		if(bit_flip)    DEBUG_FSM("* [simulation] received packet contains bit flips *")
-			// simulation part end
+	if(dropPacket)DEBUG_FSM("* [simulation] received packet is dropped *")
+	if(bit_flip)DEBUG_FSM("* [simulation] received packet contains bit flips *")
+	// simulation part end
+	// process received message
+	if(rcv_buf_len == (uint16_t)~0){
+		//if(DEBUG)printf("timeout socket\n");
+		*timeout = 1;
+		valid  = 0;
+	} else {
+		*timeout = 0;
+		valid = decomposeTLV( tag,  len, crc, &rcv_id, data, rcv_buf, rcv_buf_len);
 
-			// process received message
-			if(rcv_buf_len == (uint16_t)~0){
-				//DEBUG_FSM("timeout socket")
-				*timeout = 1;
-				valid  = 0;
-			} else {
-				*timeout = 0;
-				valid = decomposeTLV( tag,  len, crc, &rcv_id, data, rcv_buf, rcv_buf_len);
-
-				// print received message
-				if(PRINT_CONTENT_UDP_PACKET){
-					printf("Received: \n");
-					printf("\t tag = %d\n", *tag);
-					printf("\t len = %d\n", *len);
-					printf("\t id  = %d\n", rcv_id);
-					printf("\t crc = %08x\n",*crc);
-					printf("\t data = ");
-					print_array8(data, *len);
-					printf("\n");
-				}
-
-			}
-	//printf("ret\n");
+		// print received message
+		if(PRINT_CONTENT_UDP_PACKET){
+			printf("Received: \n");
+			printf("\t tag = %d\n", *tag);
+			printf("\t len = %d\n", *len);
+			printf("\t id  = %d\n", rcv_id);
+			printf("\t crc = %08x\n",*crc);
+			printf("\t data = ");
+			print_array8(data, *len);
+			printf("\n");
+		}
+	}
 	return ((valid & (rcv_id==id)));
 }
 

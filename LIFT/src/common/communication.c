@@ -13,9 +13,7 @@ struct sockaddr_in tx_addr;
 int fd_tx;
 int fd_rx;
 
-int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
-
-	char *dst_ip = "127.0.0.1";
+int init_socket(const char *tx_ip, int tx_port, int rx_port) {
 
 	// create tx and rx sockets
 
@@ -32,7 +30,7 @@ int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 	//safety check
 	if (fd_rx==0||fd_rx==1||fd_rx==2||fd_tx==0||fd_tx==1||fd_tx==2){
 		close_sockets();
-		init_socket(tx_ip, tx_port,rx_port, timeout_sec);
+		init_socket(tx_ip, tx_port,rx_port);
 	}
 
 	// bind tx socket to all valid addresses, and any port
@@ -43,7 +41,7 @@ int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 	rx_addr.sin_port = htons(0);
 
 	if (bind(fd_tx, (struct sockaddr *)&rx_addr, sizeof(rx_addr)) < 0) {
-		printf("bind failed");
+		printf("bind tx failed");
 		return 0;
 	}
 
@@ -58,7 +56,7 @@ int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec) {
 	rx_addr.sin_port = htons(rx_port);
 
 	if (bind(fd_rx, (struct sockaddr *)&rx_addr, sizeof(rx_addr)) < 0) {
-		printf("bind failed");
+		printf("bind rx failed");
 		return 0;
 	}
 

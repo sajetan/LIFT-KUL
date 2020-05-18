@@ -1,43 +1,58 @@
-#include <pthread.h>
-#include "../include/common/globals.h"
-#include "../include/common/chacha20_poly1305_ae.h"
+/*
+ * receiver.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
+#include "../common/main.h"
+#include "../common/fsm.h"
+#include "drone_includes.h"
+
+//destination IP and port numbers
+static const char CC_IP[] = "127.0.0.1";
+static int TX_PORT = 9991;
+static int RX_PORT = 9990;
 
 
-//for user interaction
-uint32_t *user_interaction_thread_(void *data){
+int main(void)
+{
+	// Time-out is set to 5 seconds
+	init_socket(CC_IP, TX_PORT, RX_PORT);
 
-}
+	// FSM part
+	Memory memory;
+	initMemory(&memory, TRUE);
+	int exit = 0;
+	memory.current_state= IDLE_DRONE;
 
-
-//for session handling
-uint32_t *session_handler_thread_(void *data){
-
-}
-
-//for user interaction
-uint32_t *communication_handler_thread_(void *data){
-
-}
-
-
-uint32_t main() {
-
-	pthread_t user_interaction;
-	pthread_t session_handler;
-	pthread_t communication_handler;
-
-
-	pthread_create(&user_interaction, NULL, user_interaction_thread_, NULL);
-	pthread_detach(user_interaction);
-
-	pthread_create(&session_handler, NULL, session_hanlder_thread_, NULL);
-	pthread_detach(session_handler);
-
-
-	pthread_create(&communication_handler, NULL, communication_handler_thread_, NULL);
-	pthread_detach(communication_handler);
-
-
-
-	return (0);
+	while(!exit){
+		switch(memory.current_state){
+		case IDLE_DRONE:
+			memory.current_state = idle_drone_handler(&memory);
+			break;
+		case STS_MAKE_1:
+			memory.vid_seq_num=0;
+			memory.current_state = sts_make_1_handler(&memory);
+			break;
+		case STS_SEND_1:
+			memory.current_state = sts_send_1_handler(&memory);
+			break;
+		case STS_COMPLETED_DRONE:
+			if(DEBUG)print_num(memory.session_key);
+			memory.current_state = sts_completed_drone_handler(&memory);
+			break;
+		case STATE_EXIT:
+			if(DEBUG)print_num(memory.session_key);
+			exit = 1;
+			break;
+		default:
+			printf("undefined STATE\n");
+			exit = 1;
+			break;
+		}
+	}	
+	close_sockets();
+	return 0;
 }

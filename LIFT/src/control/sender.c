@@ -66,40 +66,23 @@ void status_menu(){
 }
 
 
-//for session handling
-
-
-//for user interaction
+//for communication messages after STS
 void *communication_handler_thread(void *argdata){
-	//printf("communication_handler---here\n");
-	//	int exit=0;
 
 	Memory *memory = (Memory *) argdata;
 	PRINT_STATE()
-	//    uint16_t valid = 0;
-	//    WORD_TAG tag = TAG_UNDEFINED;
-	//    WORD_LEN len = 0;
-	//    uint8_t data[MAX_DATA_LENGTH] = {0};
-	//    uint16_t timeoutSocket = 0;
 	uint16_t counter = 0;
 	Timer myTimer;
 	startTimer(&myTimer);
 	make_command_request_packet(memory);
-	//print_num(memory->session_key);
 	gCommunicationThread=1;
 	for(counter = 0; counter < MAX_COMMUNICATION_RETRANSMISSION; counter ++){
-		//printf("inside forloop in communication handler \n");
-		//    	print_num(memory->send_buf);
 		if(!gCommunicationThread)return (void*)RETURN_SUCCESS;
 		send_packet(memory->send_buf, memory->send_buf_len);  // send packet
 		DEBUG_FSM("Communication packet sent\n")
-		//startTimer(&myTimer);                           // start timer
-		//while(valueTimer(&myTimer)<COMMUNICATION_TIMEOUT && gCommunicationThread){
-			usleep(500000);
-		//}
-		//DEBUG_FSM("timeout,ack not received,retransmit packet\n")
+		usleep(500000); //retransmit every 500ms to have a reliable communication
 	}
-	DEBUG_FSM("timeout and retransmission counter exceeded, drone unreachable")
+	DEBUG_FSM("Retransmission counter exceeded, drone is unreachable")
 	return (void*) DRONE_UNREACHABLE;
 }
 
@@ -217,47 +200,26 @@ void *communication_receive_handler_thread(void *argdata){
 			}
 		}
 	}
+	memory->current_state=RESTART_SESSION;
+	printf("Closing session \n");
 	pthread_exit(NULL);
 
 }
 
 
 //for session handling
-//void *session_handler_thread(void *data){
-void session_handler_thread(Memory *data){
-	//pthread_exit(NULL);
-	// Ports for direct communication
-	// Time-out is set to 5 seconds
-	//init_socket(9992, 9993, 10);
-
-	// Ports for communication over GNU Radio
-	//init_socket(21236, 21234, 5);
-
-	// FSM part
-	//	State state = idle_CC;
+void session_handler(Memory *data){
 	Memory *memory = (Memory *) data;
-
-	//print_num(memory->G.x);
-	//initMemory(&memory); //, "123", "123");
 	int exit = 0;
-	//gFSMState = NULL_STATE;
-	// udp part
-	//uint8_t buf[MAX_TRANSFER_LENGTH] = {0};	// message buffer
-
 	while(!exit){
 		switch(memory->current_state){
 		case NULL_STATE:
 			printf("do nothing");
 			usleep(100000);
-			//exit=1;
 			//printf("did nothing");
-			//gFSMState=idle_CC;
 			break;
 		case idle_CC:
 			memory->current_state = idle_CC_fct(memory);
-			break;
-		case key_exchange_CC:
-			memory->current_state = key_exchange_CC_fct(memory);
 			break;
 		case STS_make_0:
 			memory->current_state = STS_make_0_fct(memory);
@@ -282,7 +244,6 @@ void session_handler_thread(Memory *data){
 			break;
 		}
 	}
-
 }
 
 
@@ -297,36 +258,26 @@ int main(void){
 	init_socket(drone_ip, 9997, 9996, 10);
 	int exit = 0;
 
-	//SESSION_ACTIONS choice=0;
-	int choice=0;
-	int sub_choice=0;
+	int choice=0; //session actions
+	int sub_choice=0; //Sub Actions
 	printf("=================================================================\n");
 	printf("\t\t Welcome to LIFT Drone Control System \n");
 	printf("=================================================================\n");
 	// start_menu();
 	while(!exit){
-
-		//    	fflush(stdin);
 		if(memory.current_state==NULL_STATE) {choice=start_menu();}
 		else if(memory.current_state==CONTROL_SEND_COMMAND){choice=control_menu();}
-		if (memory.current_state!=RESTART_SESSION){
-			//    		fflush(stdin);
-			//    		char tmp[5000];
-			//    		fgets(tmp, 5000, stdin);
-			//    		sscanf(tmp, "%d", &choice);
-
-			//			scanf("%d",&choice);
-			//			scanf("%*[^\n]");
-
+		else if(memory.current_state==RESTART_SESSION){
+			initMemory(&memory);
+			memory.current_state=RESTART_SESSION;
+			choice=INIT_ESTABLISH_CONNECTION;
 		}
-
 		usleep(1000);
 		switch(choice){
 		case INIT_ESTABLISH_CONNECTION:
 			if ( memory.current_state==NULL_STATE ||memory.current_state==RESTART_SESSION){
-
 				memory.current_state=idle_CC;
-				session_handler_thread(&memory);
+				session_handler(&memory);
 				memory.current_state=CONTROL_SEND_COMMAND;
 				printf("Key Establishment Phase Successful \n");
 
@@ -341,9 +292,6 @@ int main(void){
 		case START_COMMUNICATION_STATUS:
 			if(memory.current_state!=CONTROL_SEND_COMMAND){printf("!!!Invalid input, please try again!!!\n");break;}
 			status_menu();
-			//    		fgets(c, 1, stdin);
-			//    		sub_choice = atoi(c);
-			//fflush(stdin);
 			scanf("%d",&sub_choice);
 			scanf("%*[^\n]");
 			if (sub_choice==DRONE_GET_GPS || sub_choice==DRONE_GET_BATTERY || sub_choice==DRONE_GET_TEMPERATURE){
@@ -360,9 +308,6 @@ int main(void){
 		case START_COMMUNICATION_COMMAND:
 			if(memory.current_state!=CONTROL_SEND_COMMAND){printf("!!!Invalid input, please try again!!!\n");break;}
 			commands_menu();
-			//    		fgets(c, 1, stdin);
-			//    		sub_choice = atoi(c);
-			//fflush(stdin);
 			scanf("%d",&sub_choice);
 			scanf("%*[^\n]");
 			if (sub_choice==DRONE_TURN_LEFT || sub_choice==DRONE_TURN_RIGHT || sub_choice==DRONE_HIGHER || sub_choice==DRONE_LOWER){
@@ -420,17 +365,11 @@ int main(void){
 			printf("!!!Invalid input, please try again!!!\n");
 			break;
 #endif
-
 		}
-
-		//    	fflush(stdin);
-		//    	fflush(stdout);
 	}
 
 	close_sockets();
-	return (0);
-
-
+	return RETURN_SUCCESS;
 }
 
 

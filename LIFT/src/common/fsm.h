@@ -8,8 +8,9 @@
 
 #ifndef FSM_H_
 #define FSM_H_
-//#include"communication.h"     // for MAX_TRANSFER_LENGTH
 
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>
 #include "globals.h"
 #include "utilities.h"
 #include "message.h"    // for WORD_ID
@@ -19,8 +20,7 @@
 #include "../hash/hash.h"
 #include "../ecc/signature.h"
 #include "../aead/chacha20_poly1305_interface.h"
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>
+#include "../drone/drone_includes.h"
 
 // all printing functions for debugging
 #define PRINT_STATE()   if(1)\
@@ -38,7 +38,7 @@
 #define MAX_COMMUNICATION_RETRANSMISSION 30
 #define SESSION_TIMEOUT 600000 //ten minutes in milliseconds
 #define COMMUNICATION_TIMEOUT 1000 //retransmit after one second
-#define IF_BITERROR 1 //enable or disable biterrors
+#define IF_BITERROR 0 //enable or disable biterrors
 
 // parameters of the fsm
 #define INFINITE_LOOP_STS 0     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
@@ -47,12 +47,13 @@
 #define SIMULATE_PACKET_DROP 0 // max 100, set to zero to disable
 #define BER_INVERSE  5000        // max 32000 min 1
 
+#define SEND_CONSTANT_DATA 1
 
 #define COMMAND_LENGTH 2 //in bytes
 #define SEQ_LENGTH 4 //in bytes
 #define GPS_LENGTH 16 //in bytes, 8 for lattitude, 8 for longitude
-#define VIDEOFRAME_LENGTH (32*32+4)
-
+#define VIDEOFRAMES 4 //each of 32bytes
+#define VIDEOFRAME_LENGTH (VIDEOFRAMES*32+4)
 typedef enum
 {
 	NULL_STATE,
@@ -111,11 +112,6 @@ typedef enum{
 	DRONE_GET_BATTERY,
 	DRONE_GET_TEMPERATURE
 }STATUS_COMMAND;
-
-
-
-
-
 
 ////////////
 
@@ -213,6 +209,7 @@ LIFT_RESULT make_command_request_packet(Memory* mem);
 LIFT_RESULT make_command_response_packet(uint8_t *data, Memory* mem);
 void compose_command_response(uint8_t* response_packet,uint32_t seq_num,  WORD_TAG cmd_type,  WORD_LEN cmd, uint8_t* response, WORD_LEN response_length);
 void decompose_command_response(uint8_t *data, uint32_t *seq_num,  WORD_TAG *cmd_type,  WORD_LEN *cmd, uint8_t* response, WORD_LEN response_len);
+
 void get_temperature(uint8_t* temperature);
 void get_battery(uint8_t* battery);
 void get_gps_coordinates(uint8_t* coordinates);

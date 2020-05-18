@@ -37,9 +37,6 @@ int main(void)
 		case idle_drone:
 			memory.current_state = idle_drone_fct(&memory);
 			break;
-		case key_exchange_drone:
-			memory.current_state = key_exchange_drone_fct(&memory);
-			break;
 		case STS_make_1:
 			memory.vid_seq_num=0;
 			memory.current_state = STS_make_1_fct(&memory);

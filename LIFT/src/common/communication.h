@@ -22,7 +22,7 @@
 #include <arpa/inet.h>
 #include "../common/globals.h"
 
-#define MAX_TRANSFER_LENGTH 1472
+#define MAX_TRANSFER_LENGTH  200 //1472
 
 
 int init_socket(const char *tx_ip, int tx_port, int rx_port, int timeout_sec);

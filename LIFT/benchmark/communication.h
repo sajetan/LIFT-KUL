@@ -16,7 +16,7 @@
 
 #define MAX_TRANSFER_LENGTH 1472
 
-#define IFENCRYPT 0 //to enable encryption 1, to disable 0
+#define IFENCRYPT 1 //to enable encryption 1, to disable 0
 
 #define MSGS 5000 // number of messages to send
 

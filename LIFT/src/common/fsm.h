@@ -11,6 +11,7 @@
 
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
+#include "../config.h"
 #include "globals.h"
 #include "utilities.h"
 #include "message.h"    // for WORD_ID
@@ -23,37 +24,22 @@
 #include "../drone/drone_includes.h"
 #include "../control/control_includes.h"
 
-// all printing functions for debugging
-#define PRINT_STATE()   if(1)\
-		printf("[ Current STATE:  %s ]\n", __func__);
-#define DEBUG_FSM(s)    if(0)\
-		printf("\t%s \n",s);
-#define PRINT_VIDEO_FRAME(s,l)    if(1)\
-		printf("\tVideo Seq num [%d] len [%d] \n",s,l);
 
-
-#define DEBUG_SIGNATURE 0
-#define PRINT_CONTENT_UDP_PACKET 0
 #define MAX_TRIALS 10
 #define MAX_COMMUNICATION_RETRANSMISSION 15 //number of retransmission of communication packets
 #define SESSION_TIMEOUT 6000000 //sixty minutes in milliseconds, can be configures as required
 #define COMMUNICATION_TIMEOUT 1000 //retransmit after one second
-#define IF_BITERROR 1 //enable or disable biterrors
 
 // parameters of the fsm
 #define INFINITE_LOOP_STS 0     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
 #define INFINITE_LOOP_DSTS 1     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
 #define TIMEOUT 400            // in ms, timeout value. /!\ not the same as the socket timeout, which has been set to a very small number
-#define SIMULATE_PACKET_DROP 0 // max 100, set to zero to disable
-#define BER_INVERSE  5000        // max 32000 min 1
-
-#define SEND_CONSTANT_DATA 1 //for integration to send constant data
 
 #define COMMAND_LENGTH 2 //in bytes
 #define SEQ_LENGTH 4 //in bytes
 #define GPS_LENGTH 16 //in bytes, 8 for lattitude, 8 for longitude
-#define VIDEOFRAMES 4 //each of 32bytes
 #define VIDEOFRAME_LENGTH (VIDEOFRAMES*32+4)
+
 typedef enum
 {
 	NULL_STATE,

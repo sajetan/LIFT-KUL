@@ -16,6 +16,7 @@ static const char DRONE_IP[] = "127.0.0.1";
 static int TX_PORT = 9990;
 static int RX_PORT = 9991;
 
+
 static volatile int gCommunicationThread =0;
 
 //for communication messages after STS

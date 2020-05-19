@@ -21,15 +21,10 @@
 #include <string.h>
 #include <assert.h>
 #include <fcntl.h>
-
-#define DEBUG 0 //enable to print logs
+#include "../config.h"
 
 #define FALSE 0
 #define TRUE 1
-
-
-//new
-#define P(print)    printf("hello %x \n", print);
 
 #define WORD uint16_t
 

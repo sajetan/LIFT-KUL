@@ -343,9 +343,8 @@ STATE sts_send_1_handler(Memory* mem){
 						DEBUG_FSM("signature valid")
 						make_packet(mem, TAG_STS_OK);
 						send_packet(mem->send_buf, mem->send_buf_len);  // send packet
-						if(DEBUG)printf("\tSending STS OK \n");
-						if(DEBUG)printf("Key Establishment Phase Successful\n");
-						printf("-----------------------------------------------------------------\n");
+						printf("\tSending STS OK \n");
+						printf("Key Establishment Phase Successful\n\n");
 						return STS_COMPLETED_DRONE;
 						//below is only for testing
 						//if(INFINITE_LOOP_DSTS){
@@ -484,7 +483,7 @@ STATE sts_completed_drone_handler(Memory* mem){
 				break;
 			case TAG_COMMAND:
 				if (crc!=mem->cmd_crc){
-					printf("-----------------------------------------------------------------\n");
+					if(DEBUG)printf("-----------------------------------------------------------------\n");
 					if(DEBUG)printf("COMMAND_PACKET received; crc=[%08x]\n",crc);
 					//not retransmitted data, so construct a new response packet
 					valid = make_command_response_packet(data, mem);

@@ -10,7 +10,7 @@
 
 int start_menu(){
 	int choice=0;
-	printf("\n-----------------------------------------------------------------\n");
+	printf("-----------------------------------------------------------------\n");
 	printf("Press (1) to establish Drone Connection\n");
 	printf("Press (9) to Shutdown System\n");
 	printf("Please enter your choice here: ");
@@ -23,7 +23,7 @@ int start_menu(){
 
 int control_menu(){
 	int choice=0;
-	printf("\n-----------------------------------------------------------------\n");
+	printf("-----------------------------------------------------------------\n");
 	printf("Press (2) to Get Drone Status\n");
 	printf("Press (3) to Send Command to Drone\n");
 	printf("Press (4) to Start Stream Video from Drone\n");

@@ -12,9 +12,9 @@
 #include "control_includes.h"
 
 //destination IP and port numbers
-static const char DRONE_IP[] = "127.0.0.1";
-static int TX_PORT = 9990;
-static int RX_PORT = 9991;
+static const char DRONE_IP[] = "10.87.20.96";
+static int TX_PORT = 9996;
+static int RX_PORT = 9997;
 
 
 static volatile int gCommunicationThread =0;
@@ -137,7 +137,8 @@ void *communication_receive_handler_thread(void *argdata){
 			}
 		}
 	}
-	memory->current_state=SESSION_TIMEOUT_STATE;
+
+	if (memory->current_state!=RESTART_SESSION) memory->current_state=SESSION_TIMEOUT_STATE;
 	printf("Closing session \n");
 	pthread_exit(NULL);
 

@@ -12,10 +12,10 @@ This project is undertaken at the Department of Electrical Engineering, KU Leuve
 
 ### Implementation Details: 
 ##### For source code: 
-[LIFT/src] (https://github.com/sajetan/PnD-ICT-Security/tree/master/LIFT/src)
+[LIFT/src](https://github.com/sajetan/PnD-ICT-Security/tree/master/LIFT/src)
 
 ##### For code benchmarking: 
-[LIFT/benchmark] (https://github.com/sajetan/PnD-ICT-Security/tree/master/LIFT/benchmark)
+[LIFT/benchmark](https://github.com/sajetan/PnD-ICT-Security/tree/master/LIFT/benchmark)
 
 ##### To build source code: 
 cd LIFT/ --> make clean --> make 

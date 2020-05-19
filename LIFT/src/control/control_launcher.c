@@ -56,6 +56,7 @@ void *communication_receive_handler_thread(void *argdata){
 	uint8_t response_data[MAX_DATA_LENGTH] = {0};
 
 	Timer myTimer;
+	Timer videoTimer;
 	startTimer(&myTimer);
 
 	while(memory->current_state==CONTROL_SEND_COMMAND && valueTimer(&myTimer)<SESSION_TIMEOUT){

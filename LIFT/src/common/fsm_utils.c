@@ -11,6 +11,9 @@
 //initilize memory, structure is common for both drone and CC
 void initMemory(Memory* mem, uint8_t isDrone){
 	printf("Initializing memories\n");
+	
+	// set seed for simulations
+	srand(time(0));
 
 	// entropy pool
 	initPool(&mem->pool);

@@ -106,13 +106,7 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 	WORD_LEN plaintext_len=0;
 	WORD_LEN response_len=0;
 	WORD_LEN response_packet_len=0;
-
-	//WORD i = 0;
 	uint8_t valid = 0;
-	//uint16_t start = 0;
-	//uint16_t len = 0;
-
-	//usleep(100);
 	valid = make_decrypted_message(plaintext, &plaintext_len, mem,rcv_data );
 	if (!valid) return RETURN_INVALID;
 
@@ -165,7 +159,6 @@ LIFT_RESULT make_command_response_packet(uint8_t *rcv_data, Memory* mem){
 		break;
 	case SESSION_TERMINATE_VIDEO_STREAM:    // OK message, this massage does not contain any data
 		printf("--------------------STOPPED STREAMING VIDEO -------------------------------\n");
-		//len = 0;
 		mem->is_videostreaming=0;
 		response_len=COMMAND_LENGTH;
 		response[0]=SESSION_ACK;

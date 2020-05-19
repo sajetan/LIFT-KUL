@@ -9,6 +9,12 @@ This project is undertaken at the Department of Electrical Engineering, KU Leuve
 * **Signature** : ECDSA over elliptic curve P-256 by NIST
 * **Hash** : SHA-256 Keccak Implementation
 
+After successful *Key Establishment*, we are able to achieve:
+* Send secure commands
+* Send secure status updates under secure request
+* Send secure binary stream, with enough throughput as to support video streaming (with configurable packet sizes)
+* Send new requests and receive responses while still drone is sending bitstream in the background
+* There is a session timeout as well after which new session will be established and different set of session keys will be computed.
 
 ### Implementation Details: 
 ##### For source code: 
@@ -25,7 +31,7 @@ Executables are **control_launcher** and **drone_launcher**, open two terminals 
 **drone_launcher** - Drone is always the responder. 
 
 On executing **control_launcher**, an user can make the below choices: 
-* ***Establish Drone Connection*** - choosing this, control center will initiate the key establishment protocol with the drone.
+* ***Establish Drone Connection*** - choosing this, control center will initiate the key establishment protocol with the drone. The control center and the drone shall retransmit each other if the messages/responses are not reached successfully. 
 * ***Close the System*** - will exit the terminal
 
 Below are a few choices when the *Key Establishment Phase Successful*: 
@@ -38,11 +44,11 @@ Below are a few choices when the *Key Establishment Phase Successful*:
 
 
 ### NOTE: 
-* For changing any performance related actions like enabling debug logs, or changing parameters, please change in *LIFT/src/config.h*
+* For changing any performance related actions like enabling debug logs/BER or changing parameters, please change in *LIFT/src/config.h*
 * For changing IP addresses and ports of control center and drone, change in *LIFT/src/control/control_launcher.c* and *LIFT/src/drone/drone_launcher.c*
 
 
-**For more details contact:** 
+**For more details/suggestions contact:** 
 * Ferdinand Hannequart (*ferdinand.hannequart@student.kuleuven.be*)
 * Lien Wouters (*lien.wouters@student.kuleuven.be*)
 * Tejas Narayana (*tejas.narayana@student.kuleuven.be*)

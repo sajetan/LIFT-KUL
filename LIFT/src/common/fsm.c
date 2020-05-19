@@ -813,7 +813,7 @@ LIFT_RESULT verify_STS_1(uint8_t *rcv_data, Memory* mem){
 
 	// 3. verify mac
 	word2rawbyte(mem->session_key8, mem->session_key, CHACHA_KEY_LENGTH);
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN);
 
 	if(DEBUG_SIGNATURE){
 		printf("[verify_STS_1_data] session_key x affine----- ");print_hex_type(session_key_affine.x,16);
@@ -893,7 +893,7 @@ LIFT_RESULT verify_STS_2(uint8_t *rcv_data, Memory* mem){    //rcv_data = STS_2_
 
 
 	// 2. verify mac
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN);
 	if(DEBUG_SIGNATURE){
 		printf("drone's point x : ");    print_num(mem->session_drone_public.x);
 		printf("drone's point y : ");    print_num(mem->session_drone_public.y);

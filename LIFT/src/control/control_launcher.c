@@ -118,13 +118,17 @@ void *communication_receive_handler_thread(void *argdata){
 						else if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
 							printf("DRONE VIDEO STREAMING IN THE BACKGROUND \n");
+							startTimer(&videoTimer);
 						}
 						break;
 					case SESSION_TERMINATE_VIDEO_STREAM:    // OK message, this massage does not contain any data
 						if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
 							memory->is_videostreaming=0;
-							printf("DRONE VIDEO STREAMING STOPPED total received frames = [%d] [total %d Mbytes]\n",memory->vid_seq_num, (memory->vid_seq_num*VIDEOFRAMES*32/1000000));
+							double total_data=(double)(memory->vid_seq_num*VIDEOFRAMES*32/1000000.0);
+							double throughput= total_data/(double)valueTimer(&videoTimer)*1000; //in Mega Bytes per second
+							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] [total data = %0.2f Mbytes at %0.2f Mbytes/sec]\n",memory->vid_seq_num, total_data,(double)throughput);
+							memory->vid_seq_num=0;
 						}
 						break;
 					default:

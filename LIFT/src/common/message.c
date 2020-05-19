@@ -9,6 +9,8 @@
 #include "message.h"
 #include "crc.h"
 
+static volatile int printcount =0;
+
 void getTLV(uint8_t* buf, uint16_t* buf_len, WORD_TAG tag,  WORD_LEN dataLength, WORD_ID id, uint8_t* data){
 	assert(MAX_DATA_LENGTH >= dataLength);
 
@@ -80,7 +82,14 @@ LIFT_RESULT decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, uint32_t *crc, W
 
 	}
 
-	if (rcvd_crc!=calcrc) {printf("CRC Incorrect, Packet will be dropped \n");return RETURN_INVALID;}
+	if (rcvd_crc!=calcrc) {
+		if (printcount<4){
+			printf("CRC Incorrect, Packet will be dropped --------------------\n"); //just to reduce the number of packet drop logs
+			if (printcount>5000)printcount=0;
+			printcount++;
+			return RETURN_INVALID;
+		}
+	}
 
 	//initialize
 	*tag = hdr->tag;

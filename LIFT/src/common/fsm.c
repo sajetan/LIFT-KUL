@@ -51,7 +51,8 @@ void *video_streaming_thread(void *argdata){
 		send_packet(memory->send_vidbuf, memory->send_vidbuf_len);
 		//usleep(10); //streaming about 1072 bytes of data every 10microsecond
 	}
-	printf("Stopping video stream  total frames sent [%d] [total %d Mbytes] \n", memory->vid_seq_num, (memory->vid_seq_num*VIDEOFRAMES*32/1000000));
+	printf("Stopping video stream  total frames sent [%d] [total %.2f Mbytes] \n", memory->vid_seq_num, (double)(memory->vid_seq_num*VIDEOFRAMES*32/1000000.0));
+	memory->vid_seq_num=0;
 	pthread_exit(NULL);
 
 }

@@ -293,7 +293,6 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 
 	//receive message
 	rcv_buf_len = receive_message(rcv_buf);
-	srand(time(0));
 	// simulation part begin
 	if(rcv_buf_len != (uint16_t)~0){
 		// simulate packet loss

@@ -126,9 +126,9 @@ void *communication_receive_handler_thread(void *argdata){
 						if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
 							memory->is_videostreaming=0;
-							double total_data=(double)(memory->vid_seq_num*VIDEOFRAMES*32/1000000.0);
+							double total_data=(double)(memory->vid_seq_num*VIDEOFRAMES*32*8/1000000.0);
 							double throughput= total_data/(double)valueTimer(&videoTimer)*1000; //in Mega Bytes per second
-							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] [total data = %0.2f Mbytes at %0.2f Mbytes/sec]\n",memory->vid_seq_num, total_data,(double)throughput);
+							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] [total data = %0.2f Mb at %0.2f Mbits/sec]\n",memory->vid_seq_num, total_data,(double)throughput);
 							memory->vid_seq_num=0;
 						}
 						break;

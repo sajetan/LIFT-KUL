@@ -1,16 +1,17 @@
 /*
- * second draft of the FSM 
  * fsm.h
- * 
- *
- *  Created on: April 18, 2020
- *      Author: Ferdinand Hannequart
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef FSM_H_
 #define FSM_H_
-//#include"communication.h"     // for MAX_TRANSFER_LENGTH
 
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>
+#include "../config.h"
 #include "globals.h"
 #include "utilities.h"
 #include "message.h"    // for WORD_ID
@@ -20,63 +21,46 @@
 #include "../hash/hash.h"
 #include "../ecc/signature.h"
 #include "../aead/chacha20_poly1305_interface.h"
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>
-
-// all printing functions for debugging
-#define PRINT_STATE()   if(1)\
-		printf("[ Current state:  %s ]\n", __func__);
-#define DEBUG_FSM(s)    if(0)\
-		printf("\t%s \n",s);
-#define PRINT_VIDEO_FRAME(s,l)    if(1)\
-		printf("\tVideo Seq num [%d] len [%d] \n",s,l);
+#include "../drone/drone_includes.h"
+#include "../control/control_includes.h"
 
 
-#define DEBUG 0
-#define DEBUG_SIGNATURE 0
-#define PRINT_CONTENT_UDP_PACKET 0
 #define MAX_TRIALS 10
-#define MAX_COMMUNICATION_RETRANSMISSION 20
-#define SESSION_TIMEOUT 600000 //ten minutes in milliseconds
-#define COMMUNICATION_TIMEOUT 100
-#define IF_BITERROR 0 //enable or disable biterrors
+#define MAX_COMMUNICATION_RETRANSMISSION 15 //number of retransmission of communication packets
+#define SESSION_TIMEOUT 6000000 //sixty minutes in milliseconds, can be configures as required
+#define COMMUNICATION_TIMEOUT 1000 //retransmit after one second
 
 // parameters of the fsm
 #define INFINITE_LOOP_STS 0     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
 #define INFINITE_LOOP_DSTS 1     // 1: run STS infinitely, 0: run STS once and exit (doesn't really work yet, since both must know the other exits)
 #define TIMEOUT 400            // in ms, timeout value. /!\ not the same as the socket timeout, which has been set to a very small number
-#define SIMULATE_PACKET_DROP 0 // max 100, set to zero to disable
-#define BER_INVERSE  32000        // max 32000 min 1
-
 
 #define COMMAND_LENGTH 2 //in bytes
 #define SEQ_LENGTH 4 //in bytes
 #define GPS_LENGTH 16 //in bytes, 8 for lattitude, 8 for longitude
-#define VIDEOFRAME_LENGTH (32*32+4)
+#define VIDEOFRAME_LENGTH (VIDEOFRAMES*32+4)
 
 typedef enum
 {
 	NULL_STATE,
-	idle_drone,
-	idle_CC,
-	key_exchange_CC,
-	key_exchange_drone,
-	STS_send_0,
-	STS_send_1,
-	STS_send_2,
-	STS_make_0,
-	STS_make_1,
-	STS_make_2,
-	STS_completed_drone,
+	IDLE_DRONE,
+	IDLE_CC,
+	STS_SEND_0,
+	STS_SEND_1,
+	STS_SEND_2,
+	STS_MAKE_0,
+	STS_MAKE_1,
+	STS_MAKE_2,
+	STS_COMPLETED_DRONE,
 	CONTROL_SEND_COMMAND,
 	DRONE_PROCESS_COMMAND,
-	State_Exit,
+	STATE_EXIT,
 	DRONE_UNREACHABLE,
-	RESTART_SESSION
-} State;
+	RESTART_SESSION,
+	SESSION_TIMEOUT_STATE
+} STATE;
 
 
-//new enums
 typedef enum{
 	SESSION_CONTROL_REQUEST=1,
 	SESSION_STATUS_REQUEST_MESSAGE,
@@ -93,7 +77,6 @@ typedef enum{
 	TERMINATE_VIDEO_STREAM_COMMUNICATION,
 	REINIT_ESTABLISH_CONNECTION,
 	TERMINATE_SYSTEM=9
-
 }SESSION_ACTIONS;
 
 typedef enum{
@@ -114,14 +97,6 @@ typedef enum{
 }STATUS_COMMAND;
 
 
-
-
-
-
-////////////
-
-
-
 typedef struct Memory Memory;
 struct Memory
 {
@@ -138,9 +113,8 @@ struct Memory
 	uint8_t send_vidbuf[MAX_TRANSFER_LENGTH];
 	uint16_t send_vidbuf_len;
 
-	uint8_t rcv_STS_0[MAX_DATA_LENGTH];
-	uint16_t rcv_STS_0_len;
-	uint32_t STS0_CRC;
+	uint32_t STS0_CRC; //keeping track of previous STS0 message
+
 	// permanent public and private key pairs
 	p256_affine drone_PK;
 	p256_affine control_PK;
@@ -171,30 +145,32 @@ struct Memory
 
 };
 
-void initMemory(Memory* mem);
+//void initMemory(Memory* mem);
+void initMemory(Memory* mem, uint8_t isDrone);
+
+void initDroneMemory(Memory* mem);
+void initCCMemory(Memory* mem);
+
 
 // make, send and receive functions
 void make_packet(Memory* mem, WORD_TAG tag);
 void send_packet(uint8_t* buf, uint16_t buf_len);
 LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len,uint32_t *crc, uint8_t* data, WORD_ID id, uint16_t* timeout);
 
-// next state logic functions
-State idle_CC_fct(Memory* mem);
-State idle_drone_fct(Memory* mem);
+// next STATE logic functions
+STATE idle_cc_handler(Memory* mem);
+STATE idle_drone_handler(Memory* mem);
 
-State key_exchange_drone_fct(Memory* mem);
-State key_exchange_CC_fct(Memory* mem);
 
-State STS_make_0_fct(Memory* mem);
-State STS_make_1_fct(Memory* mem);
-State STS_make_2_fct(Memory* mem);
+STATE sts_make_0_handler(Memory* mem);
+STATE sts_make_1_handler(Memory* mem);
+STATE sts_make_2_handler(Memory* mem);
 
-State STS_send_0_fct(Memory* mem);
-State STS_send_1_fct(Memory* mem);
-State STS_send_2_fct(Memory* mem);
+STATE sts_send_0_handler(Memory* mem);
+STATE sts_send_1_handler(Memory* mem);
+STATE sts_send_2_handler(Memory* mem);
 
-State STS_completed_drone_fct(Memory* mem);
-
+STATE sts_completed_drone_handler(Memory* mem);
 
 
 // STS specific functions
@@ -207,16 +183,12 @@ LIFT_RESULT verify_STS_1(uint8_t *rcv_data, Memory* mem);
 LIFT_RESULT verify_STS_2(uint8_t *rcv_data, Memory* mem);
 
 //new functions
-State CONTROL_SEND_COMMAND_fct(Memory* mem, uint16_t cmd_type, uint16_t command);
 uint16_t make_encrypted_message(uint8_t* data, Memory* mem, uint8_t* plaintext, WORD_LEN plaintext_len);
 LIFT_RESULT make_decrypted_message(uint8_t* plaintext, WORD_LEN* plaintext_len, Memory* mem, uint8_t* rcv_data);
 LIFT_RESULT make_command_request_packet(Memory* mem);
 LIFT_RESULT make_command_response_packet(uint8_t *data, Memory* mem);
 void compose_command_response(uint8_t* response_packet,uint32_t seq_num,  WORD_TAG cmd_type,  WORD_LEN cmd, uint8_t* response, WORD_LEN response_length);
 void decompose_command_response(uint8_t *data, uint32_t *seq_num,  WORD_TAG *cmd_type,  WORD_LEN *cmd, uint8_t* response, WORD_LEN response_len);
-void get_temperature(uint8_t* temperature);
-void get_battery(uint8_t* battery);
-void get_gps_coordinates(uint8_t* coordinates);
 
 
 #endif

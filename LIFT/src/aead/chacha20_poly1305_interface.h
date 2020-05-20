@@ -1,12 +1,14 @@
 /*
  * chacha20_poly1305_interface.h
- * sajetan
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef CHACHA20_POLY1305_INTERFACE_H_
 #define CHACHA20_POLY1305_INTERFACE_H_
 
-//#include"main.h"
 #include "chacha20.h"
 
 #define decrypt_init encrypt_init //encryption and decryption uses the same code
@@ -16,7 +18,6 @@
 #define MAC_TAG_LENGTH 16 //in bytes
 
 #define POLY_PADDING_LENGTH 16 //in bytes
-
 
 
 typedef uint8_t u8;
@@ -38,12 +39,10 @@ void poly1305_msg_construction(u8 *poly_msg,poly1305_msg_struct *in);
 
 void encrypt_init(u8 *ciphertext, u8 *key_in, u8 key_length, u8 *nonce_in, u8 *plain_text_in, u32 len, u64 counter);
 
-void print_num_type(uint8_t *in,size_t type);
-
 void poly1305_key_gen(u8 *poly_key, u8 *key,u8 *nonce);
 
-void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad);
-uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len, const char *aad);
+void aead_chacha20_poly1305(uint8_t *output,uint8_t *ciphertext_out,uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len);
+uint16_t verify_mac_aead_chacha20_poly1305(uint8_t *rcv_mac_tag, uint8_t *key, uint32_t key_len, uint8_t *nonce, uint8_t *plaintext_in, uint32_t len);
 void paddingCheck(poly1305_msg_struct  *in, uint16_t padding_length);
 
 //test functions

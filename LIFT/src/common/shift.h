@@ -1,8 +1,9 @@
 /*
-Ferdinand Hannequart
-WORD.h
-
-purpose: contains the prototypes, defines and includes
+ * shift.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef DEF_SHIFT

@@ -57,14 +57,12 @@ dkms.conf
 *.in
 aclocal*
 compile
-config.*
 configure
 depcomp
 install-sh
 missing
 stamp-h1
 auto*
-Makefile
 *.swp
 =======
 /Debug/

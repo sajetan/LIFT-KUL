@@ -1,3 +1,11 @@
+/*
+ * poly1305.c
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
 #include "poly1305.h"
 
 #if defined(POLY1305_8BIT)

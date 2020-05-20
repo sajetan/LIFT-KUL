@@ -1,6 +1,9 @@
 /*
  * utilities.h
- *
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef UTILITIES_H_
@@ -32,6 +35,9 @@ void print_hex_type(WORD *in, WORD type);
 void print_hex_8(uint8_t *in);
 void print_hex_WORDype(WORD *in,WORD size, WORD type);
 void print_array8(uint8_t *in, uint64_t size);
+void print_num_type(uint8_t *in,size_t type);
+void print_num_type_length(uint8_t *in,size_t len,size_t type);
+
 void rawbyte2word(WORD *out, uint8_t *in, WORD len);
 void word2rawbyte(uint8_t *out, WORD *in, WORD len);
 WORD equalWord(WORD a[], WORD b[]);

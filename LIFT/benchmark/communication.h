@@ -1,3 +1,11 @@
+/*
+ * communication.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
+ */
+
 #ifndef COM_H_
 #define COM_H_
 
@@ -10,12 +18,12 @@
 
 #define IFENCRYPT 1 //to enable encryption 1, to disable 0
 
-#define MSGS 50 // number of messages to send
+#define MSGS 5000 // number of messages to send
 
 #define ENCRYPTED_MESSAGE_LENGTH 2 //(32 * ENCRYPTED_MESSAGE_LENGTH) bytes , 32 because 256 bits in random gen
 
 
-int init_socket(int tx_port, int rx_port, int timeout_sec);
+int init_socket(const char* tx_ip,int tx_port, int rx_port);
 int send_message(uint8_t* data, int length);
 int receive_message(uint8_t* data);
 int close_sockets();

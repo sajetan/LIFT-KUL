@@ -70,7 +70,7 @@ void chacha20_counter_set(chacha20_ctx *ctx, uint64_t counter)
 	ctx->available = 0;
 
 	//enable below for debug logs
-#if 0
+#if DEBUG
 	printf("setup key[4] = %08x \n",ctx->schedule[4]);
 	printf("setup key[5] = %08x \n",ctx->schedule[5]);
 	printf("setup key[6] = %08x \n",ctx->schedule[6]);

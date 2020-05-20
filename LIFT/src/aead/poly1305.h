@@ -1,8 +1,9 @@
 /*
  * poly1305.h
- *
- *  Created on: 18-Apr-2020
- *      Author: sajetan
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef POLY1305_H_

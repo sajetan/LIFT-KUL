@@ -1,17 +1,20 @@
 /*
  * control_includes.h
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
+
+#include "../common/globals.h"
 
 #ifndef INCLUDE_CONTROL_INCLUDES_H_
 #define INCLUDE_CONTROL_INCLUDES_H_
 
-typedef enum {
-	CONTROL_SESSION_INIT = 0,
-	CONTROL_SEND_PUBLIC_KEY,
-	CONTROL_CALCULATE_SESSION_KEY,
-	CONTROL_SESSION_COMMUNICATION,
-	CONTROL_SESSION_TERMINATE
-} LIFT_CONTROL_SESSION_STATES;
+int start_menu();
+int control_menu();
+void commands_menu();
+void status_menu();
 
 
 #endif /* INCLUDE_CONTROL_INCLUDES_H_ */

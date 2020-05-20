@@ -1,8 +1,9 @@
 /*
  * mod.h
- *
- *  Created on: Mar 28, 2020
- *      Author: r0665956
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef MOD_H_

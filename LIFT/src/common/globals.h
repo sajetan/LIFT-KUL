@@ -1,8 +1,9 @@
 /*
  * globals.h
- *
- *  Created on: April 19
- *      Author: Ferdinand Hannequart
+ * LIFT DRONE CONTROL PROJECT
+ * Copyright: ESAT, KU Leuven
+ * Author: Ferdinand Hannequart, Lien Wouters, Tejas Narayana
+ * Year: 2020
  */
 
 #ifndef GLOBALS_H_
@@ -20,17 +21,10 @@
 #include <string.h>
 #include <assert.h>
 #include <fcntl.h>
-//#inclusde <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-
+#include "../config.h"
 
 #define FALSE 0
 #define TRUE 1
-
-
-//new
-#define P(print)    printf("hello %x \n", print);
 
 #define WORD uint16_t
 

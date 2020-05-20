@@ -138,7 +138,7 @@ void *communication_receive_handler_thread(void *argdata){
 								perc = (double) (memory->vid_count)/ (double) (memory->vid_seq_num - memory->vid_seq_num_start)*100;
 							}
 							double throughput= total_data/(double)valueTimer(&videoTimer)*1000*8; //in Mega Bytes per second
-							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] \nPercentage received from total= [%0.1f] \n[total data = %0.2f MB at %0.1f Mbits/sec]\n",memory->vid_count, perc, total_data,(double)throughput);
+							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] \nPercentage received = [%0.1f] \n[total data = %0.2f MB at %0.1f Mbits/sec]\n",memory->vid_count, perc, total_data,(double)throughput);
 							//memory->vid_seq_num=0;
 						}
 						break;

@@ -12,7 +12,8 @@
 #include "control_includes.h"
 
 //destination IP and port numbers
-static const char DRONE_IP[] = "10.87.20.96";
+//static const char DRONE_IP[] = "10.87.20.96";
+static const char DRONE_IP[] = "127.0.0.1";
 static int TX_PORT = 9996;
 static int RX_PORT = 9997;
 
@@ -113,23 +114,32 @@ void *communication_receive_handler_thread(void *argdata){
 						break;
 					case SESSION_VIDEO_STREAM_REQUEST:
 						if(cmd==DRONE_VIDEO_FRAME){
-							if((response_data[3]<<24|response_data[2]<<16|response_data[1]<<8|response_data[0]) > memory->vid_seq_num)
-								memory->vid_seq_num+=1; //ideally this should be equal to the total frames sent from the drone but some packets can be dropped
+							if((response_data[3]<<24|response_data[2]<<16|response_data[1]<<8|response_data[0]) > memory->vid_seq_num){
+								memory->vid_seq_num = (response_data[3]<<24|response_data[2]<<16|response_data[1]<<8|response_data[0]) ; //ideally this should be equal to the total frames sent from the drone but some packets can be dropped
+								memory->vid_count ++;
+							}
 						}
 						else if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
 							printf("DRONE VIDEO STREAMING IN THE BACKGROUND \n");
 							startTimer(&videoTimer);
+							memory->vid_seq_num_start = memory->vid_seq_num;
+							memory->vid_count = 0;
+
 						}
 						break;
 					case SESSION_TERMINATE_VIDEO_STREAM:    // OK message, this massage does not contain any data
 						if((response_data[1]<<8|response_data[0])==SESSION_ACK||(response_data[1]<<8|response_data[0])==SESSION_REACK){
 							gCommunicationThread=0; //ack or re-ack received, terminate communication thread
 							memory->is_videostreaming=0;
-							double total_data=(double)(memory->vid_seq_num*VIDEOFRAMES*32*8/1000000.0);
-							double throughput= total_data/(double)valueTimer(&videoTimer)*1000; //in Mega Bytes per second
-							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] [total data = %0.2f Mb at %0.2f Mbits/sec]\n",memory->vid_seq_num, total_data,(double)throughput);
-							memory->vid_seq_num=0;
+							double total_data=(double)(memory->vid_count*VIDEOFRAMES*32/1000000.0);
+							double perc = 0;
+							if((memory->vid_seq_num - memory->vid_seq_num_start)!=0){
+								perc = (double) (memory->vid_count)/ (double) (memory->vid_seq_num - memory->vid_seq_num_start)*100;
+							}
+							double throughput= total_data/(double)valueTimer(&videoTimer)*1000*8; //in Mega Bytes per second
+							printf("DRONE VIDEO STREAMING STOPPED \ntotal received frames = [%d] \nPercentage received from total= [%0.1f] \n[total data = %0.2f MB at %0.1f Mbits/sec]\n",memory->vid_count, perc, total_data,(double)throughput);
+							//memory->vid_seq_num=0;
 						}
 						break;
 					default:

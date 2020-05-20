@@ -12,8 +12,8 @@
 #include "control_includes.h"
 
 //destination IP and port numbers
-//static const char DRONE_IP[] = "10.87.20.96";
-static const char DRONE_IP[] = "127.0.0.1";
+static const char DRONE_IP[] = "10.87.20.96";
+//static const char DRONE_IP[] = "127.0.0.1";
 static int TX_PORT = 9996;
 static int RX_PORT = 9997;
 

@@ -78,7 +78,9 @@ void char2byte(uint8_t *out, const char *in);
 //void test_convert_hex_array();
 
 void startTimer(Timer *timer);
+void startTimerMicro(Timer *timer);
 uint32_t valueTimer(Timer *timer);
+uint32_t valueTimerMicro(Timer *timer);
 void printTimer(Timer* timer);
 
 #endif /* SUB_H_ */

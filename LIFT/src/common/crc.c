@@ -100,14 +100,12 @@ uint32_t compute_crc(uint8_t *data, uint16_t len)
 {
 	//Initialize crc-32 to starting value
 	uint32_t crc = 0xffffffff;
-
 	for (uint16_t i=0; i< len; i++){
 		crc = (crc >> 8) ^ crc_table[(crc ^ (uint32_t) data[i]) & 0x000000ff];
 	}
 
 	//Finalize the CRC-32 value by inverting all the bits
 	crc = crc ^ 0xffffffff;
-
 	return crc;
 }
 

@@ -26,7 +26,7 @@
 
 
 #define MAX_TRIALS 10
-#define MAX_COMMUNICATION_RETRANSMISSION 15 //number of retransmission of communication packets
+#define MAX_COMMUNICATION_RETRANSMISSION 20 //number of retransmission of communication packets
 #define SESSION_TIMEOUT 6000000 //sixty minutes in milliseconds, can be configures as required
 #define COMMUNICATION_TIMEOUT 1000 //retransmit after one second
 
@@ -137,6 +137,8 @@ struct Memory
 	//communication related fields
 	uint32_t volatile seq_num;
 	uint32_t volatile vid_seq_num;
+	uint32_t volatile vid_count;
+	uint32_t volatile vid_seq_num_start;
 	uint32_t volatile cmd_crc;
 	uint32_t volatile cmd;
 	uint32_t volatile cmd_type;

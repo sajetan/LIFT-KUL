@@ -69,6 +69,9 @@ LIFT_RESULT decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, uint32_t *crc, W
 	struct lift_pkt_hdr *hdr = (struct lift_pkt_hdr *) buf;
 	uint16_t i = 0;
 	uint16_t start = 0;
+	if(hdr->len > MAX_DATA_LENGTH){
+		return RETURN_INVALID;
+	}
 	uint32_t rcvd_crc= *((uint32_t *)(buf + sizeof(*hdr) + hdr->len));
 
 	uint32_t calcrc = compute_crc(buf,sizeof(*hdr)+hdr->len);
@@ -83,12 +86,13 @@ LIFT_RESULT decomposeTLV( WORD_TAG* tag,  WORD_LEN* dataLength, uint32_t *crc, W
 	}
 
 	if (rcvd_crc!=calcrc) {
-		if (printcount<4){
+		/*if (printcount<4){
 			printf("CRC Incorrect, Packet will be dropped --------------------\n"); //just to reduce the number of packet drop logs
 			if (printcount>5000)printcount=0;
 			printcount++;
-			return RETURN_INVALID;
-		}
+		}*/
+					return RETURN_INVALID;
+
 	}
 
 	//initialize

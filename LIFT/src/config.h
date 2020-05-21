@@ -18,6 +18,8 @@
 		printf("\t%s \n",s);
 #define PRINT_VIDEO_FRAME(s,l)    if(1)\
 		printf("\tVideo Seq num [%d] len [%d] \n",s,l);
+#define PRINT_BITFLIP()    if(1)\
+		printf("CRC Incorrect, Packet will be dropped ---------------- \n");
 
 #define DEBUG_SIGNATURE 0
 #define PRINT_CONTENT_UDP_PACKET 0
@@ -29,5 +31,6 @@
 #define IF_BITERROR 1 //enable or disable biterrors
 #define SIMULATE_PACKET_DROP 0 // max 100, set to zero to disable
 #define VIDEOFRAMES 4 //each of 32bytes
+#define DELAY_VIDEO 0 // add delay between video frames, in µs
 
 #endif /* CONFIG_H_ */

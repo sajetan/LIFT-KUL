@@ -51,8 +51,8 @@ void poly1305_msg_construction(u8 *poly_msg,poly1305_msg_struct *in){
 
 	memset(poly_msg_array,0x00,MAX_MSG_SIZE*4);
 
-	memset(msg_len,0x00,strlen((const char*)msg_len));
-	memset(aad_len,0x00,strlen((const char*)aad_len));
+	memset(msg_len,0x00,UINT64_SIZE);
+	memset(aad_len,0x00,UINT64_SIZE);
 
 	*(uint64_t*)&msg_len=in->msg_len;  //convert uint64 to little endian of 8 bytes
 	*(uint64_t*)&aad_len=in->aad_len;  //convert uint64 to little endian of 8 bytes

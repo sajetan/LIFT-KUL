@@ -11,6 +11,9 @@
 //initilize memory, structure is common for both drone and CC
 void initMemory(Memory* mem, uint8_t isDrone){
 	printf("Initializing memories\n");
+	
+	// set seed for simulations
+	srand(time(0));
 
 	// entropy pool
 	initPool(&mem->pool);
@@ -66,6 +69,8 @@ void initMemory(Memory* mem, uint8_t isDrone){
 	mem->seq_num=0;
 	mem->is_videostreaming=0;
 	mem->vid_seq_num=0;
+	mem->vid_count=0;
+	mem->vid_seq_num_start=0;
 
 	// debugging
 	mem->counter = 0;
@@ -290,10 +295,9 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 	uint16_t bit_flip = 0;
 
 	initArray8(data, MAX_DATA_LENGTH);
-
+	
 	//receive message
 	rcv_buf_len = receive_message(rcv_buf);
-	srand(time(0));
 	// simulation part begin
 	if(rcv_buf_len != (uint16_t)~0){
 		// simulate packet loss
@@ -305,7 +309,7 @@ LIFT_RESULT receive_packet(WORD_TAG *tag, WORD_LEN *len, uint32_t *crc, uint8_t*
 			if(IF_BITERROR){
 				for(i = 0; i<rcv_buf_len; i++){
 					r = (rand() % BER_INVERSE);
-					if(r<3){
+					if(r<8){
 						bit_flip = 1;
 						mask = 1<<r;
 					} else{

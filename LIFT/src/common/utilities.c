@@ -668,6 +668,18 @@ uint32_t valueTimer(Timer* timer){
 void printTimer(Timer* timer){
 	printf("elapsed time: %d.%03d ms\n", valueTimer(timer)/1000, valueTimer(timer)%1000);
 }
+
+void startTimerMicro(Timer* timer){
+	gettimeofday(&timer->tv, NULL);
+	timer->time_in_mill_1 = (timer->tv).tv_sec*1000000 + (timer->tv).tv_usec; // convert tv_sec & tv_usec to millisecond
+}
+
+uint32_t valueTimerMicro(Timer* timer){
+	gettimeofday(&timer->tv2, NULL);
+	timer->time_in_mill_2 = (timer->tv2).tv_sec * 1000000 + (timer->tv2).tv_usec; // convert tv_sec & tv_usec to millisecond
+	return timer->time_in_mill_2 - timer->time_in_mill_1;
+}
+
 void convertTest(){
 	WORD w[SIZE] = {0};
 	printf("\n---- %s -----\n", __func__);

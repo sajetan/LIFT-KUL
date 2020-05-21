@@ -12,6 +12,7 @@
 
 //destination IP and port numbers
 static const char CC_IP[] = "10.87.20.93";
+//static const char CC_IP[] = "127.0.0.1";
 static int TX_PORT = 9997;
 static int RX_PORT = 9996;
 

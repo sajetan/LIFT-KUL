@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include"globals.h"
 
 void generate_crc_tabble();
 uint32_t compute_crc(uint8_t *data, uint16_t len);

@@ -20,6 +20,7 @@ void *video_streaming_thread(void *argdata){
 	uint8_t data_payload[MAX_DATA_LENGTH] = {0};
 	uint8_t data_packet[MAX_DATA_LENGTH] = {0};
 	WORD_LEN data_packet_len=0;
+	Timer t;
 
 	WORD rand[SIZE] = {0};
 	int i=0;
@@ -27,10 +28,14 @@ void *video_streaming_thread(void *argdata){
 	uint32_t seq_num=0;
 
 	printf("Starting Video Streaming thread\n");
+	memory->vid_count = 0;
 
 	while(memory->current_state==STS_COMPLETED_DRONE && memory->is_videostreaming==1){
-		memory->vid_seq_num+=1;
+		startTimerMicro(&t);
+		memory->vid_seq_num++;
+		memory->vid_count ++;
 		seq_num = memory->vid_seq_num;
+
 		for(i = 0; i<SEQ_LENGTH; i++){
 			videoframe[i] = ((seq_num >> (8*i)));
 		}
@@ -50,9 +55,12 @@ void *video_streaming_thread(void *argdata){
 
 		send_packet(memory->send_vidbuf, memory->send_vidbuf_len);
 		//usleep(10); //streaming about 1072 bytes of data every 10microsecond
+		while(valueTimerMicro(&t)<DELAY_VIDEO){
+
+		}
 	}
-	printf("Stopping video stream  total frames sent [%d] [total %.2f Mb] \n", memory->vid_seq_num, (double)(memory->vid_seq_num*VIDEOFRAMES*32*8/1000000.0));
-	memory->vid_seq_num=0;
+	printf("Stopping video stream  total frames sent [%d] [total %.2f MB] \n", memory->vid_count, (double)(memory->vid_count*VIDEOFRAMES*32/1000000.0));
+	//memory->vid_seq_num=0;
 	pthread_exit(NULL);
 
 }
@@ -225,6 +233,7 @@ STATE idle_drone_handler(Memory* mem){
 		if(timeoutSocket){
 			// if timeout, just continue listening
 		} else if(!valid){
+			PRINT_BITFLIP()
 			DEBUG_FSM("invalid id or incorrect integrity check")
 		} else{
 			//DEBUG_FSM("valid id and correct integrity check")
@@ -279,6 +288,7 @@ STATE sts_send_0_handler(Memory* mem){
 			if(timeoutSocket){
 				// timeout of UDP socket
 			} else if(!valid){
+				PRINT_BITFLIP()
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
 
@@ -328,6 +338,7 @@ STATE sts_send_1_handler(Memory* mem){
 			if(timeoutSocket){
 				// timeout of UDP socket
 			} else if(!valid){
+				PRINT_BITFLIP()
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
 				if(tag == TAG_STS_2){
@@ -387,10 +398,10 @@ STATE sts_send_2_handler(Memory* mem){
 		while(valueTimer(&myTimer)<TIMEOUT){
 			initArray8(data, MAX_DATA_LENGTH);
 			valid = receive_packet( &tag, &len, &crc, data, mem->receiverID, &timeoutSocket);
-
 			if(timeoutSocket){
 				// timeout of UDP socket
 			} else if(!valid){
+				PRINT_BITFLIP()
 				DEBUG_FSM("invalid id or incorrect integrity check")
 			} else{
 				if(tag == TAG_STS_OK){
@@ -445,6 +456,7 @@ STATE sts_completed_drone_handler(Memory* mem){
 		if(timeoutSocket){
 			// do nothing
 		} else if(!valid){
+			PRINT_BITFLIP()
 			DEBUG_FSM("invalid id or incorrect integrity check")
 		} else{
 			switch (tag)
@@ -813,7 +825,7 @@ LIFT_RESULT verify_STS_1(uint8_t *rcv_data, Memory* mem){
 
 	// 3. verify mac
 	word2rawbyte(mem->session_key8, mem->session_key, CHACHA_KEY_LENGTH);
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN);
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
 
 	if(DEBUG_SIGNATURE){
 		printf("[verify_STS_1_data] session_key x affine----- ");print_hex_type(session_key_affine.x,16);
@@ -893,7 +905,7 @@ LIFT_RESULT verify_STS_2(uint8_t *rcv_data, Memory* mem){    //rcv_data = STS_2_
 
 
 	// 2. verify mac
-	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN);
+	valid = verify_mac_aead_chacha20_poly1305(mac_tag, mem->session_key8, CHACHA_KEY_LENGTH, nonce, ciphertext, SIG_LEN); //this is not working
 	if(DEBUG_SIGNATURE){
 		printf("drone's point x : ");    print_num(mem->session_drone_public.x);
 		printf("drone's point y : ");    print_num(mem->session_drone_public.y);

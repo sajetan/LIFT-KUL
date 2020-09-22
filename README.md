@@ -37,7 +37,7 @@ On executing **control_launcher**, an user can make the below choices:
 Below are a few choices when the *Key Establishment Phase Successful*: 
 * ***Get Drone Status*** - sends a command request to drone to fetch its status. Status menu will be shown to select the type of satus (like GPS coordinates, Temperature, Battery Level etc) 
 * ***Send Command to Drone*** - sends commands to drone to make control decisions. Control menu will be shown to select the type of control (like move left/right/up/down) 
-* ***Start Video Stream from Drone*** - this will initiate the video stream from drone to the control center, in the current architecture, video stream is just a binary stream of data which the control center will receive and process in background in a separate thread (Control center can still communicate with the Drone while video is streaming in the background) 
+* ***Start Video Stream from Drone*** - this will initiate the video stream from drone to the control center, in the current architecture, video stream (is just a binary stream in this case) data which the control center will receive and process in background in a separate thread (Control center can still communicate with the Drone while video is streaming in the background) 
 * ***Terminate Video Stream from Drone*** - this will make a request to Drone to stop the video stream, in the end it displays the total number of frames received with the size.  
 * ***Restart Session*** - this will reinitate the session. 
 * ***Close the system*** - this will exit the terminal.
